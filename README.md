@@ -81,6 +81,9 @@ npm run dev
 - `SENDGRID_API_KEY` (optional)
 - `FROM_EMAIL` (optional)
 
+### Replit note
+If you run on Replit, set `NEXTAUTH_URL` to your Replit app URL (e.g. `https://<your-subdomain>.replit.dev`) and restart the app after updating env vars.
+
 ## Demo login
 - `admin@demo.school`
 - `Password123!`

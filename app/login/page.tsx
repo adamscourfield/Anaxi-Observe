@@ -2,8 +2,10 @@
 
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -11,8 +13,13 @@ export default function LoginPage() {
     const form = new FormData(e.currentTarget);
     const email = String(form.get("email") || "");
     const password = String(form.get("password") || "");
-    const res = await signIn("credentials", { email, password, redirect: true, callbackUrl: "/tenant" });
-    if (res?.error) setError("Invalid credentials");
+    const res = await signIn("credentials", { email, password, redirect: false, callbackUrl: "/tenant" });
+    if (res?.error) {
+      setError("Invalid credentials or auth configuration issue. Check NEXTAUTH_URL and NEXTAUTH_SECRET.");
+      return;
+    }
+    router.push(res?.url || "/tenant");
+    router.refresh();
   }
 
   return (
