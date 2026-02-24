@@ -1,0 +1,2 @@
+-- Initial migration generated for Stage 1 schema.
+-- Run `npx prisma migrate dev` against Postgres to apply.
