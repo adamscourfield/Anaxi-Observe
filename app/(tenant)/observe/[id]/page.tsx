@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
-import { OBSERVATION_SIGNALS } from "@/modules/observations/signals";
+import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
+import { getTenantSignalLabels } from "@/modules/observations/tenantSignalLabels";
 
 export default async function ObservationDetailPage({ params }: { params: { id: string } }) {
   const user = await getSessionUserOrThrow();
@@ -14,6 +15,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
   });
   if (!observation) notFound();
   if (user.role === "TEACHER" && observation.observedTeacherId !== user.id) throw new Error("FORBIDDEN");
+  const labelMap = await getTenantSignalLabels(user.tenantId);
 
   const signalMap = new Map((observation.signals as any[]).map((signal) => [signal.signalKey, signal]));
 
@@ -32,12 +34,15 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
       </div>
 
       <section className="space-y-2">
-        {(OBSERVATION_SIGNALS as any[]).map((signal) => {
+        {(SIGNAL_DEFINITIONS as any[]).map((signal) => {
+          const override = (labelMap as any)[signal.key];
+          const displayName = override?.displayName || signal.displayNameDefault;
+          const description = override?.description || signal.descriptionDefault;
           const value = signalMap.get(signal.key);
           return (
             <div className="rounded border bg-white p-3 text-sm" key={signal.key}>
-              <p className="font-medium">{signal.label}</p>
-              <p className="text-slate-600">{signal.description}</p>
+              <p className="font-medium">{displayName}</p>
+              <p className="text-slate-600">{description}</p>
               <p className="mt-1"><strong>Recorded:</strong> {value?.notObserved ? "Not observed" : value?.valueKey || "-"}</p>
             </div>
           );

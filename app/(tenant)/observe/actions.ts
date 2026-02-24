@@ -3,7 +3,7 @@
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature, requireRole } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
-import { OBSERVATION_SIGNALS } from "@/modules/observations/signals";
+import { GLOBAL_SCALE, SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -17,7 +17,7 @@ export async function createObservation(formData: FormData) {
   const yearGroup = String(formData.get("yearGroup") || "").trim();
   const subject = String(formData.get("subject") || "").trim();
   const classCode = String(formData.get("classCode") || "").trim() || null;
-  const phase = String(formData.get("phase") || "OTHER");
+  const phase = String(formData.get("phase") || "UNKNOWN");
   const contextNote = String(formData.get("contextNote") || "").trim() || null;
 
   if (!observedTeacherId || !yearGroup || !subject || Number.isNaN(observedAt.getTime())) {
@@ -27,10 +27,11 @@ export async function createObservation(formData: FormData) {
   const teacher = await (prisma as any).user.findFirst({ where: { id: observedTeacherId, tenantId: user.tenantId, isActive: true } });
   if (!teacher) throw new Error("INVALID_TEACHER");
 
-  const signalData = OBSERVATION_SIGNALS.map((signal) => {
+  const allowedScaleKeys = new Set(GLOBAL_SCALE.map((s) => s.key));
+  const signalData = SIGNAL_DEFINITIONS.map((signal) => {
     const notObserved = String(formData.get(`signal_${signal.key}_not`) || "") === "1";
     const valueKey = String(formData.get(`signal_${signal.key}_value`) || "").trim() || null;
-    if (!notObserved && !valueKey) {
+    if (!notObserved && (!valueKey || !allowedScaleKeys.has(valueKey as any))) {
       throw new Error(`MISSING_SIGNAL_${signal.key}`);
     }
     return {

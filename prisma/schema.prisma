@@ -98,28 +98,25 @@ enum ActionStatus {
 }
 
 enum LessonPhase {
-  DO_NOW
-  INPUT
+  INSTRUCTION
   GUIDED_PRACTICE
   INDEPENDENT_PRACTICE
-  PLENARY
-  TRANSITION
-  OTHER
+  UNKNOWN
 }
 
 enum SignalKey {
-  LEARNING_OBJECTIVE_CLARITY
-  EXPLANATION_QUALITY
-  CHECKING_FOR_UNDERSTANDING
-  ADAPTIVE_TEACHING
-  STUDENT_PARTICIPATION
-  BEHAVIOUR_FOR_LEARNING
-  CLASSROOM_CLIMATE
-  ROUTINES_AND_TRANSITIONS
-  QUESTIONING_DEPTH
-  FEEDBACK_IN_LESSON
-  PACE_AND_CHALLENGE
-  SEND_SUPPORT
+  BEHAVIOUR_CLIMATE
+  PARTICIPATION_EQUITY
+  PACE_MOMENTUM
+  COLD_CALL_DENSITY
+  CFU_CYCLES
+  ERROR_CORRECTION_DEPTH
+  MODELLING_EXPLICITNESS
+  LANGUAGE_PRECISION
+  LIVE_ADJUSTMENT
+  RETRIEVAL_PRESENCE
+  STRETCH_DEPLOYMENT
+  INDEPENDENT_ACCOUNTABILITY
 }
 
 model Tenant {
@@ -142,6 +139,7 @@ model Tenant {
   meetings            Meeting[]
   meetingActions      MeetingAction[]
   observations        Observation[]
+  tenantSignalLabels  TenantSignalLabel[]
   students            Student[]
   studentSnapshots    StudentSnapshot[]
   subjects            Subject[]
@@ -527,4 +525,18 @@ model ObservationSignal {
   notObserved   Boolean     @default(false)
 
   @@unique([observationId, signalKey])
+}
+
+model TenantSignalLabel {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  signalKey   SignalKey
+  displayName String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, signalKey])
+  @@index([tenantId])
 }

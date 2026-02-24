@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { SIGNAL_DEFINITIONS } from "../modules/observations/signalDefinitions";
 
 const prisma = new PrismaClient();
 const FEATURES = ["OBSERVATIONS", "STUDENTS", "STUDENTS_IMPORT", "LEAVE", "ON_CALL", "MEETINGS", "ADMIN"] as const;
@@ -58,6 +59,14 @@ async function main() {
   }
   for (const email of ["oncall@demo.school", "pastoral@demo.school"]) {
     await (prisma as any).onCallRecipient.upsert({ where: { tenantId_email: { tenantId: tenant.id, email } }, update: {}, create: { tenantId: tenant.id, email } });
+  }
+
+  for (const signal of SIGNAL_DEFINITIONS) {
+    await (prisma as any).tenantSignalLabel.upsert({
+      where: { tenantId_signalKey: { tenantId: tenant.id, signalKey: signal.key } },
+      update: { displayName: signal.displayNameDefault, description: signal.descriptionDefault },
+      create: { tenantId: tenant.id, signalKey: signal.key, displayName: signal.displayNameDefault, description: signal.descriptionDefault }
+    });
   }
 }
 

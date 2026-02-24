@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     include: { student: true, reason: true, location: true }
   });
 
-  const recipients = await prisma.user.findMany({
+  const recipients = await (prisma as any).user.findMany({
     where: { tenantId: user.tenantId, isActive: true, receivesOnCallEmails: true },
     select: { email: true }
   });

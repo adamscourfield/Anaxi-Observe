@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 export default async function AdminUsersPage() {
   const user = await requireAdminUser();
-  const users = await prisma.user.findMany({ where: { tenantId: user.tenantId }, orderBy: { createdAt: "desc" } });
+  const users = await (prisma as any).user.findMany({ where: { tenantId: user.tenantId }, orderBy: { createdAt: "desc" } });
   const scopes = await (prisma as any).lOAApprovalScope.findMany({ where: { tenantId: user.tenantId } });
 
   const scopedByApprover = new Map<string, Set<string>>();
@@ -22,7 +22,7 @@ export default async function AdminUsersPage() {
     const role = String(formData.get("role") || "TEACHER") as any;
     const password = String(formData.get("password") || "Password123!");
     const hash = await bcrypt.hash(password, 10);
-    await prisma.user.create({
+    await (prisma as any).user.create({
       data: {
         tenantId: admin.tenantId,
         fullName,
@@ -42,7 +42,7 @@ export default async function AdminUsersPage() {
     const admin = await requireAdminUser();
     const id = String(formData.get("id"));
     const active = String(formData.get("active")) === "true";
-    await prisma.user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { isActive: !active } });
+    await (prisma as any).user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { isActive: !active } });
     revalidatePath("/tenant/admin/users");
   }
 
@@ -52,7 +52,7 @@ export default async function AdminUsersPage() {
     const id = String(formData.get("id"));
     const password = String(formData.get("password") || "Password123!");
     const hash = await bcrypt.hash(password, 10);
-    await prisma.user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { passwordHash: hash } });
+    await (prisma as any).user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { passwordHash: hash } });
     revalidatePath("/tenant/admin/users");
   }
 
@@ -61,7 +61,7 @@ export default async function AdminUsersPage() {
     const admin = await requireAdminUser();
     const id = String(formData.get("id"));
     const enabled = String(formData.get("enabled")) === "true";
-    await prisma.user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { canApproveAllLoa: !enabled } });
+    await (prisma as any).user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { canApproveAllLoa: !enabled } });
     revalidatePath("/tenant/admin/users");
   }
 
@@ -70,7 +70,7 @@ export default async function AdminUsersPage() {
     const admin = await requireAdminUser();
     const id = String(formData.get("id"));
     const enabled = String(formData.get("enabled")) === "true";
-    await prisma.user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { receivesOnCallEmails: !enabled } });
+    await (prisma as any).user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { receivesOnCallEmails: !enabled } });
     revalidatePath("/tenant/admin/users");
   }
 
