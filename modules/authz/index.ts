@@ -106,3 +106,42 @@ export function canApproveLeave(
 
   return false;
 }
+
+// ─── Teacher Analysis Visibility ──────────────────────────────────────────────
+
+export type TeacherAnalysisTarget = {
+  /** The userId of the teacher whose profile is being accessed */
+  teacherUserId: string;
+  /** Department IDs associated with that teacher */
+  teacherDepartmentIds: string[];
+};
+
+/**
+ * Determines whether a viewer can see a teacher's risk analysis profile.
+ *
+ * Rules:
+ * - ADMIN / SLT → can view all teachers
+ * - HOD → can view teachers in their departments
+ * - Coach (LEADER role with coachee assignment) → can view assigned coachees
+ * - TEACHER → can view only themselves
+ * - Others → no access
+ */
+export function canViewTeacherAnalysis(
+  viewer: ViewerContext,
+  target: TeacherAnalysisTarget
+): boolean {
+  if (viewer.role === "ADMIN" || viewer.role === "SLT") return true;
+
+  if (viewer.userId === target.teacherUserId) return true;
+
+  if (viewer.role === "HOD") {
+    const sharedDept = viewer.hodDepartmentIds.some((deptId) =>
+      target.teacherDepartmentIds.includes(deptId)
+    );
+    if (sharedDept) return true;
+  }
+
+  if (viewer.coacheeUserIds.includes(target.teacherUserId)) return true;
+
+  return false;
+}

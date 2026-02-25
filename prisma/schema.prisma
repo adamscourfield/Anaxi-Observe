@@ -131,6 +131,7 @@ model Tenant {
   meetingAttendees   MeetingAttendee[]
   meetingActions     MeetingAction[]
   departments        Department[]
+  observations       Observation[]
 }
 
 model User {
@@ -165,6 +166,8 @@ model User {
   leaveApprovalGroupScopes    LeaveApprovalGroupScope[] @relation("LeaveApprovalGroupSubject")
   timetableEntries            TimetableEntry[]   @relation("TimetableTeacher")
   timetableImportJobs         TimetableImportJob[] @relation("TimetableImportUploader")
+  observationsAsTeacher       Observation[]      @relation("ObservedTeacher")
+  observationsAsObserver      Observation[]      @relation("ObserverUser")
 
   @@unique([tenantId, email])
 }
@@ -481,6 +484,40 @@ model Insight {
   @@index([tenantId, createdAt])
   @@index([tenantId, type])
   @@index([tenantId, severity, createdAt])
+}
+
+// ─── Observation Models ───────────────────────────────────────────────────────
+
+model Observation {
+  id                String              @id @default(cuid())
+  tenantId          String
+  tenant            Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  observedTeacherId String
+  observedTeacher   User                @relation("ObservedTeacher", fields: [observedTeacherId], references: [id])
+  observerId        String
+  observer          User                @relation("ObserverUser", fields: [observerId], references: [id])
+  observedAt        DateTime
+  yearGroup         String
+  subject           String
+  classCode         String?
+  phase             String              @default("UNKNOWN")
+  contextNote       String?
+  signals           ObservationSignal[]
+  createdAt         DateTime            @default(now())
+
+  @@index([tenantId, observedAt])
+  @@index([tenantId, observedTeacherId, observedAt])
+}
+
+model ObservationSignal {
+  id            String      @id @default(cuid())
+  observationId String
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  signalKey     String
+  valueKey      String?
+  notObserved   Boolean     @default(false)
+
+  @@unique([observationId, signalKey])
 }
 
 // ─── Meeting Models ───────────────────────────────────────────────────────────

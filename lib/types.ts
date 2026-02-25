@@ -11,7 +11,8 @@ export type FeatureKey =
   | "MEETINGS"
   | "TIMETABLE"
   | "ADMIN"
-  | "ADMIN_SETTINGS";
+  | "ADMIN_SETTINGS"
+  | "ANALYSIS";
 
 export type SessionUser = {
   id: string;
