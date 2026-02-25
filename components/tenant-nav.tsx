@@ -11,6 +11,7 @@ export function TenantNav({ role, enabledFeatures }: { role: UserRole; enabledFe
       {has("ON_CALL") && <Link href="/tenant/on-call">On Call</Link>}
       {has("LEAVE") && <Link href="/tenant/leave">Leave</Link>}
       {has("MEETINGS") && <Link href="/tenant/meetings">Meetings</Link>}
+      {has("MEETINGS") && <Link href="/tenant/my-actions">My Actions</Link>}
       {role === "ADMIN" && has("ADMIN") && <Link href="/tenant/admin/users">Admin</Link>}
     </nav>
   );

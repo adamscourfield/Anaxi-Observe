@@ -1,0 +1,146 @@
+import { prisma } from "@/lib/prisma";
+import { CreateMeetingInput, UpdateMeetingInput } from "./types";
+
+const MEETING_INCLUDE = {
+  createdBy: { select: { id: true, fullName: true, email: true } },
+  attendees: { include: { user: { select: { id: true, fullName: true, email: true } } } },
+  actions: {
+    include: {
+      owner: { select: { id: true, fullName: true, email: true } },
+      createdBy: { select: { id: true, fullName: true, email: true } },
+      completedBy: { select: { id: true, fullName: true } },
+    },
+    orderBy: { dueDate: "asc" as const },
+  },
+};
+
+export async function createMeeting(
+  tenantId: string,
+  createdByUserId: string,
+  input: CreateMeetingInput
+) {
+  if (!input.title) throw new Error("title required");
+  if (!input.startDateTime || !input.endDateTime) throw new Error("startDateTime and endDateTime required");
+  if (input.endDateTime <= input.startDateTime) throw new Error("endDateTime must be after startDateTime");
+
+  const allAttendeeIds = [...new Set([...input.attendeeIds, createdByUserId])];
+  const validAttendees = await (prisma as any).user.findMany({
+    where: { tenantId, id: { in: allAttendeeIds }, isActive: true },
+    select: { id: true },
+  });
+
+  return (prisma as any).meeting.create({
+    data: {
+      tenantId,
+      title: input.title,
+      type: input.type,
+      startDateTime: input.startDateTime,
+      endDateTime: input.endDateTime,
+      location: input.location ?? null,
+      notes: input.notes ?? null,
+      createdByUserId,
+      attendees: {
+        createMany: {
+          data: validAttendees.map((u: { id: string }) => ({ userId: u.id, tenantId })),
+        },
+      },
+    },
+    include: MEETING_INCLUDE,
+  });
+}
+
+export async function getMeetingDetail(tenantId: string, meetingId: string) {
+  const meeting = await (prisma as any).meeting.findFirst({
+    where: { id: meetingId, tenantId },
+    include: MEETING_INCLUDE,
+  });
+  if (!meeting) throw new Error("meeting not found");
+  return meeting;
+}
+
+export async function updateMeeting(
+  tenantId: string,
+  meetingId: string,
+  createdByUserId: string,
+  input: UpdateMeetingInput
+) {
+  const existing = await (prisma as any).meeting.findFirst({ where: { id: meetingId, tenantId } });
+  if (!existing) throw new Error("meeting not found");
+  if (existing.createdByUserId !== createdByUserId) throw new Error("only creator can update meeting");
+
+  if (input.startDateTime && input.endDateTime && input.endDateTime <= input.startDateTime) {
+    throw new Error("endDateTime must be after startDateTime");
+  }
+
+  const data: Record<string, unknown> = {};
+  if (input.title !== undefined) data.title = input.title;
+  if (input.type !== undefined) data.type = input.type;
+  if (input.startDateTime !== undefined) data.startDateTime = input.startDateTime;
+  if (input.endDateTime !== undefined) data.endDateTime = input.endDateTime;
+  if (input.location !== undefined) data.location = input.location;
+  if (input.notes !== undefined) data.notes = input.notes;
+
+  return (prisma as any).meeting.update({
+    where: { id: meetingId },
+    data,
+    include: MEETING_INCLUDE,
+  });
+}
+
+export async function deleteMeeting(
+  tenantId: string,
+  meetingId: string,
+  createdByUserId: string
+) {
+  const existing = await (prisma as any).meeting.findFirst({ where: { id: meetingId, tenantId } });
+  if (!existing) throw new Error("meeting not found");
+  if (existing.createdByUserId !== createdByUserId) throw new Error("only creator can delete meeting");
+
+  await (prisma as any).meeting.delete({ where: { id: meetingId } });
+}
+
+export async function addAttendee(meetingId: string, userId: string, tenantId: string) {
+  const meeting = await (prisma as any).meeting.findFirst({ where: { id: meetingId, tenantId } });
+  if (!meeting) throw new Error("meeting not found");
+
+  return (prisma as any).meetingAttendee.upsert({
+    where: { meetingId_userId: { meetingId, userId } },
+    create: { meetingId, userId, tenantId },
+    update: {},
+  });
+}
+
+export async function removeAttendee(meetingId: string, userId: string, tenantId: string) {
+  const meeting = await (prisma as any).meeting.findFirst({ where: { id: meetingId, tenantId } });
+  if (!meeting) throw new Error("meeting not found");
+
+  await (prisma as any).meetingAttendee.delete({
+    where: { meetingId_userId: { meetingId, userId } },
+  });
+}
+
+export async function listMeetings(
+  tenantId: string,
+  filters: { type?: string; dateRange?: { from?: Date; to?: Date }; isAttendee?: boolean; userId?: string } = {}
+) {
+  const where: Record<string, unknown> = { tenantId };
+
+  if (filters.type) where.type = filters.type;
+  if (filters.dateRange?.from || filters.dateRange?.to) {
+    where.startDateTime = {};
+    if (filters.dateRange.from) (where.startDateTime as any).gte = filters.dateRange.from;
+    if (filters.dateRange.to) (where.startDateTime as any).lte = filters.dateRange.to;
+  }
+  if (filters.isAttendee && filters.userId) {
+    where.attendees = { some: { userId: filters.userId } };
+  }
+
+  return (prisma as any).meeting.findMany({
+    where,
+    include: {
+      ...MEETING_INCLUDE,
+      _count: { select: { actions: true } },
+    },
+    orderBy: { startDateTime: "desc" },
+  });
+}

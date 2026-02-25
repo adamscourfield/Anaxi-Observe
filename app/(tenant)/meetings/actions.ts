@@ -1,123 +1,75 @@
 "use server";
 
 import { getSessionUserOrThrow } from "@/lib/auth";
-import { requireFeature, requireRole } from "@/lib/guards";
-import { prisma } from "@/lib/prisma";
+import { requireFeature } from "@/lib/guards";
+import { hasPermission } from "@/lib/rbac";
+import { createMeeting, updateMeeting } from "@/modules/meetings/service";
+import { createAction, completeAction } from "@/modules/actions/service";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-export async function createMeeting(formData: FormData) {
+export async function createMeetingAction(formData: FormData) {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "MEETINGS");
-  requireRole(user, ["LEADER", "SLT", "ADMIN"]);
+  if (!hasPermission(user.role, "meetings:create")) throw new Error("FORBIDDEN");
 
   const title = String(formData.get("title") || "").trim();
-  const meetingType = String(formData.get("meetingType") || "OTHER");
-  const startAt = new Date(String(formData.get("startAt") || ""));
-  const endAtRaw = String(formData.get("endAt") || "").trim();
-  const endAt = endAtRaw ? new Date(endAtRaw) : null;
-  const attendeeIds = formData.getAll("attendeeIds").map((value) => String(value));
+  const type = String(formData.get("type") || "OTHER") as any;
+  const startDateTime = new Date(String(formData.get("startDateTime") || ""));
+  const endDateTimeRaw = String(formData.get("endDateTime") || "").trim();
+  const endDateTime = endDateTimeRaw ? new Date(endDateTimeRaw) : new Date(startDateTime.getTime() + 3600000);
+  const attendeeIds = formData.getAll("attendeeIds").map((v) => String(v));
+  const location = String(formData.get("location") || "").trim() || undefined;
+  const notes = String(formData.get("notes") || "").trim() || undefined;
 
-  if (!title || Number.isNaN(startAt.getTime())) throw new Error("INVALID_MEETING");
-  if (endAt && Number.isNaN(endAt.getTime())) throw new Error("INVALID_MEETING");
+  if (!title || Number.isNaN(startDateTime.getTime())) throw new Error("INVALID_MEETING");
 
-  const attendees = await (prisma as any).user.findMany({
-    where: { tenantId: user.tenantId, id: { in: [...new Set([...attendeeIds, user.id])] }, isActive: true },
-    select: { id: true }
-  });
-
-  const meeting = await (prisma as any).meeting.create({
-    data: {
-      tenantId: user.tenantId,
-      title,
-      meetingType,
-      startAt,
-      endAt,
-      createdById: user.id,
-      attendees: {
-        createMany: { data: attendees.map((attendee: any) => ({ userId: attendee.id })) }
-      }
-    }
+  const meeting = await createMeeting(user.tenantId, user.id, {
+    title, type, startDateTime, endDateTime, location, notes, attendeeIds,
   });
 
   revalidatePath("/tenant/meetings");
-  revalidatePath("/tenant/meetings/actions");
   redirect(`/tenant/meetings/${meeting.id}`);
 }
 
-export async function updateMeetingNotes(formData: FormData) {
+export async function updateMeetingNotesAction(formData: FormData) {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "MEETINGS");
 
   const meetingId = String(formData.get("meetingId") || "");
-  const notes = String(formData.get("notes") || "").trim() || null;
-  const meeting = await (prisma as any).meeting.findFirst({
-    where: { id: meetingId, tenantId: user.tenantId },
-    include: { attendees: true }
-  });
-  if (!meeting) throw new Error("NOT_FOUND");
+  const notes = String(formData.get("notes") || "").trim() || undefined;
 
-  const isAttendee = (meeting.attendees as any[]).some((attendee) => attendee.userId === user.id);
-  if (!isAttendee && meeting.createdById !== user.id) throw new Error("FORBIDDEN");
-
-  await (prisma as any).meeting.update({ where: { id: meetingId }, data: { notes } });
+  await updateMeeting(user.tenantId, meetingId, user.id, { notes });
   revalidatePath(`/tenant/meetings/${meetingId}`);
 }
 
-export async function addMeetingAction(formData: FormData) {
+export async function addMeetingActionAction(formData: FormData) {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "MEETINGS");
 
   const meetingId = String(formData.get("meetingId") || "");
-  const actionText = String(formData.get("actionText") || "").trim();
-  const assignedToId = String(formData.get("assignedToId") || "");
-  const dueDate = new Date(String(formData.get("dueDate") || ""));
+  const description = String(formData.get("description") || "").trim();
+  const ownerUserId = String(formData.get("ownerUserId") || "");
+  const dueDateRaw = String(formData.get("dueDate") || "").trim();
+  const dueDate = dueDateRaw ? new Date(dueDateRaw) : undefined;
 
-  if (!meetingId || !actionText || !assignedToId || Number.isNaN(dueDate.getTime())) throw new Error("INVALID_ACTION");
+  if (!meetingId || !description || !ownerUserId) throw new Error("INVALID_ACTION");
 
-  const meeting = await (prisma as any).meeting.findFirst({
-    where: { id: meetingId, tenantId: user.tenantId },
-    include: { attendees: true }
-  });
-  if (!meeting) throw new Error("NOT_FOUND");
-
-  const canEdit = meeting.createdById === user.id || (meeting.attendees as any[]).some((attendee) => attendee.userId === user.id);
-  if (!canEdit) throw new Error("FORBIDDEN");
-
-  const assignee = await (prisma as any).user.findFirst({ where: { id: assignedToId, tenantId: user.tenantId, isActive: true } });
-  if (!assignee) throw new Error("INVALID_ASSIGNEE");
-
-  await (prisma as any).meetingAction.create({
-    data: {
-      tenantId: user.tenantId,
-      meetingId,
-      actionText,
-      assignedToId,
-      dueDate,
-      status: "OPEN"
-    }
-  });
+  await createAction(user.tenantId, meetingId, user.id, { description, ownerUserId, dueDate });
 
   revalidatePath(`/tenant/meetings/${meetingId}`);
   revalidatePath("/tenant/meetings/actions");
+  revalidatePath("/tenant/my-actions");
 }
 
-export async function markActionDone(formData: FormData) {
+export async function markActionDoneAction(formData: FormData) {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "MEETINGS");
 
   const actionId = String(formData.get("actionId") || "");
-  const completionNote = String(formData.get("completionNote") || "").trim() || null;
-
-  const action = await (prisma as any).meetingAction.findFirst({ where: { id: actionId, tenantId: user.tenantId } });
-  if (!action) throw new Error("NOT_FOUND");
-  if (action.assignedToId !== user.id) throw new Error("FORBIDDEN");
-
-  await (prisma as any).meetingAction.update({
-    where: { id: actionId },
-    data: { status: "DONE", completedAt: new Date(), completionNote }
-  });
+  await completeAction(user.tenantId, actionId, user.id);
 
   revalidatePath("/tenant/meetings/actions");
-  revalidatePath(`/tenant/meetings/${action.meetingId}`);
+  revalidatePath("/tenant/my-actions");
 }
+

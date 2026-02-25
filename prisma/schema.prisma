@@ -66,6 +66,20 @@ enum InsightScope {
   TEACHER
 }
 
+enum MeetingType {
+  LINE_MANAGEMENT
+  DEPARTMENT
+  PASTORAL
+  SEN
+  OTHER
+}
+
+enum ActionStatus {
+  OPEN
+  DONE
+  BLOCKED
+}
+
 enum SignalKey {
   BEHAVIOUR_CLIMATE
   PARTICIPATION_EQUITY
@@ -102,6 +116,9 @@ model Tenant {
   importJobs         ImportJob[]
   importMappings     ImportMappingConfig[]
   insights           Insight[]
+  meetings           Meeting[]
+  meetingAttendees   MeetingAttendee[]
+  meetingActions     MeetingAction[]
 }
 
 model User {
@@ -123,6 +140,11 @@ model User {
   onCallRequestsResponded     OnCallRequest[]    @relation("OnCallResponder")
   importJobsCreated           ImportJob[]
   insightsAsTeacher           Insight[]          @relation("InsightTeacher")
+  meetingsCreated             Meeting[]          @relation("MeetingCreator")
+  meetingAttendance           MeetingAttendee[]  @relation("MeetingAttendee")
+  actionsOwned                MeetingAction[]    @relation("ActionOwner")
+  actionsCreated              MeetingAction[]    @relation("ActionCreator")
+  actionsCompleted            MeetingAction[]    @relation("ActionCompleter")
 
   @@unique([tenantId, email])
 }
@@ -413,4 +435,74 @@ model Insight {
   @@index([tenantId, createdAt])
   @@index([tenantId, type])
   @@index([tenantId, severity, createdAt])
+}
+
+// ─── Meeting Models ───────────────────────────────────────────────────────────
+
+model Meeting {
+  id                String            @id @default(cuid())
+  tenantId          String
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  title             String
+  type              MeetingType
+  startDateTime     DateTime
+  endDateTime       DateTime
+  location          String?
+  notes             String?
+
+  createdByUserId   String
+  createdBy         User              @relation("MeetingCreator", fields: [createdByUserId], references: [id])
+
+  attendees         MeetingAttendee[]
+  actions           MeetingAction[]
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([tenantId, startDateTime])
+  @@index([createdByUserId])
+}
+
+model MeetingAttendee {
+  id          String   @id @default(cuid())
+  meetingId   String
+  meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation("MeetingAttendee", fields: [userId], references: [id], onDelete: Cascade)
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+  @@index([userId, meetingId])
+}
+
+model MeetingAction {
+  id                String        @id @default(cuid())
+  tenantId          String
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  meetingId         String
+  meeting           Meeting       @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  description       String
+  ownerUserId       String
+  owner             User          @relation("ActionOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  dueDate           DateTime?
+  status            ActionStatus  @default(OPEN)
+
+  createdByUserId   String?
+  createdBy         User?         @relation("ActionCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  completedAt       DateTime?
+  completedByUserId String?
+  completedBy       User?         @relation("ActionCompleter", fields: [completedByUserId], references: [id], onDelete: SetNull)
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([ownerUserId, status])
+  @@index([meetingId, status])
+  @@index([tenantId, dueDate])
+  @@index([ownerUserId, dueDate])
 }
