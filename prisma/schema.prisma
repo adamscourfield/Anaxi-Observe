@@ -224,10 +224,11 @@ model TenantSignalLabel {
 // ─── LOA Models ───────────────────────────────────────────────────────────────
 
 model LoaReason {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   label    String
+  active   Boolean @default(true)
 
   @@unique([tenantId, label])
 }
