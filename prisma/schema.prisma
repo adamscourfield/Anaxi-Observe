@@ -1,0 +1,542 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  TEACHER
+  LEADER
+  SLT
+  ADMIN
+}
+
+enum FeatureKey {
+  OBSERVATIONS
+  STUDENTS
+  STUDENTS_IMPORT
+  LEAVE
+  ON_CALL
+  MEETINGS
+  ADMIN
+}
+
+enum StudentStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum StudentFlagKey {
+  ATTENDANCE_DROP
+  DETENTIONS_SPIKE
+  INTERNAL_EXCLUSIONS_SPIKE
+  SUSPENSIONS_NEW
+  ON_CALLS_SPIKE
+  LATENESS_SPIKE
+}
+
+enum FlagSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ImportType {
+  STUDENTS_SNAPSHOT
+  STUDENT_SUBJECT_TEACHERS
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum OnCallCategory {
+  BEHAVIOUR
+  FIRST_AID
+}
+
+enum OnCallStatus {
+  SENT
+  ACKNOWLEDGED
+  RESOLVED
+  CANCELLED
+}
+
+enum LOAStatus {
+  PENDING
+  APPROVED
+  DENIED
+  CANCELLED
+}
+
+enum LOADecisionType {
+  PAID
+  UNPAID
+  DENIED
+}
+
+enum MeetingType {
+  ONE_TO_ONE
+  TEAM
+  DEPARTMENT
+  PASTORAL
+  SLT
+  OTHER
+}
+
+enum ActionStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum LessonPhase {
+  INSTRUCTION
+  GUIDED_PRACTICE
+  INDEPENDENT_PRACTICE
+  UNKNOWN
+}
+
+enum SignalKey {
+  BEHAVIOUR_CLIMATE
+  PARTICIPATION_EQUITY
+  PACE_MOMENTUM
+  COLD_CALL_DENSITY
+  CFU_CYCLES
+  ERROR_CORRECTION_DEPTH
+  MODELLING_EXPLICITNESS
+  LANGUAGE_PRECISION
+  LIVE_ADJUSTMENT
+  RETRIEVAL_PRESENCE
+  STRETCH_DEPLOYMENT
+  INDEPENDENT_ACCOUNTABILITY
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users               User[]
+  features            TenantFeature[]
+  vocab               TenantVocab[]
+  loaReasons          LoaReason[]
+  loaAuthorisers      LOAAuthoriser[]
+  loaApprovalScopes   LOAApprovalScope[]
+  loaRequests         LOARequest[]
+  onCallReasons       OnCallReason[]
+  onCallLocations     OnCallLocation[]
+  onCallRecipients    OnCallRecipient[]
+  onCallRequests      OnCallRequest[]
+  meetings            Meeting[]
+  meetingActions      MeetingAction[]
+  observations        Observation[]
+  tenantSignalLabels  TenantSignalLabel[]
+  students            Student[]
+  studentSnapshots    StudentSnapshot[]
+  subjects            Subject[]
+  studentSubjectLinks StudentSubjectTeacher[]
+  studentChangeFlags  StudentChangeFlag[]
+  importJobs          ImportJob[]
+  importMappings      ImportMappingConfig[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  email        String
+  fullName     String
+  passwordHash String
+  role         UserRole
+  isActive     Boolean  @default(true)
+  canApproveAllLoa Boolean @default(false)
+  receivesOnCallEmails Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  subjectTeacherMappings StudentSubjectTeacher[]
+  onCallCreated         OnCallRequest[] @relation("OnCallCreatedBy")
+  onCallAssigned        OnCallRequest[] @relation("OnCallAssignedTo")
+  loaAuthoriserRows     LOAAuthoriser[]
+  loaApprovalScopesAsApprover LOAApprovalScope[] @relation("LoaScopeApprover")
+  loaApprovalScopesAsTarget   LOAApprovalScope[] @relation("LoaScopeTarget")
+  loaRequests           LOARequest[]    @relation("LoaRequester")
+  loaDecisioned         LOARequest[]    @relation("LoaDecisionBy")
+  meetingsCreated       Meeting[]       @relation("MeetingCreatedBy")
+  meetingAttendances    MeetingAttendee[]
+  meetingActions        MeetingAction[] @relation("MeetingActionAssignedTo")
+  observationsReceived  Observation[]   @relation("ObservedTeacher")
+  observationsMade      Observation[]   @relation("Observer")
+
+  @@unique([tenantId, email])
+  @@index([tenantId, role])
+}
+
+model TenantFeature {
+  id       String     @id @default(cuid())
+  tenantId String
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  key      FeatureKey
+  enabled  Boolean    @default(true)
+
+  @@unique([tenantId, key])
+}
+
+model TenantVocab {
+  id            String @id @default(cuid())
+  tenantId      String
+  tenant        Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  key           String
+  labelSingular String
+  labelPlural   String
+
+  @@unique([tenantId, key])
+}
+
+model LoaReason {
+  id       String  @id @default(cuid())
+  tenantId String
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  label    String
+  active   Boolean @default(true)
+  requests LOARequest[]
+
+  @@unique([tenantId, label])
+}
+
+model LOAAuthoriser {
+  id       String @id @default(cuid())
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+}
+
+model LOAApprovalScope {
+  id           String @id @default(cuid())
+  tenantId     String
+  tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  approverId   String
+  approver     User   @relation("LoaScopeApprover", fields: [approverId], references: [id], onDelete: Cascade)
+  targetUserId String
+  targetUser   User   @relation("LoaScopeTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, approverId, targetUserId])
+  @@index([tenantId, approverId])
+}
+
+model LOARequest {
+  id            String           @id @default(cuid())
+  tenantId      String
+  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  requesterId   String
+  requester     User             @relation("LoaRequester", fields: [requesterId], references: [id])
+  startAt       DateTime
+  endAt         DateTime
+  reasonId      String
+  reason        LoaReason        @relation(fields: [reasonId], references: [id])
+  coverNotes    String?
+  status        LOAStatus        @default(PENDING)
+  decisionById  String?
+  decisionBy    User?            @relation("LoaDecisionBy", fields: [decisionById], references: [id])
+  decisionAt    DateTime?
+  decisionType  LOADecisionType?
+  decisionNotes String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([tenantId, status, startAt])
+}
+
+model OnCallReason {
+  id       String  @id @default(cuid())
+  tenantId String
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  label    String
+  active   Boolean @default(true)
+
+  requests OnCallRequest[]
+
+  @@unique([tenantId, label])
+}
+
+model OnCallLocation {
+  id       String  @id @default(cuid())
+  tenantId String
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  label    String
+  active   Boolean @default(true)
+
+  requests OnCallRequest[]
+
+  @@unique([tenantId, label])
+}
+
+model OnCallRecipient {
+  id       String  @id @default(cuid())
+  tenantId String
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  email    String
+  active   Boolean @default(true)
+
+  @@unique([tenantId, email])
+}
+
+model OnCallRequest {
+  id           String         @id @default(cuid())
+  tenantId     String
+  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now())
+  createdById  String
+  createdBy    User           @relation("OnCallCreatedBy", fields: [createdById], references: [id])
+  studentId    String
+  student      Student        @relation(fields: [studentId], references: [id])
+  category     OnCallCategory
+  locationId   String?
+  location     OnCallLocation? @relation(fields: [locationId], references: [id])
+  locationText String?
+  reasonId     String?
+  reason       OnCallReason?   @relation(fields: [reasonId], references: [id])
+  notes        String?
+  status       OnCallStatus   @default(SENT)
+  assignedToId String?
+  assignedTo   User?          @relation("OnCallAssignedTo", fields: [assignedToId], references: [id])
+  resolvedAt   DateTime?
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status])
+}
+
+model Student {
+  id         String        @id @default(cuid())
+  tenantId   String
+  tenant     Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  upn        String
+  fullName   String
+  yearGroup  String?
+  sendFlag   Boolean       @default(false)
+  ppFlag     Boolean       @default(false)
+  status     StudentStatus @default(ACTIVE)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  snapshots  StudentSnapshot[]
+  subjects   StudentSubjectTeacher[]
+  changeFlags StudentChangeFlag[]
+  onCallRequests OnCallRequest[]
+
+  @@unique([tenantId, upn])
+  @@index([tenantId, fullName])
+}
+
+model StudentSnapshot {
+  id                      String   @id @default(cuid())
+  tenantId                String
+  tenant                  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId               String
+  student                 Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  snapshotDate            DateTime
+  positivePointsTotal     Int      @default(0)
+  detentionsCount         Int      @default(0)
+  internalExclusionsCount Int      @default(0)
+  suspensionsCount        Int      @default(0)
+  onCallsCount            Int      @default(0)
+  attendancePct           Decimal  @db.Decimal(5, 2)
+  latenessCount           Int      @default(0)
+  createdAt               DateTime @default(now())
+
+  @@unique([tenantId, studentId, snapshotDate])
+  @@index([tenantId, snapshotDate])
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+
+  links     StudentSubjectTeacher[]
+
+  @@unique([tenantId, name])
+}
+
+model StudentSubjectTeacher {
+  id            String    @id @default(cuid())
+  tenantId      String
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacherId     String
+  teacher       User      @relation(fields: [teacherId], references: [id])
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+
+  @@index([tenantId, studentId, subjectId])
+}
+
+model StudentChangeFlag {
+  id           String         @id @default(cuid())
+  tenantId     String
+  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  flagKey      StudentFlagKey
+  severity     FlagSeverity
+  baselineFrom DateTime
+  baselineTo   DateTime
+  currentFrom  DateTime
+  currentTo    DateTime
+  detailsJson  Json
+  createdAt    DateTime       @default(now())
+  resolvedAt   DateTime?
+
+  @@index([tenantId, studentId, flagKey, createdAt])
+}
+
+model ImportJob {
+  id           String       @id @default(cuid())
+  tenantId     String
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type         ImportType
+  status       ImportStatus
+  uploadedBy   String
+  fileName     String
+  rowCount     Int          @default(0)
+  errorSummary String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  errors       ImportError[]
+
+  @@index([tenantId, type, status])
+}
+
+model ImportError {
+  id          String    @id @default(cuid())
+  importJobId String
+  importJob   ImportJob @relation(fields: [importJobId], references: [id], onDelete: Cascade)
+  rowNumber   Int
+  field       String
+  message     String
+  createdAt   DateTime  @default(now())
+}
+
+model ImportMappingConfig {
+  id         String     @id @default(cuid())
+  tenantId   String
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  importType ImportType
+  mappingJson Json
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([tenantId, importType])
+}
+
+model Meeting {
+  id          String      @id @default(cuid())
+  tenantId    String
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title       String
+  meetingType MeetingType
+  startAt     DateTime
+  endAt       DateTime?
+  createdById String
+  createdBy   User        @relation("MeetingCreatedBy", fields: [createdById], references: [id])
+  notes       String?
+  createdAt   DateTime    @default(now())
+
+  attendees   MeetingAttendee[]
+  actions     MeetingAction[]
+
+  @@index([tenantId, startAt])
+}
+
+model MeetingAttendee {
+  id        String  @id @default(cuid())
+  meetingId String
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+}
+
+model MeetingAction {
+  id             String       @id @default(cuid())
+  tenantId       String
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  meetingId      String
+  meeting        Meeting      @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  actionText     String
+  assignedToId   String
+  assignedTo     User         @relation("MeetingActionAssignedTo", fields: [assignedToId], references: [id])
+  dueDate        DateTime
+  status         ActionStatus @default(OPEN)
+  completedAt    DateTime?
+  completionNote String?
+  createdAt      DateTime     @default(now())
+
+  @@index([tenantId, assignedToId, status, dueDate])
+}
+
+model Observation {
+  id                String      @id @default(cuid())
+  tenantId          String
+  tenant            Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  observedTeacherId String
+  observedTeacher   User        @relation("ObservedTeacher", fields: [observedTeacherId], references: [id])
+  observerId        String
+  observer          User        @relation("Observer", fields: [observerId], references: [id])
+  observedAt        DateTime
+  yearGroup         String
+  subject           String
+  classCode         String?
+  phase             LessonPhase
+  contextNote       String?
+  createdAt         DateTime    @default(now())
+
+  signals           ObservationSignal[]
+
+  @@index([tenantId, observedAt])
+  @@index([tenantId, observedTeacherId, observedAt])
+}
+
+model ObservationSignal {
+  id            String      @id @default(cuid())
+  observationId String
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  signalKey     SignalKey
+  valueKey      String?
+  notObserved   Boolean     @default(false)
+
+  @@unique([observationId, signalKey])
+}
+
+model TenantSignalLabel {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  signalKey   SignalKey
+  displayName String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, signalKey])
+  @@index([tenantId])
+}
