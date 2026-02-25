@@ -353,6 +353,7 @@ export async function computeTeacherSignalProfile(
 
 export type TeacherPivotSignalCell = {
   currentMean: number | null;
+  prevMean: number | null;
   delta: number | null;
   coverageCount: number;
 };
@@ -452,7 +453,7 @@ export async function computeTeacherPivot(
       const currentMean = curr ? computeMean(curr.scores) : null;
       const prevMean = prev ? computeMean(prev.scores) : null;
       const delta = currentMean !== null && prevMean !== null ? currentMean - prevMean : null;
-      signalData[signalKey] = { currentMean, delta, coverageCount: curr?.count ?? 0 };
+      signalData[signalKey] = { currentMean, prevMean, delta, coverageCount: curr?.count ?? 0 };
     }
 
     rows.push({

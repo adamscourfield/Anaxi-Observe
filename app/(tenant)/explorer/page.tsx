@@ -76,6 +76,33 @@ function fmtDelta(val: number | null, decimals = 2): string {
   return `${val > 0 ? "+" : ""}${val.toFixed(decimals)}`;
 }
 
+/** Visual threshold for signal-cell accent treatment */
+const VISUAL_THRESHOLD = 0.15;
+
+function pivotCellClass(delta: number | null, density: "comfortable" | "compact"): string {
+  const pad = density === "compact" ? "px-2 py-1.5" : "px-3 py-3";
+  if (delta !== null && delta < -VISUAL_THRESHOLD) {
+    return `${pad} tabular-nums border-l-2 border-amber-300 bg-amber-50/40`;
+  }
+  return `${pad} tabular-nums`;
+}
+
+function pivotCellTooltip(
+  label: string,
+  cell: { currentMean: number | null; prevMean: number | null; delta: number | null; coverageCount: number },
+  windowDays: number,
+  computedAt: string
+): string {
+  return [
+    label,
+    `Current: ${cell.currentMean !== null ? cell.currentMean.toFixed(2) : "—"}`,
+    `Previous: ${cell.prevMean !== null ? cell.prevMean.toFixed(2) : "—"}`,
+    `Δ ${cell.delta !== null ? (cell.delta > 0 ? "+" : "") + cell.delta.toFixed(2) : "—"}`,
+    `Coverage: ${cell.coverageCount}`,
+    `Window: ${windowDays}d · ${computedAt}`,
+  ].join("\n");
+}
+
 export default async function ExplorerPage({
   searchParams,
 }: {
@@ -117,6 +144,10 @@ export default async function ExplorerPage({
   const filterYearGroup = typeof searchParams?.yearGroup === "string" ? searchParams.yearGroup : "";
   const filterSubject = typeof searchParams?.subject === "string" ? searchParams.subject : "";
   const studentSearch = typeof searchParams?.studentSearch === "string" ? searchParams.studentSearch : "";
+  const densityRaw = typeof searchParams?.density === "string" ? searchParams.density : "comfortable";
+  const density: "comfortable" | "compact" = densityRaw === "compact" ? "compact" : "comfortable";
+  const sortSignal = typeof searchParams?.sortSignal === "string" ? searchParams.sortSignal : "";
+  const sortDir: "asc" | "desc" = typeof searchParams?.sortDir === "string" && searchParams.sortDir === "asc" ? "asc" : "desc";
 
   // Load reference data for filters
   const [departments, settings] = await Promise.all([
@@ -243,6 +274,8 @@ export default async function ExplorerPage({
       ...(filterYearGroup ? { yearGroup: filterYearGroup } : {}),
       ...(filterSubject ? { subject: filterSubject } : {}),
       ...(studentSearch ? { studentSearch } : {}),
+      ...(density !== "comfortable" ? { density } : {}),
+      ...(sortSignal ? { sortSignal, sortDir } : {}),
       ...overrides,
     };
     return "?" + new URLSearchParams(params).toString();
@@ -250,6 +283,26 @@ export default async function ExplorerPage({
 
   const signalKeys = SIGNAL_DEFINITIONS.map((s) => s.key);
   const signalLabels = new Map(SIGNAL_DEFINITIONS.map((s) => [s.key, s.displayNameDefault]));
+
+  // Apply signal column sort if requested (overrides default status + drift sort)
+  if (sortSignal && (signalKeys as string[]).includes(sortSignal)) {
+    teacherPivotRows = [...teacherPivotRows].sort((a, b) => {
+      const aDelta = a.signalData[sortSignal]?.delta ?? null;
+      const bDelta = b.signalData[sortSignal]?.delta ?? null;
+      if (aDelta === null && bDelta === null) return 0;
+      if (aDelta === null) return 1;
+      if (bDelta === null) return -1;
+      return sortDir === "asc" ? aDelta - bDelta : bDelta - aDelta;
+    });
+    deptPivotRows = [...deptPivotRows].sort((a, b) => {
+      const aDelta = a.signalData[sortSignal]?.delta ?? null;
+      const bDelta = b.signalData[sortSignal]?.delta ?? null;
+      if (aDelta === null && bDelta === null) return 0;
+      if (aDelta === null) return 1;
+      if (bDelta === null) return -1;
+      return sortDir === "asc" ? aDelta - bDelta : bDelta - aDelta;
+    });
+  }
 
   // suppress unused variable warning
   void settings;
@@ -414,8 +467,26 @@ export default async function ExplorerPage({
         )}
       </div>
 
-      {/* Export button */}
-      <div className="flex items-center gap-3">
+      {/* Export button + density toggle */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Density toggle */}
+        {(view === "INSTRUCTION_TEACHERS_PIVOT" || view === "INSTRUCTION_DEPARTMENTS_PIVOT") && (
+          <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-0.5">
+            {(["comfortable", "compact"] as const).map((d) => (
+              <Link
+                key={d}
+                href={buildFilterQuery({ density: d })}
+                className={`calm-transition rounded-md px-3 py-1 text-xs font-medium transition duration-200 ease-calm ${
+                  d === density
+                    ? "bg-[var(--accent-tint)] text-text"
+                    : "text-muted hover:text-text"
+                }`}
+              >
+                {d === "comfortable" ? "Comfortable" : "Compact"}
+              </Link>
+            ))}
+          </div>
+        )}
         {canExport ? (
           <form action="/api/explorer/export" method="POST">
             <input type="hidden" name="view" value={view} />
@@ -453,56 +524,121 @@ export default async function ExplorerPage({
               <BodyText className="text-muted">No teachers with observations in this window.</BodyText>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
-                    <th className="px-4 py-3 sticky left-0 bg-bg">Teacher</th>
-                    <th className="px-4 py-3">Department</th>
-                    <th className="px-4 py-3 text-right">Coverage</th>
-                    <th className="px-4 py-3">Band</th>
-                    <th className="px-4 py-3 text-right">Drift</th>
-                    {signalKeys.map((k) => (
-                      <th key={k} className="px-3 py-3 text-right min-w-[80px]" title={signalLabels.get(k)}>
-                        {signalLabels.get(k)?.slice(0, 6) ?? k}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {teacherPivotRows.map((row) => (
-                    <tr key={row.teacherMembershipId} className="border-b border-divider last:border-0 hover:bg-bg">
-                      <td className="px-4 py-3 font-medium text-text sticky left-0 bg-surface">
-                        <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="hover:underline">
+            <>
+              {/* Mobile card fallback (< md) */}
+              <div className="md:hidden divide-y divide-divider">
+                {teacherPivotRows.map((row) => {
+                  const worstDeltas = signalKeys
+                    .map((k) => ({ key: k, label: signalLabels.get(k) ?? k, delta: row.signalData[k]?.delta ?? null }))
+                    .filter((x) => x.delta !== null)
+                    .sort((a, b) => (a.delta as number) - (b.delta as number))
+                    .slice(0, 3);
+                  return (
+                    <div key={row.teacherMembershipId} className="px-4 py-3 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="font-medium text-text hover:underline">
                           {row.teacherName}
                         </Link>
-                      </td>
-                      <td className="px-4 py-3 text-muted text-xs">{row.departmentNames.join(", ") || "—"}</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teacherCoverage}</td>
-                      <td className="px-4 py-3">
                         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_PILL[row.status]}`}>
                           {STATUS_LABELS[row.status]}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted">{row.normalizedIDS.toFixed(1)}</td>
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted">
+                        <span>{row.departmentNames.join(", ") || "—"}</span>
+                        <span>Coverage: {row.teacherCoverage}</span>
+                      </div>
+                      {worstDeltas.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
+                          {worstDeltas.map((x) => (
+                            <span key={x.key} className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50/60 px-2 py-0.5 text-xs text-amber-800">
+                              {x.label?.slice(0, 10)}: Δ {(x.delta as number) > 0 ? "+" : ""}{(x.delta as number).toFixed(1)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <Link
+                        href={buildFilterQuery({ density: "comfortable" })}
+                        className="inline-block text-xs text-accent hover:underline mt-1"
+                      >
+                        Open full pivot →
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Desktop table (≥ md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
+                      <th className="px-4 py-3 sticky left-0 z-20 bg-bg">Teacher</th>
+                      <th className="px-4 py-3">Department</th>
+                      <th className="px-4 py-3 text-right">Coverage</th>
+                      <th className="px-4 py-3">Band</th>
+                      <th className="px-4 py-3 text-right">Drift</th>
                       {signalKeys.map((k) => {
-                        const cell = row.signalData[k];
+                        const isSorted = sortSignal === k;
+                        const nextDir = isSorted && sortDir === "desc" ? "asc" : "desc";
                         return (
-                          <td key={k} className="px-3 py-3 text-right tabular-nums">
-                            <span className="text-text">{cell?.currentMean !== null ? cell.currentMean?.toFixed(2) : "—"}</span>
-                            {cell?.delta !== null && (
-                              <span className={`ml-1 text-xs ${deltaClass(cell.delta)}`}>
-                                {fmtDelta(cell.delta)}
-                              </span>
-                            )}
-                          </td>
+                          <th key={k} className="px-3 py-3 text-right min-w-[90px]">
+                            <Link
+                              href={buildFilterQuery({ sortSignal: k, sortDir: nextDir })}
+                              title={signalLabels.get(k)}
+                              className={`inline-flex items-center justify-end gap-0.5 hover:text-text transition-colors ${isSorted ? "text-text" : ""}`}
+                            >
+                              {signalLabels.get(k)?.slice(0, 6) ?? k}
+                              <span className="text-[10px]">{isSorted ? (sortDir === "desc" ? "↓" : "↑") : "⇅"}</span>
+                            </Link>
+                          </th>
                         );
                       })}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {teacherPivotRows.map((row) => (
+                      <tr key={row.teacherMembershipId} className="border-b border-divider last:border-0 hover:bg-bg">
+                        <td className="px-4 py-3 font-medium text-text sticky left-0 z-10 bg-surface">
+                          <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="hover:underline">
+                            {row.teacherName}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3 text-muted text-xs">{row.departmentNames.join(", ") || "—"}</td>
+                        <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teacherCoverage}</td>
+                        <td className="px-4 py-3">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_PILL[row.status]}`}>
+                            {STATUS_LABELS[row.status]}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums text-muted">{row.normalizedIDS.toFixed(1)}</td>
+                        {signalKeys.map((k) => {
+                          const cell = row.signalData[k] ?? { currentMean: null, prevMean: null, delta: null, coverageCount: 0 };
+                          const label = signalLabels.get(k) ?? k;
+                          return (
+                            <td
+                              key={k}
+                              className={pivotCellClass(cell.delta, density)}
+                              title={pivotCellTooltip(label, cell, windowDays, computedAtStr)}
+                            >
+                              <div className="flex flex-col items-end gap-0.5">
+                                <span className="text-text tabular-nums">
+                                  {cell.currentMean !== null ? cell.currentMean.toFixed(1) : "—"}
+                                </span>
+                                <span className="text-[11px] text-muted tabular-nums">
+                                  Δ {cell.delta !== null ? (cell.delta > 0 ? "+" : "") + cell.delta.toFixed(1) : "—"}
+                                </span>
+                              </div>
+                              {cell.delta !== null && cell.delta > VISUAL_THRESHOLD && (
+                                <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-green-400 align-middle" />
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </Card>
       )}
@@ -519,48 +655,110 @@ export default async function ExplorerPage({
               <BodyText className="text-muted">No departments with data in this window.</BodyText>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
-                    <th className="px-4 py-3">Department</th>
-                    <th className="px-4 py-3 text-right">Teachers</th>
-                    <th className="px-4 py-3 text-right">Observations</th>
-                    {signalKeys.map((k) => (
-                      <th key={k} className="px-3 py-3 text-right min-w-[80px]" title={signalLabels.get(k)}>
-                        {signalLabels.get(k)?.slice(0, 6) ?? k}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {deptPivotRows.map((row) => (
-                    <tr key={row.departmentId} className="border-b border-divider last:border-0 hover:bg-bg">
-                      <td className="px-4 py-3 font-medium text-text">
-                        <Link href={`/scope?departmentId=${row.departmentId}&window=${windowDays}`} className="hover:underline">
+            <>
+              {/* Mobile card fallback (< md) */}
+              <div className="md:hidden divide-y divide-divider">
+                {deptPivotRows.map((row) => {
+                  const worstDeltas = signalKeys
+                    .map((k) => ({ key: k, label: signalLabels.get(k) ?? k, delta: row.signalData[k]?.delta ?? null }))
+                    .filter((x) => x.delta !== null)
+                    .sort((a, b) => (a.delta as number) - (b.delta as number))
+                    .slice(0, 3);
+                  return (
+                    <div key={row.departmentId} className="px-4 py-3 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <Link href={`/scope?departmentId=${row.departmentId}&window=${windowDays}`} className="font-medium text-text hover:underline">
                           {row.departmentName}
                         </Link>
-                      </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teacherCount}</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted">{row.observationCount}</td>
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted">
+                        <span>Teachers: {row.teacherCount}</span>
+                        <span>Obs: {row.observationCount}</span>
+                      </div>
+                      {worstDeltas.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
+                          {worstDeltas.map((x) => (
+                            <span key={x.key} className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50/60 px-2 py-0.5 text-xs text-amber-800">
+                              {x.label?.slice(0, 10)}: Δ {(x.delta as number) > 0 ? "+" : ""}{(x.delta as number).toFixed(1)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <Link
+                        href={buildFilterQuery({ density: "comfortable" })}
+                        className="inline-block text-xs text-accent hover:underline mt-1"
+                      >
+                        Open full pivot →
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Desktop table (≥ md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
+                      <th className="px-4 py-3 sticky left-0 z-20 bg-bg">Department</th>
+                      <th className="px-4 py-3 text-right">Teachers</th>
+                      <th className="px-4 py-3 text-right">Observations</th>
                       {signalKeys.map((k) => {
-                        const cell = row.signalData[k];
+                        const isSorted = sortSignal === k;
+                        const nextDir = isSorted && sortDir === "desc" ? "asc" : "desc";
                         return (
-                          <td key={k} className="px-3 py-3 text-right tabular-nums">
-                            <span className="text-text">{cell?.currentMean !== null ? cell.currentMean?.toFixed(2) : "—"}</span>
-                            {cell?.delta !== null && (
-                              <span className={`ml-1 text-xs ${deltaClass(cell.delta)}`}>
-                                {fmtDelta(cell.delta)}
-                              </span>
-                            )}
-                          </td>
+                          <th key={k} className="px-3 py-3 text-right min-w-[90px]">
+                            <Link
+                              href={buildFilterQuery({ sortSignal: k, sortDir: nextDir })}
+                              title={signalLabels.get(k)}
+                              className={`inline-flex items-center justify-end gap-0.5 hover:text-text transition-colors ${isSorted ? "text-text" : ""}`}
+                            >
+                              {signalLabels.get(k)?.slice(0, 6) ?? k}
+                              <span className="text-[10px]">{isSorted ? (sortDir === "desc" ? "↓" : "↑") : "⇅"}</span>
+                            </Link>
+                          </th>
                         );
                       })}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {deptPivotRows.map((row) => (
+                      <tr key={row.departmentId} className="border-b border-divider last:border-0 hover:bg-bg">
+                        <td className="px-4 py-3 font-medium text-text sticky left-0 z-10 bg-surface">
+                          <Link href={`/scope?departmentId=${row.departmentId}&window=${windowDays}`} className="hover:underline">
+                            {row.departmentName}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teacherCount}</td>
+                        <td className="px-4 py-3 text-right tabular-nums text-muted">{row.observationCount}</td>
+                        {signalKeys.map((k) => {
+                          const cell = row.signalData[k] ?? { currentMean: null, prevMean: null, delta: null, coverageCount: 0 };
+                          const label = signalLabels.get(k) ?? k;
+                          return (
+                            <td
+                              key={k}
+                              className={pivotCellClass(cell.delta, density)}
+                              title={pivotCellTooltip(label, cell, windowDays, computedAtStr)}
+                            >
+                              <div className="flex flex-col items-end gap-0.5">
+                                <span className="text-text tabular-nums">
+                                  {cell.currentMean !== null ? cell.currentMean.toFixed(1) : "—"}
+                                </span>
+                                <span className="text-[11px] text-muted tabular-nums">
+                                  Δ {cell.delta !== null ? (cell.delta > 0 ? "+" : "") + cell.delta.toFixed(1) : "—"}
+                                </span>
+                              </div>
+                              {cell.delta !== null && cell.delta > VISUAL_THRESHOLD && (
+                                <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-green-400 align-middle" />
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </Card>
       )}
