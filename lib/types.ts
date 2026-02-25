@@ -1,5 +1,17 @@
-export type UserRole = "TEACHER" | "LEADER" | "SLT" | "ADMIN" | "HR" | "ON_CALL";
-export type FeatureKey = "OBSERVATIONS" | "STUDENTS" | "STUDENTS_IMPORT" | "LEAVE" | "ON_CALL" | "MEETINGS" | "ADMIN";
+export type UserRole = "TEACHER" | "LEADER" | "HOD" | "SLT" | "ADMIN" | "HR" | "ON_CALL";
+export type FeatureKey =
+  | "OBSERVATIONS"
+  | "SIGNALS"
+  | "STUDENTS"
+  | "STUDENTS_IMPORT"
+  | "BEHAVIOUR_IMPORT"
+  | "LEAVE"
+  | "LEAVE_OF_ABSENCE"
+  | "ON_CALL"
+  | "MEETINGS"
+  | "TIMETABLE"
+  | "ADMIN"
+  | "ADMIN_SETTINGS";
 
 export type SessionUser = {
   id: string;

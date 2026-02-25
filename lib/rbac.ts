@@ -1,7 +1,7 @@
 import { UserRole } from "@/lib/types";
 
 export const isAdmin = (role: UserRole) => role === "ADMIN";
-export const canLead = (role: UserRole) => role === "LEADER" || role === "SLT" || role === "ADMIN";
+export const canLead = (role: UserRole) => role === "LEADER" || role === "HOD" || role === "SLT" || role === "ADMIN";
 
 export type OnCallPermission =
   | "oncall:create"
@@ -40,6 +40,11 @@ const ROLE_PERMISSIONS: Record<UserRole, AppPermission[]> = {
     "oncall:create", "oncall:acknowledge", "oncall:resolve", "oncall:view_all",
     "import:write", "students:read", "students:write",
     "meetings:create", "meetings:view_all", "meetings:edit",
+    "actions:create", "actions:manage", "actions:view_own",
+  ],
+  HOD: [
+    "oncall:create", "students:read",
+    "meetings:create", "meetings:view_own",
     "actions:create", "actions:manage", "actions:view_own",
   ],
   LEADER: ["oncall:create", "oncall:cancel", "students:read"],

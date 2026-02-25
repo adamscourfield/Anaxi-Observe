@@ -3,7 +3,10 @@ import bcrypt from "bcryptjs";
 import { SIGNAL_DEFINITIONS } from "../modules/observations/signalDefinitions";
 
 const prisma = new PrismaClient();
-const FEATURES = ["OBSERVATIONS", "STUDENTS", "STUDENTS_IMPORT", "LEAVE", "ON_CALL", "MEETINGS", "ADMIN"] as const;
+const FEATURES = [
+  "OBSERVATIONS", "SIGNALS", "STUDENTS", "STUDENTS_IMPORT", "BEHAVIOUR_IMPORT",
+  "LEAVE", "LEAVE_OF_ABSENCE", "ON_CALL", "MEETINGS", "TIMETABLE", "ADMIN", "ADMIN_SETTINGS"
+] as const;
 
 async function main() {
   const tenant = await prisma.tenant.upsert({

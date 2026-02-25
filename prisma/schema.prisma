@@ -12,6 +12,7 @@ generator client {
 enum UserRole {
   TEACHER
   LEADER
+  HOD
   SLT
   ADMIN
   HR
@@ -127,6 +128,7 @@ model Tenant {
   meetings           Meeting[]
   meetingAttendees   MeetingAttendee[]
   meetingActions     MeetingAction[]
+  departments        Department[]
 }
 
 model User {
@@ -154,6 +156,13 @@ model User {
   actionsOwned                MeetingAction[]    @relation("ActionOwner")
   actionsCreated              MeetingAction[]    @relation("ActionCreator")
   actionsCompleted            MeetingAction[]    @relation("ActionCompleter")
+  departmentMemberships       DepartmentMembership[] @relation("DepartmentMember")
+  coachAssignmentsAsCoach     CoachAssignment[]  @relation("CoachAssignmentCoach")
+  coachAssignmentsAsCoachee   CoachAssignment[]  @relation("CoachAssignmentCoachee")
+  leaveApprovalGroupMemberships LeaveApprovalGroupMember[] @relation("LeaveApprovalGroupApprover")
+  leaveApprovalGroupScopes    LeaveApprovalGroupScope[] @relation("LeaveApprovalGroupSubject")
+  timetableEntries            TimetableEntry[]   @relation("TimetableTeacher")
+  timetableImportJobs         TimetableImportJob[] @relation("TimetableImportUploader")
 
   @@unique([tenantId, email])
 }
@@ -470,6 +479,152 @@ model Insight {
   @@index([tenantId, createdAt])
   @@index([tenantId, type])
   @@index([tenantId, severity, createdAt])
+}
+
+// ─── Meeting Models ───────────────────────────────────────────────────────────
+
+// ─── Department Models ────────────────────────────────────────────────────────
+
+model Department {
+  id          String                @id @default(cuid())
+  tenantId    String
+  tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String
+  memberships DepartmentMembership[]
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model DepartmentMembership {
+  id                 String     @id @default(cuid())
+  tenantId           String
+  departmentId       String
+  department         Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User       @relation("DepartmentMember", fields: [userId], references: [id], onDelete: Cascade)
+  isHeadOfDepartment Boolean    @default(false)
+
+  @@unique([departmentId, userId])
+  @@index([tenantId, departmentId])
+}
+
+// ─── Coach Assignment Model ───────────────────────────────────────────────────
+
+model CoachAssignment {
+  id               String   @id @default(cuid())
+  tenantId         String
+  coachUserId      String
+  coach            User     @relation("CoachAssignmentCoach", fields: [coachUserId], references: [id], onDelete: Cascade)
+  coacheeUserId    String
+  coachee          User     @relation("CoachAssignmentCoachee", fields: [coacheeUserId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@unique([tenantId, coachUserId, coacheeUserId])
+  @@index([tenantId, coachUserId])
+}
+
+// ─── Leave Approval Group Models ─────────────────────────────────────────────
+
+enum LeaveApprovalGroupAppliesTo {
+  ALL_STAFF
+  SELECTED_MEMBERS
+}
+
+model LeaveApprovalGroup {
+  id        String                       @id @default(cuid())
+  tenantId  String
+  name      String
+  appliesTo LeaveApprovalGroupAppliesTo  @default(ALL_STAFF)
+  approvers LeaveApprovalGroupMember[]
+  scopes    LeaveApprovalGroupScope[]
+  createdAt DateTime                     @default(now())
+  updatedAt DateTime                     @updatedAt
+
+  @@index([tenantId])
+}
+
+model LeaveApprovalGroupMember {
+  id               String             @id @default(cuid())
+  tenantId         String
+  groupId          String
+  group            LeaveApprovalGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  approverUserId   String
+  approver         User               @relation("LeaveApprovalGroupApprover", fields: [approverUserId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, approverUserId])
+  @@index([tenantId])
+}
+
+model LeaveApprovalGroupScope {
+  id              String             @id @default(cuid())
+  tenantId        String
+  groupId         String
+  group           LeaveApprovalGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  subjectUserId   String
+  subject         User               @relation("LeaveApprovalGroupSubject", fields: [subjectUserId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, subjectUserId])
+  @@index([tenantId])
+}
+
+// ─── Tenant Settings Model ────────────────────────────────────────────────────
+
+model TenantSettings {
+  id                        String    @id @default(cuid())
+  tenantId                  String    @unique
+  schoolName                String?
+  timezone                  String    @default("Europe/London")
+  defaultInsightWindowDays  Int       @default(21)
+  positivePointsLabel       String    @default("Positive Points")
+  detentionLabel            String    @default("Detention")
+  internalExclusionLabel    String    @default("Internal Exclusion")
+  suspensionLabel           String    @default("Suspension")
+  onCallLabel               String    @default("On Call")
+  driftDeltaThreshold       Float     @default(0.15)
+  minObservationCount       Int       @default(3)
+  behaviourSpikePercent     Float     @default(50.0)
+  onboardingCompletedAt     DateTime?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+}
+
+// ─── Timetable Models ─────────────────────────────────────────────────────────
+
+model TimetableEntry {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  classCode          String
+  subject            String
+  yearGroup          String
+  teacherUserId      String?
+  teacher            User?    @relation("TimetableTeacher", fields: [teacherUserId], references: [id], onDelete: SetNull)
+  teacherEmailRaw    String?
+  room               String?
+  dayOfWeek          Int?
+  period             String?
+  createdAt          DateTime @default(now())
+
+  @@index([tenantId, yearGroup, subject, classCode])
+}
+
+model TimetableImportJob {
+  id              String   @id @default(cuid())
+  tenantId        String
+  status          String   @default("PENDING")
+  uploadedByUserId String
+  uploadedBy      User     @relation("TimetableImportUploader", fields: [uploadedByUserId], references: [id])
+  fileName        String
+  rowCount        Int      @default(0)
+  rowsProcessed   Int      @default(0)
+  rowsFailed      Int      @default(0)
+  errorReportJson Json?
+  createdAt       DateTime @default(now())
+  finishedAt      DateTime?
+
+  @@index([tenantId, createdAt])
 }
 
 // ─── Meeting Models ───────────────────────────────────────────────────────────
