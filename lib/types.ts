@@ -1,4 +1,4 @@
-export type UserRole = "TEACHER" | "LEADER" | "SLT" | "ADMIN";
+export type UserRole = "TEACHER" | "LEADER" | "SLT" | "ADMIN" | "HR" | "ON_CALL";
 export type FeatureKey = "OBSERVATIONS" | "STUDENTS" | "STUDENTS_IMPORT" | "LEAVE" | "ON_CALL" | "MEETINGS" | "ADMIN";
 
 export type SessionUser = {

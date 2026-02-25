@@ -1,3 +1,53 @@
+enum OnCallRequestType {
+  BEHAVIOUR
+  FIRST_AID
+}
+
+enum OnCallStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  CANCELLED
+}
+
+model OnCallRequest {
+  id                      String            @id @default(cuid())
+  tenantId                String
+  tenant                  Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  requesterUserId         String
+  requester               User              @relation("OnCallRequester", fields: [requesterUserId], references: [id])
+
+  studentId               String
+  student                 Student           @relation(fields: [studentId], references: [id])
+
+  requestType             OnCallRequestType
+  location                String
+  behaviourReasonCategory String?
+  notes                   String?
+
+  status                  OnCallStatus      @default(OPEN)
+
+  responderUserId         String?
+  responder               User?             @relation("OnCallResponder", fields: [responderUserId], references: [id], onDelete: SetNull)
+
+  createdAt               DateTime          @default(now())
+  acknowledgedAt          DateTime?
+  resolvedAt              DateTime?
+  updatedAt               DateTime          @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status, createdAt])
+  @@index([requesterUserId, status])
+}
+
+// Update Tenant model: add `onCallRequests OnCallRequest[]`
+// Update User model: add `onCallRequestsCreated OnCallRequest[] @relation("OnCallRequester")`
+//                   and `onCallRequestsResponded OnCallRequest[] @relation("OnCallResponder")`
+// Update Student model: add `onCallRequests OnCallRequest[]`
+
 enum InsightType {
   DRIFT_DOWN
   DRIFT_UP
