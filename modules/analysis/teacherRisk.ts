@@ -348,3 +348,130 @@ export async function computeTeacherSignalProfile(
     computedAt: new Date(),
   };
 }
+
+// ─── Batch Teacher Pivot (for Explorer) ──────────────────────────────────────
+
+export type TeacherPivotSignalCell = {
+  currentMean: number | null;
+  delta: number | null;
+  coverageCount: number;
+};
+
+export type TeacherPivotRow = {
+  teacherMembershipId: string;
+  teacherName: string;
+  departmentNames: string[];
+  teacherCoverage: number;
+  lastObservationAt: Date | null;
+  normalizedIDS: number;
+  status: RiskStatus;
+  signalData: Record<string, TeacherPivotSignalCell>;
+};
+
+/**
+ * Compute full teacher × signal pivot for Explorer.
+ * Optionally filter to a subset of teacher IDs.
+ */
+export async function computeTeacherPivot(
+  tenantId: string,
+  windowDays: number,
+  filterTeacherIds?: string[]
+): Promise<{ rows: TeacherPivotRow[]; computedAt: Date }> {
+  const settings = await (prisma as any).tenantSettings.findUnique({ where: { tenantId } });
+  const minCoverage: number = settings?.minObservationCount ?? DEFAULT_MIN_COVERAGE;
+  const driftThreshold: number = settings?.driftDeltaThreshold ?? DEFAULT_DRIFT_THRESHOLD;
+
+  const { currentStart, currentEnd, prevStart } = windowBounds(windowDays);
+
+  const teacherFilter = filterTeacherIds ? { observedTeacherId: { in: filterTeacherIds } } : {};
+
+  const [currentObs, prevObs, deptMemberships, signalLabels] = await Promise.all([
+    (prisma as any).observation.findMany({
+      where: { tenantId, observedAt: { gte: currentStart, lte: currentEnd }, ...teacherFilter },
+      include: { signals: true, observedTeacher: true },
+    }),
+    (prisma as any).observation.findMany({
+      where: { tenantId, observedAt: { gte: prevStart, lt: currentStart }, ...teacherFilter },
+      include: { signals: true },
+    }),
+    (prisma as any).departmentMembership.findMany({
+      where: { tenantId },
+      include: { department: true },
+    }),
+    (prisma as any).tenantSignalLabel.findMany({ where: { tenantId } }),
+  ]);
+
+  const labelMap = new Map<string, string>(
+    (signalLabels as any[]).map((l: any) => [l.signalKey, l.displayName])
+  );
+
+  const teacherDepts = new Map<string, string[]>();
+  for (const m of deptMemberships as any[]) {
+    if (!teacherDepts.has(m.userId)) teacherDepts.set(m.userId, []);
+    teacherDepts.get(m.userId)!.push(m.department.name);
+  }
+
+  const currentByTeacher = new Map<string, any[]>();
+  for (const obs of currentObs as any[]) {
+    if (!currentByTeacher.has(obs.observedTeacherId)) currentByTeacher.set(obs.observedTeacherId, []);
+    currentByTeacher.get(obs.observedTeacherId)!.push(obs);
+  }
+
+  const prevByTeacher = new Map<string, any[]>();
+  for (const obs of prevObs as any[]) {
+    if (!prevByTeacher.has(obs.observedTeacherId)) prevByTeacher.set(obs.observedTeacherId, []);
+    prevByTeacher.get(obs.observedTeacherId)!.push(obs);
+  }
+
+  const rows: TeacherPivotRow[] = [];
+
+  for (const [teacherId, teacherCurrentObs] of currentByTeacher.entries()) {
+    const teacher = teacherCurrentObs[0]?.observedTeacher;
+    if (!teacher) continue;
+
+    const teacherCoverage = teacherCurrentObs.length;
+    const lastObservationAt = teacherCurrentObs.reduce((latest: Date | null, obs: any) => {
+      const d = new Date(obs.observedAt);
+      return latest === null || d > latest ? d : latest;
+    }, null);
+
+    const currentSignals = teacherCurrentObs.flatMap((o: any) => o.signals);
+    const prevTeacherObs = prevByTeacher.get(teacherId) ?? [];
+    const prevSignals = prevTeacherObs.flatMap((o: any) => o.signals);
+
+    const currentMeans = buildSignalMeans(currentSignals);
+    const prevMeans = buildSignalMeans(prevSignals);
+
+    const { normalizedIDS } = computeIDS(currentMeans, prevMeans, driftThreshold);
+    const status = classifyStatus(normalizedIDS, teacherCoverage, minCoverage);
+
+    const signalData: Record<string, TeacherPivotSignalCell> = {};
+    for (const signalKey of ALL_SIGNAL_KEYS) {
+      const curr = currentMeans.get(signalKey);
+      const prev = prevMeans.get(signalKey);
+      const currentMean = curr ? computeMean(curr.scores) : null;
+      const prevMean = prev ? computeMean(prev.scores) : null;
+      const delta = currentMean !== null && prevMean !== null ? currentMean - prevMean : null;
+      signalData[signalKey] = { currentMean, delta, coverageCount: curr?.count ?? 0 };
+    }
+
+    rows.push({
+      teacherMembershipId: teacherId,
+      teacherName: teacher.fullName,
+      departmentNames: teacherDepts.get(teacherId) ?? [],
+      teacherCoverage,
+      lastObservationAt,
+      normalizedIDS,
+      status,
+      signalData,
+    });
+  }
+
+  rows.sort((a, b) => {
+    const statusDiff = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+    if (statusDiff !== 0) return statusDiff;
+    return b.normalizedIDS - a.normalizedIDS;
+  });
+
+  return { rows, computedAt: new Date() };
+}

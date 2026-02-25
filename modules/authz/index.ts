@@ -177,3 +177,47 @@ export function canViewCpdDrilldown(viewer: ViewerContext): boolean {
 export function canViewStudentAnalysis(viewer: ViewerContext): boolean {
   return viewer.role === "ADMIN" || viewer.role === "SLT" || viewer.role === "HOD";
 }
+
+// ─── Explorer Visibility ───────────────────────────────────────────────────────
+
+/**
+ * Whether a user can access the Explorer page at all.
+ * ADMIN / SLT / HOD → full access; TEACHER → no access
+ */
+export function canViewExplorer(viewer: ViewerContext): boolean {
+  return viewer.role === "ADMIN" || viewer.role === "SLT" || viewer.role === "HOD";
+}
+
+/**
+ * Whether a user can export CSV from the Explorer.
+ * ADMIN / SLT → can export full-school pivots
+ * HOD → can export only department-scoped results
+ * Others → no export
+ */
+export function canExportExplorer(viewer: ViewerContext): boolean {
+  return viewer.role === "ADMIN" || viewer.role === "SLT" || viewer.role === "HOD";
+}
+
+/**
+ * Returns the teacher-scope restriction for an Explorer view.
+ * ADMIN / SLT → no restriction (undefined = all teachers)
+ * HOD → restricted to their department teacher IDs
+ * COACH (LEADER with coachees) → restricted to coachee IDs
+ * TEACHER → restricted to only themselves
+ */
+export function getExplorerTeacherScope(viewer: ViewerContext): string[] | undefined {
+  if (viewer.role === "ADMIN" || viewer.role === "SLT") return undefined;
+  if (viewer.role === "HOD") return undefined; // dept filter applied separately
+  if (viewer.coacheeUserIds.length > 0) return viewer.coacheeUserIds;
+  return [viewer.userId];
+}
+
+/**
+ * Whether behaviour views are accessible to this viewer.
+ * ADMIN / SLT → full access
+ * HOD → full access (whole-school pastoral)
+ * Others → no access
+ */
+export function canViewBehaviourExplorer(viewer: ViewerContext): boolean {
+  return viewer.role === "ADMIN" || viewer.role === "SLT" || viewer.role === "HOD";
+}

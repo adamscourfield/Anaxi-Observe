@@ -92,6 +92,9 @@ enum ActionStatus {
 
 enum AnalysisRunType {
   STUDENT_RISK
+  TEACHER_RISK
+  CPD_PRIORITIES
+  BEHAVIOUR_COHORTS
 }
 
 enum AnalysisRunStatus {
