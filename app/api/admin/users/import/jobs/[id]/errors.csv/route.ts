@@ -1,0 +1,32 @@
+import { requireAdminUser } from "@/lib/admin";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
+  const user = await requireAdminUser();
+
+  const job = await (prisma as any).importJob.findFirst({
+    where: { id: params.id, tenantId: user.tenantId, type: "STAFF_IMPORT" },
+  });
+
+  if (!job) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  const rowErrors: any[] = job.errorReportJson ?? [];
+
+  const header = "rowNumber,Email,FullName,errorCode,message";
+  const esc = (v: string | number | undefined) =>
+    `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = rowErrors.map((e: any) =>
+    [e.rowNumber ?? "", esc(e.email ?? ""), esc(e.fullName ?? ""), esc(e.errorCode ?? ""), esc(e.message ?? "")].join(",")
+  );
+
+  const csv = [header, ...lines].join("\n");
+
+  return new Response(csv, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="staff-import-errors-${params.id}.csv"`,
+    },
+  });
+}

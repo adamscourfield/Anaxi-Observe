@@ -28,6 +28,7 @@ enum ImportJobType {
   STUDENT_SNAPSHOT
   STUDENTS_SNAPSHOT
   STUDENT_SUBJECT_TEACHERS
+  STAFF_IMPORT
 }
 
 enum ImportJobStatus {

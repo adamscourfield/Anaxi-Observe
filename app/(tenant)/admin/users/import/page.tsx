@@ -1,0 +1,287 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+interface PreviewRow {
+  email: string;
+  fullName: string;
+  role: string;
+  departments: string[];
+  isHOD: boolean;
+  hodDepartments: string[];
+  coachEmail: string;
+  membershipStatus: string;
+}
+
+interface ParseError {
+  rowNumber: number;
+  field: string;
+  errorCode: string;
+  message: string;
+}
+
+interface ImportJob {
+  id: string;
+  status: string;
+  fileName: string;
+  rowCount: number;
+  rowsProcessed: number;
+  rowsFailed: number;
+  createdAt: string;
+}
+
+export default function StaffImportPage() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<PreviewRow[]>([]);
+  const [parseErrors, setParseErrors] = useState<ParseError[]>([]);
+  const [rowCount, setRowCount] = useState(0);
+  const [validated, setValidated] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ jobId: string; rowsProcessed: number; rowsFailed: number } | null>(null);
+  const [jobs, setJobs] = useState<ImportJob[]>([]);
+  const [jobsLoaded, setJobsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    setSelectedFile(file);
+    setPreview([]);
+    setParseErrors([]);
+    setValidated(false);
+    setImportResult(null);
+    setError(null);
+
+    if (!file) return;
+
+    const form = new FormData();
+    form.append("file", file);
+
+    const res = await fetch("/api/admin/users/import/upload", { method: "POST", body: form });
+    if (!res.ok) {
+      setError("Failed to parse file");
+      return;
+    }
+    const data = await res.json();
+    setPreview(data.preview ?? []);
+    setParseErrors(data.errors ?? []);
+    setRowCount(data.rowCount ?? 0);
+    setValidated(true);
+  }
+
+  async function handleImport() {
+    if (!selectedFile) return;
+    setImporting(true);
+    setError(null);
+
+    const form = new FormData();
+    form.append("file", selectedFile);
+
+    const res = await fetch("/api/admin/users/import/run", { method: "POST", body: form });
+    setImporting(false);
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Import failed");
+      return;
+    }
+
+    const data = await res.json();
+    setImportResult({ jobId: data.jobId, rowsProcessed: data.rowsProcessed, rowsFailed: data.rowsFailed });
+    await loadJobs();
+  }
+
+  async function loadJobs() {
+    const res = await fetch("/api/admin/users/import/jobs");
+    if (!res.ok) return;
+    const data = await res.json();
+    setJobs(data.jobs ?? []);
+    setJobsLoaded(true);
+  }
+
+  const blockingErrors = parseErrors.filter((e) => e.errorCode !== "MISSING_FULL_NAME");
+  const canImport = validated && selectedFile !== null && blockingErrors.length === 0;
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-xl font-semibold text-text">Import Staff</h1>
+
+      {/* Upload card */}
+      <Card className="space-y-4">
+        <h2 className="text-base font-medium text-text">Upload CSV</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
+            Choose CSV file
+          </Button>
+          {selectedFile && (
+            <span className="text-sm text-text/70">{selectedFile.name}</span>
+          )}
+          <a
+            href="/api/admin/users/import/template"
+            download="staff-import-template.csv"
+            className="calm-transition rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text hover:bg-bg"
+          >
+            Download template CSV
+          </a>
+        </div>
+        {error && (
+          <p className="text-sm text-red-600">{error}</p>
+        )}
+      </Card>
+
+      {/* Parse errors */}
+      {parseErrors.length > 0 && (
+        <Card className="space-y-3">
+          <h2 className="text-base font-medium text-text">
+            Validation issues ({parseErrors.length})
+          </h2>
+          <ul className="space-y-1 text-sm">
+            {parseErrors.slice(0, 20).map((e, i) => (
+              <li key={i} className={e.errorCode === "MISSING_FULL_NAME" ? "text-amber-600" : "text-red-600"}>
+                Row {e.rowNumber} — {e.field}: {e.message}
+              </li>
+            ))}
+          </ul>
+          {blockingErrors.length > 0 && (
+            <p className="text-sm font-medium text-red-600">
+              {blockingErrors.length} blocking error(s) must be resolved before importing.
+            </p>
+          )}
+        </Card>
+      )}
+
+      {/* Preview card */}
+      {preview.length > 0 && (
+        <Card className="space-y-3">
+          <h2 className="text-base font-medium text-text">
+            Preview (first {preview.length} of {rowCount} rows)
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="p-2 text-left text-text/70">Email</th>
+                  <th className="p-2 text-left text-text/70">Full Name</th>
+                  <th className="p-2 text-left text-text/70">Role</th>
+                  <th className="p-2 text-left text-text/70">Departments</th>
+                  <th className="p-2 text-left text-text/70">HOD</th>
+                  <th className="p-2 text-left text-text/70">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {preview.map((row, i) => (
+                  <tr key={i} className="border-b border-divider">
+                    <td className="p-2 text-text">{row.email}</td>
+                    <td className="p-2 text-text">{row.fullName}</td>
+                    <td className="p-2 text-text">{row.role}</td>
+                    <td className="p-2 text-text">{row.departments.join("; ")}</td>
+                    <td className="p-2 text-text">{row.isHOD ? "Yes" : "No"}</td>
+                    <td className="p-2 text-text">{row.membershipStatus}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Import button */}
+      {validated && (
+        <div className="flex items-center gap-4">
+          <Button
+            variant="primary"
+            disabled={!canImport || importing}
+            onClick={handleImport}
+          >
+            {importing ? "Importing…" : "Validate & Import"}
+          </Button>
+          {!canImport && blockingErrors.length > 0 && (
+            <span className="text-sm text-red-600">Fix validation errors before importing</span>
+          )}
+        </div>
+      )}
+
+      {/* Import result */}
+      {importResult && (
+        <Card className="space-y-2">
+          <h2 className="text-base font-medium text-text">Import complete</h2>
+          <p className="text-sm text-text">
+            Rows processed: <strong>{importResult.rowsProcessed}</strong> &nbsp;|&nbsp; Rows failed:{" "}
+            <strong>{importResult.rowsFailed}</strong>
+          </p>
+          {importResult.rowsFailed > 0 && (
+            <a
+              href={`/api/admin/users/import/jobs/${importResult.jobId}/errors.csv`}
+              download
+              className="text-sm text-primaryBtn hover:underline"
+            >
+              Download error report CSV
+            </a>
+          )}
+        </Card>
+      )}
+
+      {/* Import history */}
+      <Card className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-medium text-text">Import history</h2>
+          <Button variant="ghost" onClick={loadJobs}>
+            {jobsLoaded ? "Refresh" : "Load history"}
+          </Button>
+        </div>
+        {jobsLoaded && jobs.length === 0 && (
+          <p className="text-sm text-text/60">No import jobs yet.</p>
+        )}
+        {jobs.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="p-2 text-left text-text/70">File</th>
+                  <th className="p-2 text-left text-text/70">Status</th>
+                  <th className="p-2 text-right text-text/70">Rows</th>
+                  <th className="p-2 text-right text-text/70">Failed</th>
+                  <th className="p-2 text-left text-text/70">Date</th>
+                  <th className="p-2 text-left text-text/70">Errors</th>
+                </tr>
+              </thead>
+              <tbody>
+                {jobs.map((job) => (
+                  <tr key={job.id} className="border-b border-divider">
+                    <td className="p-2 text-text">{job.fileName}</td>
+                    <td className="p-2 text-text">{job.status}</td>
+                    <td className="p-2 text-right text-text">{job.rowCount}</td>
+                    <td className="p-2 text-right text-text">{job.rowsFailed}</td>
+                    <td className="p-2 text-text">{new Date(job.createdAt).toLocaleDateString()}</td>
+                    <td className="p-2">
+                      {job.rowsFailed > 0 ? (
+                        <a
+                          href={`/api/admin/users/import/jobs/${job.id}/errors.csv`}
+                          download
+                          className="text-sm text-primaryBtn hover:underline"
+                        >
+                          Download CSV
+                        </a>
+                      ) : (
+                        <span className="text-text/40">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}

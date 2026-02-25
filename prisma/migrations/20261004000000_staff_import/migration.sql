@@ -1,0 +1,2 @@
+-- Add STAFF_IMPORT to ImportJobType enum
+ALTER TYPE "ImportJobType" ADD VALUE IF NOT EXISTS 'STAFF_IMPORT';
