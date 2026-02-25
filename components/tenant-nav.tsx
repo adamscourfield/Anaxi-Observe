@@ -16,7 +16,7 @@ export function TenantNav({
   const canImport = role === "SLT" || role === "ADMIN";
   return (
     <nav className="mb-6 flex gap-4 text-sm">
-      <Link href="/tenant">Home</Link>
+      <Link href="/home">Home</Link>
       {has("OBSERVATIONS") && <Link href="/tenant/observe">Observations</Link>}
       {has("OBSERVATIONS") && <Link href="/tenant/observe/history">Signals</Link>}
       {has("ANALYSIS") && <Link href="/analysis/teachers">Analysis</Link>}
