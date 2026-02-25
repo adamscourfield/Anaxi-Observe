@@ -12,7 +12,8 @@ export type FeatureKey =
   | "TIMETABLE"
   | "ADMIN"
   | "ADMIN_SETTINGS"
-  | "ANALYSIS";
+  | "ANALYSIS"
+  | "STUDENT_ANALYSIS";
 
 export type SessionUser = {
   id: string;

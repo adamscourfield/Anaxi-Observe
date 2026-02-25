@@ -90,6 +90,17 @@ enum ActionStatus {
   BLOCKED
 }
 
+enum AnalysisRunType {
+  STUDENT_RISK
+}
+
+enum AnalysisRunStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}
+
 enum SignalKey {
   BEHAVIOUR_CLIMATE
   PARTICIPATION_EQUITY
@@ -132,6 +143,8 @@ model Tenant {
   meetingActions     MeetingAction[]
   departments        Department[]
   observations       Observation[]
+  studentWatchlist   StudentWatchlist[]
+  analysisRuns       AnalysisRun[]
 }
 
 model User {
@@ -168,6 +181,7 @@ model User {
   timetableImportJobs         TimetableImportJob[] @relation("TimetableImportUploader")
   observationsAsTeacher       Observation[]      @relation("ObservedTeacher")
   observationsAsObserver      Observation[]      @relation("ObserverUser")
+  watchlistEntries            StudentWatchlist[]  @relation("WatchlistCreator")
 
   @@unique([tenantId, email])
 }
@@ -299,6 +313,7 @@ model Student {
   changeFlags     StudentChangeFlag[]
   subjectTeachers StudentSubjectTeacher[]
   onCallRequests  OnCallRequest[]
+  watchlistEntries StudentWatchlist[]
 
   @@unique([tenantId, upn])
 }
@@ -740,4 +755,36 @@ model MeetingAction {
   @@index([meetingId, status])
   @@index([tenantId, dueDate])
   @@index([ownerUserId, dueDate])
+}
+
+// ─── Student Watchlist Model ──────────────────────────────────────────────────
+
+model StudentWatchlist {
+  id                   String   @id @default(cuid())
+  tenantId             String
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId            String
+  student              Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdByUserId      String
+  createdBy            User     @relation("WatchlistCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  createdAt            DateTime @default(now())
+
+  @@unique([tenantId, studentId, createdByUserId])
+  @@index([tenantId, studentId])
+}
+
+// ─── Analysis Run Model ───────────────────────────────────────────────────────
+
+model AnalysisRun {
+  id            String            @id @default(cuid())
+  tenantId      String
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type          AnalysisRunType
+  windowDays    Int
+  status        AnalysisRunStatus @default(PENDING)
+  computedAt    DateTime?
+  invalidatedAt DateTime?
+  createdAt     DateTime          @default(now())
+
+  @@index([tenantId, type, computedAt])
 }

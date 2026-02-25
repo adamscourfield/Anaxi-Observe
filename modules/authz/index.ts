@@ -162,3 +162,18 @@ export function canViewCpdDrilldown(viewer: ViewerContext): boolean {
   if (viewer.role === "LEADER" && viewer.coacheeUserIds.length > 0) return true;
   return false;
 }
+
+// ─── Student Analysis Visibility ──────────────────────────────────────────────
+
+/**
+ * Determines whether a viewer can access the Student Risk Index.
+ *
+ * Rules:
+ * - ADMIN / SLT → full access
+ * - HOD → can view all students (pastoral priority)
+ * - TEACHER → no access by default (requires STUDENT_ANALYSIS feature flag)
+ * - Others → no access
+ */
+export function canViewStudentAnalysis(viewer: ViewerContext): boolean {
+  return viewer.role === "ADMIN" || viewer.role === "SLT" || viewer.role === "HOD";
+}

@@ -164,6 +164,92 @@ async function main() {
       }
     });
   }
+  // ─── Demo student snapshots for Student Risk Index ───────────────────────
+  // Seed students + snapshots for the SRI demo.
+  // Jamie: URGENT (on calls spike + attendance drop + detentions up)
+  // Priya: PRIORITY (detentions + lateness increase)
+  // Lucas: WATCH (small attendance drop)
+  // Ella: STABLE (minimal changes)
+
+  const demoStudents = [
+    { upn: "S001", fullName: "Jamie Reynolds", yearGroup: "Y10", sendFlag: true, ppFlag: false },
+    { upn: "S002", fullName: "Priya Sharma", yearGroup: "Y9", sendFlag: false, ppFlag: true },
+    { upn: "S003", fullName: "Lucas Green", yearGroup: "Y8", sendFlag: false, ppFlag: false },
+    { upn: "S004", fullName: "Ella Morgan", yearGroup: "Y10", sendFlag: false, ppFlag: false },
+  ];
+
+  const studentRecords: Record<string, any> = {};
+  for (const s of demoStudents) {
+    studentRecords[s.upn] = await (prisma as any).student.upsert({
+      where: { tenantId_upn: { tenantId: tenant.id, upn: s.upn } },
+      update: { fullName: s.fullName, yearGroup: s.yearGroup, sendFlag: s.sendFlag, ppFlag: s.ppFlag },
+      create: { tenantId: tenant.id, ...s, status: "ACTIVE" }
+    });
+  }
+
+  // Helper: upsert a snapshot
+  async function upsertSnapshot(studentId: string, date: Date, data: {
+    attendancePct: number;
+    detentionsCount: number;
+    onCallsCount: number;
+    latenessCount: number;
+    internalExclusionsCount: number;
+    suspensionsCount: number;
+    positivePointsTotal: number;
+  }) {
+    // Use ISO date portion as the snapshotDate for uniqueness
+    const snapshotDate = new Date(date.toISOString().slice(0, 10) + "T00:00:00.000Z");
+    await (prisma as any).studentSnapshot.upsert({
+      where: { tenantId_studentId_snapshotDate: { tenantId: tenant.id, studentId, snapshotDate } },
+      update: data,
+      create: { tenantId: tenant.id, studentId, snapshotDate, countScope: "TERM_TO_DATE", ...data }
+    });
+  }
+
+  const jamieId = studentRecords["S001"].id;
+  const priyaId = studentRecords["S002"].id;
+  const lucasId = studentRecords["S003"].id;
+  const ellaId = studentRecords["S004"].id;
+
+  // Jamie — URGENT: attendance drops 8pp, on-calls +3, detentions +6
+  await upsertSnapshot(jamieId, daysAgo(5), {
+    attendancePct: 74, detentionsCount: 12, onCallsCount: 5, latenessCount: 8,
+    internalExclusionsCount: 1, suspensionsCount: 0, positivePointsTotal: 3
+  });
+  await upsertSnapshot(jamieId, daysAgo(26), {
+    attendancePct: 82, detentionsCount: 6, onCallsCount: 2, latenessCount: 5,
+    internalExclusionsCount: 0, suspensionsCount: 0, positivePointsTotal: 8
+  });
+
+  // Priya — PRIORITY: detentions +4, lateness +4
+  await upsertSnapshot(priyaId, daysAgo(4), {
+    attendancePct: 91, detentionsCount: 7, onCallsCount: 1, latenessCount: 6,
+    internalExclusionsCount: 0, suspensionsCount: 0, positivePointsTotal: 12
+  });
+  await upsertSnapshot(priyaId, daysAgo(25), {
+    attendancePct: 93, detentionsCount: 3, onCallsCount: 0, latenessCount: 2,
+    internalExclusionsCount: 0, suspensionsCount: 0, positivePointsTotal: 18
+  });
+
+  // Lucas — WATCH: attendance drops 2pp
+  await upsertSnapshot(lucasId, daysAgo(6), {
+    attendancePct: 87, detentionsCount: 2, onCallsCount: 0, latenessCount: 2,
+    internalExclusionsCount: 0, suspensionsCount: 0, positivePointsTotal: 15
+  });
+  await upsertSnapshot(lucasId, daysAgo(27), {
+    attendancePct: 89, detentionsCount: 1, onCallsCount: 0, latenessCount: 1,
+    internalExclusionsCount: 0, suspensionsCount: 0, positivePointsTotal: 20
+  });
+
+  // Ella — STABLE: no significant changes
+  await upsertSnapshot(ellaId, daysAgo(3), {
+    attendancePct: 96, detentionsCount: 1, onCallsCount: 0, latenessCount: 0,
+    internalExclusionsCount: 0, suspensionsCount: 0, positivePointsTotal: 25
+  });
+  await upsertSnapshot(ellaId, daysAgo(24), {
+    attendancePct: 97, detentionsCount: 1, onCallsCount: 0, latenessCount: 0,
+    internalExclusionsCount: 0, suspensionsCount: 0, positivePointsTotal: 22
+  });
 }
 
 main().finally(async () => prisma.$disconnect());
