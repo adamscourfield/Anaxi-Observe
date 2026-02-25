@@ -145,3 +145,20 @@ export function canViewTeacherAnalysis(
 
   return false;
 }
+
+// ─── CPD Drilldown Visibility ──────────────────────────────────────────────────
+
+/**
+ * Determines whether a viewer can access the teacher list on a CPD signal
+ * drilldown page.
+ *
+ * Rules:
+ * - ADMIN / SLT / HOD → can view teacher lists
+ * - LEADER (Coach) with any coachee assignment → can view teacher lists
+ * - TEACHER → cannot view teacher lists (CPD summary only)
+ */
+export function canViewCpdDrilldown(viewer: ViewerContext): boolean {
+  if (viewer.role === "ADMIN" || viewer.role === "SLT" || viewer.role === "HOD") return true;
+  if (viewer.role === "LEADER" && viewer.coacheeUserIds.length > 0) return true;
+  return false;
+}

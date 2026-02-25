@@ -20,6 +20,7 @@ export function TenantNav({
       {has("OBSERVATIONS") && <Link href="/tenant/observe">Observations</Link>}
       {has("OBSERVATIONS") && <Link href="/tenant/observe/history">Signals</Link>}
       {has("ANALYSIS") && <Link href="/analysis/teachers">Analysis</Link>}
+      {has("ANALYSIS") && <Link href="/analysis/cpd">CPD priorities</Link>}
       {has("STUDENTS") && <Link href="/tenant/students">Students</Link>}
       {has("STUDENTS_IMPORT") && canImport && (
         <Link href="/tenant/behaviour/import">Behaviour Import</Link>
