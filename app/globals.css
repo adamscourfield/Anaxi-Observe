@@ -29,6 +29,15 @@
   --primary-btn-hover: #111C33;
   --primary-btn-active: #0B1222;
   --overlay: rgba(15, 23, 42, 0.40);
+
+  --pill-error-bg: #f9e5e4;
+  --pill-error-text: var(--error);
+  --pill-warning-bg: #fdf3de;
+  --pill-warning-text: var(--warning);
+  --pill-success-bg: #e4f0e7;
+  --pill-success-text: var(--success);
+  --pill-neutral-bg: var(--divider);
+  --pill-neutral-text: var(--text-muted);
 }
 
 body {
