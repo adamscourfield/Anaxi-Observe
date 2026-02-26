@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { SIGNAL_DEFINITIONS } from "../modules/observations/signalDefinitions";
+import { seedDemo } from "./seed.demo";
 
 const prisma = new PrismaClient();
 const FEATURES = [
@@ -252,4 +253,11 @@ async function main() {
   });
 }
 
-main().finally(async () => prisma.$disconnect());
+main()
+  .then(async () => {
+    // When prisma db seed is run in a non-production env, also seed the demo tenant.
+    if (process.env.NODE_ENV !== "production" && process.env.DEMO_SEED === "true") {
+      await seedDemo(prisma);
+    }
+  })
+  .finally(async () => prisma.$disconnect());
