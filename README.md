@@ -87,6 +87,57 @@ If you run on Replit, set `NEXTAUTH_URL` to your Replit app URL (e.g. `https://<
 ## Demo login
 - `admin@demo.school`
 - `Password123!`
+
+## Demo Seed
+
+The demo seed creates a full "Demo Academy" dataset so every Anaxi feature can be exercised end-to-end locally or on private staging.
+
+### Running
+
+```bash
+# Create (or recreate) the Demo Academy dataset
+npm run seed:demo
+
+# Explicitly reset and recreate (same effect, clearer intent)
+npm run seed:demo:reset
+```
+
+Both commands are **idempotent**: they always delete any existing Demo Academy data first, then recreate it from scratch.
+
+### Safety gates
+
+The seed will refuse to run if:
+- `NODE_ENV === "production"`, OR
+- `DATABASE_URL` does not contain `localhost` or `127.0.0.1` (unless `ALLOW_DEMO_SEED=true` is set)
+
+### Demo credentials
+
+All demo accounts use the password **`Password123!`**
+
+| Role    | Email |
+|---------|-------|
+| Admin   | `admin@demo.school` |
+| SLT     | `sarah.chen@demo.school` |
+| SLT     | `james.morrison@demo.school` |
+| SLT     | `patricia.okafor@demo.school` |
+| HOD (English) | `emma.walsh@demo.school` |
+| HOD (Maths)   | `david.kumar@demo.school` |
+| Teacher | `alice.thornton@demo.school` … `diana.osei@demo.school` |
+
+### Seeded patterns
+
+| Feature | Pattern |
+|---------|---------|
+| Teacher Risk Index | 7 drifting teachers (RETRIEVAL_PRESENCE, CFU_CYCLES, COLD_CALL_DENSITY drift down) |
+| Teacher Risk Index | 2 improving teachers (positive momentum on retrieval/CFU) |
+| Teacher Risk Index | 1 low-coverage teacher (only 2 observations) |
+| CPD Priorities | Convergent signal weakness across drifting cohort |
+| Student Risk Index | Year 9 attendance drop (−2–4 pp for ~60% of cohort) |
+| Student Risk Index | Year 8 OnCall spike (15–30 students, +1–2 onCalls) |
+| Student Risk Index | 15+ urgent students (attendance drop >6 pp / onCallsDelta ≥ 2 / suspension) |
+| LOA | 10 requests — mix of Pending / Approved / Denied |
+| OnCall | 20 events — mix of Open / Acknowledged / Resolved |
+| Meetings | 10 meetings + 30 actions (some overdue, some due soon) |
 ## Admin permissions/settings
 - `/tenant/admin/settings` controls tenant module enable/disable (school-level module assignment)
 - `/tenant/admin/signals` manages tenant display names/descriptions for fixed observation SignalKeys
