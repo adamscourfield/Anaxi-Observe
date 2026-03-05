@@ -3,6 +3,8 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { getTenantVocab } from "@/lib/vocab";
+import { Card } from "@/components/ui/card";
+import { H1, MetaText } from "@/components/ui/typography";
 
 export default async function StudentsPage({ searchParams }: { searchParams: Record<string, string | undefined> }) {
   const user = await getSessionUserOrThrow();
@@ -21,7 +23,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
     ...(yearGroup ? { yearGroup } : {}),
     ...(send ? { sendFlag: send === "true" } : {}),
     ...(pp ? { ppFlag: pp === "true" } : {}),
-    ...(status ? { status } : {})
+    ...(status ? { status } : {}),
   };
 
   const students = await (prisma as any).student.findMany({
@@ -30,46 +32,62 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
     take: 100,
     include: {
       snapshots: { orderBy: { snapshotDate: "desc" }, take: 1 },
-      changeFlags: { where: { resolvedAt: null } }
-    }
+      changeFlags: { where: { resolvedAt: null } },
+    },
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Students</h1>
-        <div className="flex gap-2 text-sm">
-          <Link href="/tenant/students/import" className="underline">Import snapshots</Link>
-          <Link href="/tenant/students/import-subject-teachers" className="underline">Import subject teachers</Link>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <H1>Students</H1>
+        <div className="flex gap-3 text-sm">
+          <Link href="/tenant/students/import" className="text-accent hover:text-accentHover">Import snapshots</Link>
+          <Link href="/tenant/students/import-subject-teachers" className="text-accent hover:text-accentHover">Import subject teachers</Link>
         </div>
       </div>
 
-      <form className="grid grid-cols-6 gap-2 rounded border bg-white p-3">
-        <input name="q" defaultValue={q} placeholder="Search name or UPN" className="col-span-2 border p-2" />
-        <input name="yearGroup" defaultValue={yearGroup} placeholder="Year" className="border p-2" />
-        <select name="send" defaultValue={send} className="border p-2"><option value="">SEND</option><option value="true">SEND Yes</option><option value="false">SEND No</option></select>
-        <select name="pp" defaultValue={pp} className="border p-2"><option value="">PP</option><option value="true">PP Yes</option><option value="false">PP No</option></select>
-        <select name="status" defaultValue={status} className="border p-2"><option value="">Status</option><option value="ACTIVE">Active</option><option value="ARCHIVED">Archived</option></select>
-      </form>
+      <Card>
+        <form className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
+          <input name="q" defaultValue={q} placeholder="Search name or UPN" className="rounded-md border border-border bg-bg/60 p-2" />
+          <input name="yearGroup" defaultValue={yearGroup} placeholder="Year" className="rounded-md border border-border bg-bg/60 p-2" />
+          <select name="send" defaultValue={send} className="rounded-md border border-border bg-bg/60 p-2"><option value="">SEND</option><option value="true">SEND Yes</option><option value="false">SEND No</option></select>
+          <select name="pp" defaultValue={pp} className="rounded-md border border-border bg-bg/60 p-2"><option value="">PP</option><option value="true">PP Yes</option><option value="false">PP No</option></select>
+          <select name="status" defaultValue={status} className="rounded-md border border-border bg-bg/60 p-2"><option value="">Status</option><option value="ACTIVE">Active</option><option value="ARCHIVED">Archived</option></select>
+          <button className="rounded-md bg-primaryBtn px-3 py-2 text-sm font-semibold text-white hover:bg-primaryBtnHover">Apply filters</button>
+        </form>
+      </Card>
 
-      <table className="w-full border bg-white text-sm">
-        <thead><tr className="border-b"><th className="p-2 text-left">UPN</th><th className="p-2 text-left">Name</th><th className="p-2">Year</th><th className="p-2">Attendance</th><th className="p-2">{vocab.detentions.plural}</th><th className="p-2">Active flags</th></tr></thead>
-        <tbody>
-          {(students as any[]).map((s: any) => {
-            const latest = s.snapshots?.[0];
-            return (
-              <tr key={s.id} className="border-b">
-                <td className="p-2">{s.upn}</td>
-                <td className="p-2"><Link className="underline" href={`/tenant/students/${s.id}`}>{s.fullName}</Link></td>
-                <td className="p-2 text-center">{s.yearGroup || "-"}</td>
-                <td className="p-2 text-center">{latest ? String(latest.attendancePct) : "-"}</td>
-                <td className="p-2 text-center">{latest ? latest.detentionsCount : "-"}</td>
-                <td className="p-2 text-center">{s.changeFlags?.length || 0}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <Card className="overflow-hidden p-0">
+        <table className="w-full text-sm">
+          <thead className="bg-bg/60">
+            <tr className="border-b border-border">
+              <th className="p-3 text-left">UPN</th>
+              <th className="p-3 text-left">Name</th>
+              <th className="p-3 text-center">Year</th>
+              <th className="p-3 text-center">Attendance</th>
+              <th className="p-3 text-center">{vocab.detentions.plural}</th>
+              <th className="p-3 text-center">Active flags</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(students as any[]).map((s: any) => {
+              const latest = s.snapshots?.[0];
+              return (
+                <tr key={s.id} className="border-b border-border/70 last:border-0 hover:bg-bg/40">
+                  <td className="p-3">{s.upn}</td>
+                  <td className="p-3"><Link className="text-accent hover:text-accentHover" href={`/tenant/students/${s.id}`}>{s.fullName}</Link></td>
+                  <td className="p-3 text-center">{s.yearGroup || "-"}</td>
+                  <td className="p-3 text-center">{latest ? String(latest.attendancePct) : "-"}</td>
+                  <td className="p-3 text-center">{latest ? latest.detentionsCount : "-"}</td>
+                  <td className="p-3 text-center">{s.changeFlags?.length || 0}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Card>
+
+      <MetaText>Showing up to 100 students. Refine filters to narrow this list.</MetaText>
     </div>
   );
 }
