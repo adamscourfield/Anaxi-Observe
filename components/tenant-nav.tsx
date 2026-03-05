@@ -18,23 +18,23 @@ type NavSection = {
 };
 
 function iconFor(href: string) {
-  if (href === "/home") return "✦";
-  if (href === "/my-actions") return "◆";
-  if (href.includes("/observe/history")) return "◴";
-  if (href.includes("/observe")) return "◉";
+  if (href === "/home") return "◻";
+  if (href === "/my-actions") return "✓";
+  if (href.includes("/observe/history")) return "◷";
+  if (href.includes("/observe")) return "◎";
   if (href.includes("/explorer")) return "◌";
   if (href.includes("/students")) return "◍";
-  if (href.includes("/behaviour/import")) return "⇡";
-  if (href.includes("/on-call")) return "✧";
-  if (href.includes("/meetings")) return "◈";
+  if (href.includes("/behaviour/import")) return "⇢";
+  if (href.includes("/on-call")) return "⚑";
+  if (href.includes("/meetings")) return "◫";
   if (href.includes("/leave")) return "◐";
-  if (href.includes("/analysis/teachers")) return "◭";
+  if (href.includes("/analysis/teachers")) return "△";
   if (href.includes("/analysis/cpd")) return "◇";
-  if (href.includes("/analysis/students")) return "◬";
+  if (href.includes("/analysis/students")) return "▽";
   if (href.includes("/admin/users")) return "◔";
-  if (href.includes("/admin/departments")) return "◫";
+  if (href.includes("/admin/departments")) return "▦";
   if (href.includes("/admin/features")) return "◩";
-  if (href.includes("/admin")) return "◨";
+  if (href.includes("/admin")) return "□";
   return "•";
 }
 
@@ -111,14 +111,14 @@ export function TenantNav({
 
   return (
     <aside
-      className={`sticky top-4 h-fit rounded-2xl border border-border/80 bg-gradient-to-b from-surface to-bg/95 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.08)] calm-transition ${
+      className={`sticky top-4 h-fit rounded-2xl border border-border bg-surface p-3 shadow-sm calm-transition ${
         collapsed ? "w-[220px]" : "w-full md:w-[292px]"
       }`}
       aria-label="Sidebar menu"
     >
       <button
         onClick={() => setCollapsed((previous) => !previous)}
-        className="mb-3 w-full rounded-lg border border-border/80 px-3 py-2 text-left text-xs tracking-wide text-muted hover:bg-divider"
+        className="mb-3 w-full rounded-lg border border-border px-3 py-2 text-left text-xs text-muted hover:bg-divider"
         type="button"
         aria-expanded={!collapsed}
       >
@@ -130,11 +130,11 @@ export function TenantNav({
           const sectionHasCurrent = section.items.some((item) => pathname?.startsWith(item.href));
 
           return (
-            <details key={section.label} open={sectionHasCurrent || !collapsed} className="rounded-xl border border-border/70 bg-bg/40">
-              <summary className="cursor-pointer list-none px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+            <details key={section.label} open={sectionHasCurrent || !collapsed} className="rounded-xl border border-border/70 bg-bg/20">
+              <summary className="cursor-pointer list-none px-3 py-2 text-xs font-medium text-muted">
                 {section.label}
               </summary>
-              <ul className="space-y-1.5 border-t border-border/70 px-2 py-2">
+              <ul className="space-y-1.5 border-t border-border/60 px-2 py-2">
                 {section.items.map((item) => {
                   const active = pathname?.startsWith(item.href);
 
@@ -144,16 +144,14 @@ export function TenantNav({
                         href={item.href}
                         className={`group flex items-center justify-between rounded-lg px-2.5 py-2 text-sm calm-transition ${
                           active
-                            ? "border border-accent/30 bg-accent/10 text-text"
-                            : "border border-transparent text-muted hover:border-border/70 hover:bg-divider/70 hover:text-text"
+                            ? "border border-border bg-divider/70 text-text"
+                            : "border border-transparent text-muted hover:border-border/60 hover:bg-divider/60 hover:text-text"
                         }`}
                       >
                         <span className="flex items-center gap-2.5">
                           <span
                             className={`inline-flex h-6 w-6 items-center justify-center rounded-md border text-[11px] font-semibold ${
-                              active
-                                ? "border-amber-400/35 bg-amber-100/20 text-text"
-                                : "border-border/80 bg-gradient-to-b from-bg to-surface text-muted group-hover:text-text"
+                              active ? "border-border bg-surface text-text" : "border-border/80 bg-bg text-muted group-hover:text-text"
                             }`}
                             aria-hidden
                           >
