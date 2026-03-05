@@ -11,10 +11,10 @@ export function SectionHeader({
   linkLabel?: string;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="mb-1 flex items-center justify-between">
       <H2>{title}</H2>
       {href && (
-        <Link href={href} className="text-xs text-accent hover:underline">
+        <Link href={href} className="text-xs font-medium text-accent hover:text-accentHover">
           {linkLabel}
         </Link>
       )}
