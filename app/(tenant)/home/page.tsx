@@ -6,6 +6,7 @@ import { H1, H2, BodyText, MetaText } from "@/components/ui/typography";
 import { StatusPill, PillVariant } from "@/components/ui/status-pill";
 import { SectionHeader } from "@/components/ui/section-header";
 import { DriverChips } from "@/components/ui/driver-chips";
+import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import {
   computeCpdPriorities,
   getTopImprovingSignals,
@@ -124,210 +125,127 @@ function LeadershipHome({
 
   return (
     <div className="space-y-6">
-      {/* 1. Instructional Movement — 7/5 col split */}
-      <section className="space-y-3">
-        <div className="grid gap-6 md:grid-cols-12">
-          {/* Left 8 cols: CPD priorities */}
-          <div className="space-y-3 md:col-span-8">
-            <SectionHeader
-              title="CPD priorities"
-              href={`/analysis/cpd?window=${windowDays}`}
-              linkLabel="View all →"
-            />
-            <Card className="space-y-1">
-              {topCpd.length === 0 ? (
-                <MetaText>No weakening signals detected in this window.</MetaText>
-              ) : (
-                <ul>
-                  {topCpd.map((row) => (
-                    <li key={row.signalKey}>
-                      <Link
-                        href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`}
-                        className="block rounded-md p-2 hover:bg-bg calm-transition transition duration-200 ease-calm"
-                      >
-                        <p className="text-sm font-medium text-text">{row.label}</p>
-                        <MetaText>
-                          {Math.round(row.driftRate * 100)}% drifting · {row.teachersCovered} covered
-                        </MetaText>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
-          </div>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <CollapsibleCard title="CPD priorities" defaultOpen className="min-h-[320px]">
+          {topCpd.length === 0 ? (
+            <MetaText>No weakening signals detected in this window.</MetaText>
+          ) : (
+            <ul className="space-y-1">
+              {topCpd.map((row) => (
+                <li key={row.signalKey}>
+                  <Link href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`} className="block rounded-md p-2 hover:bg-bg calm-transition">
+                    <p className="text-sm font-medium text-text">{row.label}</p>
+                    <MetaText>{Math.round(row.driftRate * 100)}% drifting · {row.teachersCovered} covered</MetaText>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link href={`/analysis/cpd?window=${windowDays}`} className="mt-2 block text-xs text-accent hover:underline">View all →</Link>
+        </CollapsibleCard>
 
-          {/* Right 4 cols: Teacher support priorities */}
-          <div className="space-y-3 md:col-span-4">
-            <SectionHeader
-              title="Teacher support priorities"
-              href={`/analysis/teachers?window=${windowDays}`}
-              linkLabel="View all →"
-            />
-            <Card className="space-y-1">
-              {topTeachers.length === 0 ? (
-                <MetaText>No observation data available in this window.</MetaText>
-              ) : (
-                <ul>
-                  {topTeachers.map((row) => (
-                    <li key={row.teacherMembershipId}>
-                      <Link
-                        href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`}
-                        className="flex items-start justify-between gap-2 rounded-md p-2 hover:bg-bg calm-transition transition duration-200 ease-calm"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-text">{row.teacherName}</p>
-                          <MetaText>
-                            {[
-                              row.departmentNames.length > 0 ? row.departmentNames.join(", ") : null,
-                              `${row.teacherCoverage} obs`,
-                            ]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </MetaText>
-                        </div>
-                        <StatusPill variant={RISK_STATUS_PILL[row.status]}>
-                          {RISK_STATUS_LABELS[row.status]}
-                        </StatusPill>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
-          </div>
-        </div>
+        <CollapsibleCard title="Teacher support priorities" defaultOpen className="min-h-[320px]">
+          {topTeachers.length === 0 ? (
+            <MetaText>No observation data available in this window.</MetaText>
+          ) : (
+            <ul className="space-y-1">
+              {topTeachers.map((row) => (
+                <li key={row.teacherMembershipId}>
+                  <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="flex items-start justify-between gap-2 rounded-md p-2 hover:bg-bg calm-transition">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-text">{row.teacherName}</p>
+                      <MetaText>{[row.departmentNames.length > 0 ? row.departmentNames.join(", ") : null, `${row.teacherCoverage} obs`].filter(Boolean).join(" · ")}</MetaText>
+                    </div>
+                    <StatusPill variant={RISK_STATUS_PILL[row.status]}>{RISK_STATUS_LABELS[row.status]}</StatusPill>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link href={`/analysis/teachers?window=${windowDays}`} className="mt-2 block text-xs text-accent hover:underline">View all →</Link>
+        </CollapsibleCard>
       </section>
 
-      {/* 2. Pastoral Signals — 7/5 col split */}
-      <section className="space-y-3">
-        <div className="grid gap-6 md:grid-cols-12">
-          {/* Left 6 cols: Cohort change */}
-          <div className="space-y-3 md:col-span-6">
-            <SectionHeader title="Cohort change" />
-            {!hasBehaviourData ? (
-              <Card className="space-y-2">
-                <BodyText className="text-muted">Behaviour snapshots not yet imported.</BodyText>
-                <Link href="/admin/imports" className="block text-xs text-accent hover:underline">
-                  Import behaviour data →
-                </Link>
-              </Card>
-            ) : (
-              <Card className="space-y-1">
-                {cohortAlerts.length === 0 ? (
-                  <MetaText>No significant cohort changes detected.</MetaText>
-                ) : (
-                  <ul>
-                    {cohortAlerts.map((row) => {
-                      const headline =
-                        row.attendanceDelta !== null && row.attendanceDelta < -0.5
-                          ? `${row.yearGroup} attendance ↓`
-                          : row.onCallsDelta !== null && row.onCallsDelta > 0.1
-                          ? `${row.yearGroup} on-calls ↑`
-                          : row.yearGroup ?? "Year group";
-                      const delta =
-                        row.attendanceDelta !== null && row.attendanceDelta < -0.5
-                          ? `${Math.abs(row.attendanceDelta).toFixed(1)}%`
-                          : row.onCallsDelta !== null && row.onCallsDelta > 0.1
-                          ? `+${row.onCallsDelta.toFixed(1)}`
-                          : null;
-                      return (
-                        <li key={row.yearGroup}>
-                          <Link
-                            href={`/explorer?view=BEHAVIOUR_COHORTS_PIVOT&year=${encodeURIComponent(row.yearGroup ?? "")}&window=${windowDays}`}
-                            className="block rounded-md p-2 hover:bg-bg calm-transition transition duration-200 ease-calm"
-                          >
-                            <p className="text-sm font-medium text-text">{headline}</p>
-                            <MetaText>
-                              {[
-                                delta,
-                                `${row.studentsCovered} students`,
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </MetaText>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </Card>
-            )}
-          </div>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <CollapsibleCard title="Cohort change" defaultOpen={false} className="min-h-[320px]">
+          {!hasBehaviourData ? (
+            <div className="space-y-2">
+              <BodyText className="text-muted">Behaviour snapshots not yet imported.</BodyText>
+              <Link href="/admin/imports" className="block text-xs text-accent hover:underline">Import behaviour data →</Link>
+            </div>
+          ) : cohortAlerts.length === 0 ? (
+            <MetaText>No significant cohort changes detected.</MetaText>
+          ) : (
+            <ul className="space-y-1">
+              {cohortAlerts.map((row) => {
+                const headline =
+                  row.attendanceDelta !== null && row.attendanceDelta < -0.5
+                    ? `${row.yearGroup} attendance ↓`
+                    : row.onCallsDelta !== null && row.onCallsDelta > 0.1
+                    ? `${row.yearGroup} on-calls ↑`
+                    : row.yearGroup ?? "Year group";
+                const delta =
+                  row.attendanceDelta !== null && row.attendanceDelta < -0.5
+                    ? `${Math.abs(row.attendanceDelta).toFixed(1)}%`
+                    : row.onCallsDelta !== null && row.onCallsDelta > 0.1
+                    ? `+${row.onCallsDelta.toFixed(1)}`
+                    : null;
 
-          {/* Right 6 cols: Student support priorities */}
-          <div className="space-y-3 md:col-span-6">
-            <SectionHeader
-              title="Student support priorities"
-              href={`/analysis/students?window=${windowDays}`}
-              linkLabel="View all →"
-            />
-            <Card className="space-y-1">
-              {urgentStudents.length === 0 ? (
-                <MetaText>No urgent or priority students in this window.</MetaText>
-              ) : (
-                <ul>
-                  {urgentStudents.map((row) => (
-                    <li key={row.studentId}>
-                      <Link
-                        href={`/analysis/students/${row.studentId}?window=${windowDays}`}
-                        className="block rounded-md p-2 hover:bg-bg calm-transition transition duration-200 ease-calm"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-text">{row.studentName}</p>
-                            {row.yearGroup && <MetaText>{row.yearGroup}</MetaText>}
-                          </div>
-                          <StatusPill variant={row.band === "URGENT" ? "error" : "warning"}>
-                            {row.band === "URGENT" ? "Urgent" : "Priority"}
-                          </StatusPill>
-                        </div>
-                        {row.drivers.length > 0 && (
-                          <div className="mt-1">
-                            <DriverChips drivers={row.drivers} max={2} />
-                          </div>
-                        )}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
-          </div>
-        </div>
+                return (
+                  <li key={row.yearGroup}>
+                    <Link href={`/explorer?view=BEHAVIOUR_COHORTS_PIVOT&year=${encodeURIComponent(row.yearGroup ?? "")}&window=${windowDays}`} className="block rounded-md p-2 hover:bg-bg calm-transition">
+                      <p className="text-sm font-medium text-text">{headline}</p>
+                      <MetaText>{[delta, `${row.studentsCovered} students`].filter(Boolean).join(" · ")}</MetaText>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CollapsibleCard>
+
+        <CollapsibleCard title="Student support priorities" defaultOpen className="min-h-[320px]">
+          {urgentStudents.length === 0 ? (
+            <MetaText>No urgent or priority students in this window.</MetaText>
+          ) : (
+            <ul className="space-y-1">
+              {urgentStudents.map((row) => (
+                <li key={row.studentId}>
+                  <Link href={`/analysis/students/${row.studentId}?window=${windowDays}`} className="block rounded-md p-2 hover:bg-bg calm-transition">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-text">{row.studentName}</p>
+                        {row.yearGroup && <MetaText>{row.yearGroup}</MetaText>}
+                      </div>
+                      <StatusPill variant={row.band === "URGENT" ? "error" : "warning"}>{row.band === "URGENT" ? "Urgent" : "Priority"}</StatusPill>
+                    </div>
+                    {row.drivers.length > 0 && <div className="mt-1"><DriverChips drivers={row.drivers} max={2} /></div>}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link href={`/analysis/students?window=${windowDays}`} className="mt-2 block text-xs text-accent hover:underline">View all →</Link>
+        </CollapsibleCard>
       </section>
 
-      {/* 3. Positive Momentum — collapsible */}
       {momentumSignals.length > 0 && (
-        <section className="space-y-3">
-          <details className="rounded-lg border border-border bg-surface" open={false}>
-            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-text">
-              Positive momentum
-            </summary>
-            <div className="grid gap-4 border-t border-border px-4 py-4 sm:grid-cols-2">
+        <section>
+          <CollapsibleCard title="Positive momentum" defaultOpen={false}>
+            <div className="grid gap-3 sm:grid-cols-2">
               {momentumSignals.map((row) => (
-                <Link
-                  key={row.signalKey}
-                  href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`}
-                  className="block rounded-lg border border-border bg-surface p-4 shadow-sm hover:border-accentHover calm-transition transition duration-200 ease-calm"
-                >
+                <Link key={row.signalKey} href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`} className="block rounded-lg border border-border bg-surface p-3 shadow-sm hover:border-accentHover calm-transition">
                   <p className="text-sm font-medium text-text">{row.label}</p>
-                  <MetaText className="mt-1">
-                    {Math.round(row.improvingRate * 100)}% improving · {row.teachersCovered} covered
-                  </MetaText>
+                  <MetaText className="mt-1">{Math.round(row.improvingRate * 100)}% improving · {row.teachersCovered} covered</MetaText>
                 </Link>
               ))}
             </div>
-          </details>
+          </CollapsibleCard>
         </section>
       )}
 
-      {/* Footer links */}
       <div className="flex gap-4">
-        <Link href="/explorer" className="text-sm text-accent hover:underline">
-          Open Explorer →
-        </Link>
+        <Link href="/explorer" className="text-sm text-accent hover:underline">Open Explorer →</Link>
       </div>
     </div>
   );
