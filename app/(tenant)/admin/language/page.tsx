@@ -1,8 +1,12 @@
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/admin";
-import { revalidatePath } from "next/cache";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import { getTenantSignalLabels, upsertTenantSignalLabel } from "@/modules/observations/tenantSignalLabels";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionHeader } from "@/components/ui/section-header";
 
 const BEHAVIOUR_FIELDS = [
   { key: "positivePointsLabel", label: "Positive points label", default: "Positive Points" },
@@ -29,7 +33,7 @@ export default async function AdminLanguagePage() {
     await (prisma as any).tenantSettings.upsert({
       where: { tenantId: admin.tenantId },
       update: data,
-      create: { tenantId: admin.tenantId, ...data }
+      create: { tenantId: admin.tenantId, ...data },
     });
     revalidatePath("/tenant/admin/language");
   }
@@ -56,87 +60,85 @@ export default async function AdminLanguagePage() {
   }
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-xl font-semibold">Language &amp; Labels</h1>
+    <div className="space-y-4">
+      <PageHeader title="Language" subtitle="Customize behaviour terminology and observation signal copy." />
 
-      {/* Section A: Behaviour labels */}
-      <section>
-        <h2 className="mb-3 text-base font-semibold">Behaviour labels</h2>
-        <form action={saveBehaviourLabels} className="space-y-3">
-          <div className="grid max-w-lg gap-3">
-            {BEHAVIOUR_FIELDS.map((field) => (
-              <div key={field.key} className="flex items-center gap-3">
-                <label className="w-52 text-sm text-slate-600">{field.label}</label>
-                <input
-                  name={field.key}
-                  defaultValue={settings?.[field.key] ?? field.default}
-                  placeholder={field.default}
-                  className="flex-1 rounded border p-2 text-sm"
-                />
-              </div>
-            ))}
+      <Card>
+        <SectionHeader title="Behaviour labels" subtitle="Override labels used across behaviour and leave workflows." />
+        <form action={saveBehaviourLabels} className="mt-3 grid max-w-3xl gap-3 sm:grid-cols-2">
+          {BEHAVIOUR_FIELDS.map((field) => (
+            <div key={field.key}>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.04em] text-muted">{field.label}</label>
+              <input
+                name={field.key}
+                defaultValue={settings?.[field.key] ?? field.default}
+                placeholder={field.default}
+                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm"
+              />
+            </div>
+          ))}
+          <div className="sm:col-span-2">
+            <Button type="submit">Save behaviour labels</Button>
           </div>
-          <button className="rounded bg-slate-900 px-4 py-2 text-sm text-white" type="submit">
-            Save behaviour labels
-          </button>
         </form>
-      </section>
+      </Card>
 
-      {/* Section B: Signal labels */}
-      <section>
-        <h2 className="mb-3 text-base font-semibold">Observation signal labels</h2>
-        <form action={saveSignalLabels} className="space-y-2">
-          <table className="w-full border bg-white text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2 text-left">Signal</th>
-                <th className="p-2 text-left">Default name</th>
-                <th className="p-2 text-left">Display name</th>
-                <th className="p-2 text-left">Description</th>
-                <th className="p-2" />
-              </tr>
-            </thead>
-            <tbody>
-              {SIGNAL_DEFINITIONS.map((signal) => {
-                const override = signalLabels[signal.key];
-                return (
-                  <tr className="border-b align-top" key={signal.key}>
-                    <td className="p-2 font-mono text-xs">{signal.key}</td>
-                    <td className="p-2">{signal.displayNameDefault}</td>
-                    <td className="p-2">
-                      <input
-                        name={`display_${signal.key}`}
-                        defaultValue={override?.displayName || signal.displayNameDefault}
-                        minLength={2}
-                        maxLength={80}
-                        required
-                        className="w-full rounded border p-1"
-                      />
-                    </td>
-                    <td className="p-2">
-                      <textarea
-                        name={`description_${signal.key}`}
-                        defaultValue={override?.description ?? signal.descriptionDefault}
-                        maxLength={240}
-                        rows={2}
-                        className="w-full rounded border p-1"
-                      />
-                    </td>
-                    <td className="p-2 text-center">
-                      <button formAction={resetSignal} name="signalKey" value={signal.key} type="submit" className="text-xs underline">
-                        Reset
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <button className="rounded bg-slate-900 px-4 py-2 text-sm text-white" type="submit">
-            Save signal labels
-          </button>
+      <Card className="overflow-hidden p-0">
+        <div className="p-4 pb-0">
+          <SectionHeader title="Observation signal labels" subtitle="Adjust display names and descriptions used in observation screens." />
+        </div>
+        <form action={saveSignalLabels} className="space-y-3 p-4 pt-3">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-bg/60 text-left text-xs uppercase tracking-[0.05em] text-muted">
+                  <th className="p-2">Signal</th>
+                  <th className="p-2">Default name</th>
+                  <th className="p-2">Display name</th>
+                  <th className="p-2">Description</th>
+                  <th className="p-2 text-center">Reset</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SIGNAL_DEFINITIONS.map((signal) => {
+                  const override = signalLabels[signal.key];
+                  return (
+                    <tr className="border-b border-border/70 align-top last:border-0" key={signal.key}>
+                      <td className="p-2 font-mono text-xs">{signal.key}</td>
+                      <td className="p-2">{signal.displayNameDefault}</td>
+                      <td className="p-2">
+                        <input
+                          name={`display_${signal.key}`}
+                          defaultValue={override?.displayName || signal.displayNameDefault}
+                          minLength={2}
+                          maxLength={80}
+                          required
+                          className="w-full rounded-lg border border-border bg-bg px-2 py-1.5"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <textarea
+                          name={`description_${signal.key}`}
+                          defaultValue={override?.description ?? signal.descriptionDefault}
+                          maxLength={240}
+                          rows={2}
+                          className="w-full rounded-lg border border-border bg-bg px-2 py-1.5"
+                        />
+                      </td>
+                      <td className="p-2 text-center">
+                        <Button formAction={resetSignal} name="signalKey" value={signal.key} type="submit" variant="ghost" className="px-2 py-1 text-xs">
+                          Reset
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <Button type="submit">Save signal labels</Button>
         </form>
-      </section>
+      </Card>
     </div>
   );
 }

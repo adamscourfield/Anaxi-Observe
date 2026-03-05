@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/admin";
-import { revalidatePath } from "next/cache";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionHeader } from "@/components/ui/section-header";
 
 const TABS = ["loa-reasons", "loa-authorisers", "on-call-reasons", "on-call-locations", "on-call-recipients"] as const;
 type Tab = (typeof TABS)[number];
@@ -16,7 +20,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
     (prisma as any).onCallLocation.findMany({ where: { tenantId: user.tenantId }, orderBy: { label: "asc" } }),
     (prisma as any).onCallRecipient.findMany({ where: { tenantId: user.tenantId }, orderBy: { email: "asc" } }),
     (prisma as any).user.findMany({ where: { tenantId: user.tenantId, isActive: true }, orderBy: { fullName: "asc" } }),
-    (prisma as any).lOAAuthoriser.findMany({ where: { tenantId: user.tenantId }, include: { user: true } })
+    (prisma as any).lOAAuthoriser.findMany({ where: { tenantId: user.tenantId }, include: { user: true } }),
   ]);
 
   async function addItem(formData: FormData) {
@@ -33,7 +37,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
       await (prisma as any).lOAAuthoriser.upsert({
         where: { tenantId_userId: { tenantId: admin.tenantId, userId: value } },
         update: {},
-        create: { tenantId: admin.tenantId, userId: value }
+        create: { tenantId: admin.tenantId, userId: value },
       });
     }
     revalidatePath("/tenant/admin/taxonomies");
@@ -78,44 +82,48 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
   }
 
   const tabLink = (value: Tab, label: string) => (
-    <Link key={value} href={`/tenant/admin/taxonomies?tab=${value}`} className={`rounded border px-3 py-1 text-sm ${tab === value ? "bg-slate-900 text-white" : "bg-white"}`}>
+    <Link
+      key={value}
+      href={`/tenant/admin/taxonomies?tab=${value}`}
+      className={`rounded-lg border px-3 py-1.5 text-sm calm-transition ${tab === value ? "border-transparent bg-primaryBtn text-white" : "border-border bg-surface text-text hover:bg-bg/80"}`}
+    >
       {label}
     </Link>
   );
 
   const editableTaxonomy = (title: string, type: string, rows: any[], field: "label" | "email") => (
-    <div className="rounded border bg-white p-3">
-      <h2 className="mb-2 font-medium">{title}</h2>
-      <div className="space-y-2">
+    <Card>
+      <SectionHeader title={title} />
+      <div className="mt-2 space-y-2">
         {rows.map((row) => (
-          <div key={row.id} className="flex items-center gap-2 text-sm">
-            <form action={updateItem} className="flex flex-1 gap-2">
+          <div key={row.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-border/70 p-2 text-sm">
+            <form action={updateItem} className="flex min-w-0 flex-1 gap-2">
               <input type="hidden" name="type" value={type} />
               <input type="hidden" name="id" value={row.id} />
-              <input name="label" defaultValue={row[field]} className="flex-1 border p-2" required />
-              <button className="rounded bg-slate-900 px-3 py-2 text-white" type="submit">Save</button>
+              <input name="label" defaultValue={row[field]} className="min-w-0 flex-1 rounded-lg border border-border bg-bg px-3 py-2" required />
+              <Button type="submit">Save</Button>
             </form>
             <form action={toggleActive}>
               <input type="hidden" name="type" value={type} />
               <input type="hidden" name="id" value={row.id} />
               <input type="hidden" name="active" value={String(row.active)} />
-              <button className="rounded border px-3 py-2" type="submit">{row.active ? "Deactivate" : "Activate"}</button>
+              <Button variant="secondary" type="submit">{row.active ? "Deactivate" : "Activate"}</Button>
             </form>
           </div>
         ))}
-        {rows.length === 0 ? <p className="text-sm text-slate-600">No items yet.</p> : null}
+        {rows.length === 0 ? <div className="rounded-lg border border-dashed border-border/80 px-3 py-4 text-center text-sm text-muted">No items yet.</div> : null}
       </div>
       <form action={addItem} className="mt-3 flex gap-2">
         <input type="hidden" name="type" value={type} />
-        <input name="value" className="flex-1 border p-2" placeholder={`Add ${title.slice(0, -1).toLowerCase()}`} />
-        <button className="rounded bg-slate-900 px-3 py-2 text-white" type="submit">Add</button>
+        <input name="value" className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm" placeholder={`Add ${title.slice(0, -1).toLowerCase()}`} />
+        <Button type="submit">Add</Button>
       </form>
-    </div>
+    </Card>
   );
 
   return (
-    <div className="space-y-3">
-      <h1 className="text-xl font-semibold">Taxonomies</h1>
+    <div className="space-y-4">
+      <PageHeader title="Taxonomies" subtitle="Maintain configurable taxonomy values used in leave and on-call flows." />
       <div className="flex flex-wrap gap-2">
         {tabLink("loa-reasons", "LOA Reasons")}
         {tabLink("loa-authorisers", "LOA Authorisers")}
@@ -130,31 +138,31 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
       {tab === "on-call-recipients" ? editableTaxonomy("On Call Recipients", "recipient", recipients as any[], "email") : null}
 
       {tab === "loa-authorisers" ? (
-        <div className="rounded border bg-white p-3">
-          <h2 className="mb-2 font-medium">LOA Authorisers</h2>
-          <ul className="mb-2 space-y-2 text-sm">
+        <Card>
+          <SectionHeader title="LOA Authorisers" />
+          <ul className="mb-2 mt-2 space-y-2 text-sm">
             {(loaAuthorisers as any[]).map((row) => (
-              <li className="flex items-center justify-between" key={row.id}>
+              <li className="flex items-center justify-between gap-2 rounded-lg border border-border/70 px-3 py-2" key={row.id}>
                 <span>{row.user?.fullName} ({row.user?.email})</span>
                 <form action={removeAuthoriser}>
                   <input type="hidden" name="id" value={row.id} />
-                  <button className="rounded border px-3 py-1" type="submit">Remove</button>
+                  <Button variant="secondary" type="submit">Remove</Button>
                 </form>
               </li>
             ))}
-            {loaAuthorisers.length === 0 ? <li className="text-slate-600">No authorisers configured.</li> : null}
+            {loaAuthorisers.length === 0 ? <li className="rounded-lg border border-dashed border-border/80 px-3 py-4 text-center text-sm text-muted">No authorisers configured.</li> : null}
           </ul>
           <form action={addItem} className="flex gap-2">
             <input type="hidden" name="type" value="loa_authoriser" />
-            <select name="value" className="flex-1 border p-2" required>
+            <select name="value" className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm" required>
               <option value="">Add authoriser...</option>
               {(staff as any[]).map((staffUser) => (
                 <option value={staffUser.id} key={staffUser.id}>{staffUser.fullName} ({staffUser.email})</option>
               ))}
             </select>
-            <button className="rounded bg-slate-900 px-3 py-2 text-white" type="submit">Add</button>
+            <Button type="submit">Add</Button>
           </form>
-        </div>
+        </Card>
       ) : null}
     </div>
   );

@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/admin";
-import { H1, BodyText, MetaText } from "@/components/ui/typography";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionHeader } from "@/components/ui/section-header";
 import { TimetableImportMapper } from "@/components/timetable/TimetableImportMapper";
 
 export default async function AdminTimetablePage() {
@@ -12,9 +14,7 @@ export default async function AdminTimetablePage() {
     orderBy: { finishedAt: "desc" },
   });
 
-  const entryCount = await (prisma as any).timetableEntry.count({
-    where: { tenantId: user.tenantId },
-  });
+  const entryCount = await (prisma as any).timetableEntry.count({ where: { tenantId: user.tenantId } });
 
   const unknownTeacherCount = await (prisma as any).timetableEntry.count({
     where: {
@@ -37,106 +37,89 @@ export default async function AdminTimetablePage() {
       room: true,
       dayOfWeek: true,
       period: true,
-      weekPattern: true,
-      startTime: true,
-      endTime: true,
       teacherUserId: true,
     },
   });
 
   return (
-    <div className="space-y-6">
-      <H1>Timetable</H1>
+    <div className="space-y-4">
+      <PageHeader title="Timetable" subtitle="Import timetable CSVs, resolve mappings, and inspect the latest entries." />
 
-      {/* Summary tiles */}
-      <div className="flex flex-wrap gap-4">
-        <Card className="min-w-[140px]">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Card>
           <div className="text-3xl font-bold text-text">{entryCount}</div>
-          <MetaText className="mt-1">Total entries</MetaText>
+          <div className="mt-1 text-sm text-muted">Total entries</div>
         </Card>
-        <Card className="min-w-[140px]">
+        <Card>
           <div className="text-3xl font-bold text-amber-600">{unknownTeacherCount}</div>
-          <MetaText className="mt-1">Unknown teacher emails</MetaText>
+          <div className="mt-1 text-sm text-muted">Unknown teacher emails</div>
         </Card>
-        <Card className="min-w-[200px]">
+        <Card>
           {lastJob ? (
             <>
-              <div className="text-sm font-medium text-text">
-                Last updated:{" "}
-                {new Date(lastJob.finishedAt ?? lastJob.createdAt).toLocaleString()}
-              </div>
-              <MetaText className="mt-1">
-                {lastJob.rowsProcessed} imported, {lastJob.rowsFailed} failed
-              </MetaText>
-              <div className="mt-2 flex gap-2">
+              <div className="text-sm font-medium text-text">Last updated: {new Date(lastJob.finishedAt ?? lastJob.createdAt).toLocaleString()}</div>
+              <div className="mt-1 text-sm text-muted">{lastJob.rowsProcessed} imported, {lastJob.rowsFailed} failed</div>
+              <div className="mt-2 flex flex-wrap gap-2 text-xs">
                 {lastJob.errorReportJson && (
-                  <a
-                    href={`/api/admin/timetable/import/jobs/${lastJob.id}/errors.csv`}
-                    download
-                    className="text-xs text-text underline"
-                  >
+                  <a href={`/api/admin/timetable/import/jobs/${lastJob.id}/errors.csv`} download className="text-accent underline">
                     Download error report
                   </a>
                 )}
                 {lastJob.conflictsJson && (
-                  <a
-                    href={`/api/admin/timetable/import/jobs/${lastJob.id}/conflicts.csv`}
-                    download
-                    className="text-xs text-amber-700 underline"
-                  >
+                  <a href={`/api/admin/timetable/import/jobs/${lastJob.id}/conflicts.csv`} download className="text-accent underline">
                     Download conflict report
                   </a>
                 )}
               </div>
             </>
           ) : (
-            <BodyText className="text-muted">No imports yet</BodyText>
+            <div className="text-sm text-muted">No imports yet</div>
           )}
         </Card>
       </div>
 
-      {/* Import UI */}
       <TimetableImportMapper />
 
-      {/* Entries table */}
-      {recentEntries.length > 0 && (
-        <Card>
-          <H1 className="mb-3 text-[18px]">Timetable entries (latest {recentEntries.length})</H1>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
+      <Card className="overflow-hidden p-0">
+        <div className="p-4 pb-0">
+          <SectionHeader title="Timetable entries" subtitle={`Latest ${recentEntries.length} row${recentEntries.length === 1 ? "" : "s"}`} />
+        </div>
+        {recentEntries.length === 0 ? (
+          <div className="p-4"><EmptyState title="No timetable entries" description="Import a timetable file to populate this view." /></div>
+        ) : (
+          <div className="overflow-x-auto p-4 pt-3">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="px-2 py-1 text-left font-medium text-text">ClassCode</th>
-                  <th className="px-2 py-1 text-left font-medium text-text">Subject</th>
-                  <th className="px-2 py-1 text-left font-medium text-text">Year</th>
-                  <th className="px-2 py-1 text-left font-medium text-text">Teacher email</th>
-                  <th className="px-2 py-1 text-left font-medium text-text">Day</th>
-                  <th className="px-2 py-1 text-left font-medium text-text">Period</th>
-                  <th className="px-2 py-1 text-left font-medium text-text">Room</th>
+                <tr className="border-b border-border bg-bg/60 text-left text-xs uppercase tracking-[0.05em] text-muted">
+                  <th className="p-2">Class code</th>
+                  <th className="p-2">Subject</th>
+                  <th className="p-2">Year</th>
+                  <th className="p-2">Teacher email</th>
+                  <th className="p-2">Day</th>
+                  <th className="p-2">Period</th>
+                  <th className="p-2">Room</th>
                 </tr>
               </thead>
               <tbody>
                 {(recentEntries as any[]).map((entry: any) => (
-                  <tr key={entry.id} className="border-b border-border last:border-0">
-                    <td className="px-2 py-1 text-text">{entry.classCode}</td>
-                    <td className="px-2 py-1 text-text">{entry.subject}</td>
-                    <td className="px-2 py-1 text-text">{entry.yearGroup}</td>
-                    <td className="px-2 py-1 text-text">
+                  <tr key={entry.id} className="border-b border-border/70 last:border-0">
+                    <td className="p-2">{entry.classCode}</td>
+                    <td className="p-2">{entry.subject}</td>
+                    <td className="p-2">{entry.yearGroup}</td>
+                    <td className="p-2">
                       {entry.teacherEmailRaw ?? "—"}
-                      {!entry.teacherUserId && entry.teacherEmailRaw && (
-                        <span className="ml-1 text-xs text-amber-600">(unmatched)</span>
-                      )}
+                      {!entry.teacherUserId && entry.teacherEmailRaw && <span className="ml-1 text-xs text-amber-600">(unmatched)</span>}
                     </td>
-                    <td className="px-2 py-1 text-text">{entry.dayOfWeek ?? "—"}</td>
-                    <td className="px-2 py-1 text-text">{entry.period ?? "—"}</td>
-                    <td className="px-2 py-1 text-text">{entry.room ?? "—"}</td>
+                    <td className="p-2">{entry.dayOfWeek ?? "—"}</td>
+                    <td className="p-2">{entry.period ?? "—"}</td>
+                    <td className="p-2">{entry.room ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </Card>
-      )}
+        )}
+      </Card>
     </div>
   );
 }

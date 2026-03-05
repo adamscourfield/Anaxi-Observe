@@ -1,7 +1,13 @@
 import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/admin";
-import { revalidatePath } from "next/cache";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionHeader } from "@/components/ui/section-header";
 
 export default async function AdminUsersPage() {
   const user = await requireAdminUser();
@@ -31,8 +37,8 @@ export default async function AdminUsersPage() {
         passwordHash: hash,
         isActive: true,
         canApproveAllLoa: false,
-        receivesOnCallEmails: false
-      }
+        receivesOnCallEmails: false,
+      },
     });
     revalidatePath("/tenant/admin/users");
   }
@@ -86,11 +92,11 @@ export default async function AdminUsersPage() {
         tenantId_approverId_targetUserId: {
           tenantId: admin.tenantId,
           approverId,
-          targetUserId
-        }
+          targetUserId,
+        },
       },
       update: {},
-      create: { tenantId: admin.tenantId, approverId, targetUserId }
+      create: { tenantId: admin.tenantId, approverId, targetUserId },
     });
     revalidatePath("/tenant/admin/users");
   }
@@ -105,97 +111,122 @@ export default async function AdminUsersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Users</h1>
-      <form action={createUser} className="grid max-w-2xl grid-cols-2 gap-2">
-        <input name="fullName" placeholder="Full name" className="border p-2" required />
-        <input name="email" placeholder="Email" type="email" className="border p-2" required />
-        <select name="role" className="border p-2">
-          <option>TEACHER</option><option>LEADER</option><option>SLT</option><option>ADMIN</option>
-        </select>
-        <input name="password" placeholder="Temporary password" className="border p-2" required />
-        <button type="submit" className="col-span-2 rounded bg-slate-900 px-3 py-2 text-white">Create user</button>
-      </form>
-      <table className="w-full border bg-white text-sm">
-        <thead>
-          <tr className="border-b">
-            <th className="p-2 text-left">Name</th>
-            <th className="p-2 text-left">Email</th>
-            <th className="p-2">Role</th>
-            <th className="p-2">Active</th>
-            <th className="p-2">LOA all</th>
-            <th className="p-2">On Call emails</th>
-            <th className="p-2">LOA scoped approvals</th>
-            <th className="p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(users as any[]).map((u: any) => {
-            const scoped = Array.from(scopedByApprover.get(u.id) || []);
-            return (
-              <tr key={u.id} className="border-b align-top">
-                <td className="p-2">{u.fullName}</td>
-                <td className="p-2">{u.email}</td>
-                <td className="p-2 text-center">{u.role}</td>
-                <td className="p-2 text-center">{u.isActive ? "Yes" : "No"}</td>
-                <td className="p-2 text-center">
-                  <form action={toggleApproveAllLoa}>
-                    <input type="hidden" name="id" value={u.id} />
-                    <input type="hidden" name="enabled" value={String(u.canApproveAllLoa)} />
-                    <button className="underline" type="submit">{u.canApproveAllLoa ? "Yes" : "No"}</button>
-                  </form>
-                </td>
-                <td className="p-2 text-center">
-                  <form action={toggleOnCallEmail}>
-                    <input type="hidden" name="id" value={u.id} />
-                    <input type="hidden" name="enabled" value={String(u.receivesOnCallEmails)} />
-                    <button className="underline" type="submit">{u.receivesOnCallEmails ? "Yes" : "No"}</button>
-                  </form>
-                </td>
-                <td className="p-2">
-                  <div className="space-y-2">
-                    {scoped.map((targetUserId) => {
-                      const target = (users as any[]).find((x) => x.id === targetUserId);
-                      return (
-                        <form key={targetUserId} action={removeScopedLoaApprover} className="flex items-center justify-between gap-2">
-                          <input type="hidden" name="approverId" value={u.id} />
-                          <input type="hidden" name="targetUserId" value={targetUserId} />
-                          <span>{target?.fullName || targetUserId}</span>
-                          <button className="underline" type="submit">Remove</button>
+    <div className="space-y-4">
+      <PageHeader
+        title="Users"
+        subtitle="Manage staff access, account status, LOA approval scope, and on-call notification preferences."
+        actions={
+          <Link href="/tenant/admin/users/import">
+            <Button variant="secondary" type="button">Import users</Button>
+          </Link>
+        }
+      />
+
+      <Card>
+        <SectionHeader title="Create user" subtitle="Create an account with a temporary password and role." />
+        <form action={createUser} className="mt-3 grid gap-3 sm:grid-cols-2">
+          <input name="fullName" placeholder="Full name" className="rounded-lg border border-border bg-bg px-3 py-2 text-sm" required />
+          <input name="email" placeholder="Email" type="email" className="rounded-lg border border-border bg-bg px-3 py-2 text-sm" required />
+          <select name="role" className="rounded-lg border border-border bg-bg px-3 py-2 text-sm">
+            <option>TEACHER</option><option>LEADER</option><option>SLT</option><option>ADMIN</option>
+          </select>
+          <input name="password" placeholder="Temporary password" className="rounded-lg border border-border bg-bg px-3 py-2 text-sm" required />
+          <div className="sm:col-span-2">
+            <Button type="submit">Create user</Button>
+          </div>
+        </form>
+      </Card>
+
+      <Card className="overflow-hidden p-0">
+        {(users as any[]).length === 0 ? (
+          <div className="p-4">
+            <EmptyState title="No users yet" description="Create a user manually or import users from CSV." />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-bg/60 text-left text-xs uppercase tracking-[0.05em] text-muted">
+                  <th className="p-2">Name</th>
+                  <th className="p-2">Email</th>
+                  <th className="p-2 text-center">Role</th>
+                  <th className="p-2 text-center">Active</th>
+                  <th className="p-2 text-center">LOA all</th>
+                  <th className="p-2 text-center">On-call emails</th>
+                  <th className="p-2">LOA scoped approvals</th>
+                  <th className="p-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(users as any[]).map((u: any) => {
+                  const scoped = Array.from(scopedByApprover.get(u.id) || []);
+                  return (
+                    <tr key={u.id} className="border-b border-border/70 align-top last:border-0">
+                      <td className="p-2">{u.fullName}</td>
+                      <td className="p-2">{u.email}</td>
+                      <td className="p-2 text-center">{u.role}</td>
+                      <td className="p-2 text-center">{u.isActive ? "Yes" : "No"}</td>
+                      <td className="p-2 text-center">
+                        <form action={toggleApproveAllLoa}>
+                          <input type="hidden" name="id" value={u.id} />
+                          <input type="hidden" name="enabled" value={String(u.canApproveAllLoa)} />
+                          <Button variant="ghost" className="px-2 py-1 text-xs" type="submit">{u.canApproveAllLoa ? "Yes" : "No"}</Button>
                         </form>
-                      );
-                    })}
-                    <form action={addScopedLoaApprover} className="flex gap-2">
-                      <input type="hidden" name="approverId" value={u.id} />
-                      <select name="targetUserId" className="border p-1">
-                        <option value="">Add staff...</option>
-                        {(users as any[])
-                          .filter((staff: any) => staff.id !== u.id)
-                          .map((staff: any) => <option key={staff.id} value={staff.id}>{staff.fullName}</option>)}
-                      </select>
-                      <button className="underline" type="submit">Add</button>
-                    </form>
-                  </div>
-                </td>
-                <td className="p-2">
-                  <div className="flex flex-col gap-2">
-                    <form action={toggleActive}>
-                      <input type="hidden" name="id" value={u.id} />
-                      <input type="hidden" name="active" value={String(u.isActive)} />
-                      <button className="underline" type="submit">{u.isActive ? "Deactivate" : "Activate"}</button>
-                    </form>
-                    <form action={resetPassword} className="flex gap-2">
-                      <input type="hidden" name="id" value={u.id} />
-                      <input name="password" placeholder="New password" className="border p-1" />
-                      <button className="underline" type="submit">Reset password</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                      </td>
+                      <td className="p-2 text-center">
+                        <form action={toggleOnCallEmail}>
+                          <input type="hidden" name="id" value={u.id} />
+                          <input type="hidden" name="enabled" value={String(u.receivesOnCallEmails)} />
+                          <Button variant="ghost" className="px-2 py-1 text-xs" type="submit">{u.receivesOnCallEmails ? "Yes" : "No"}</Button>
+                        </form>
+                      </td>
+                      <td className="p-2">
+                        <div className="space-y-2">
+                          {scoped.map((targetUserId) => {
+                            const target = (users as any[]).find((x) => x.id === targetUserId);
+                            return (
+                              <form key={targetUserId} action={removeScopedLoaApprover} className="flex items-center justify-between gap-2 rounded-lg border border-border/70 px-2 py-1.5">
+                                <input type="hidden" name="approverId" value={u.id} />
+                                <input type="hidden" name="targetUserId" value={targetUserId} />
+                                <span className="truncate">{target?.fullName || targetUserId}</span>
+                                <Button variant="ghost" className="px-2 py-1 text-xs" type="submit">Remove</Button>
+                              </form>
+                            );
+                          })}
+                          <form action={addScopedLoaApprover} className="flex gap-2">
+                            <input type="hidden" name="approverId" value={u.id} />
+                            <select name="targetUserId" className="min-w-0 flex-1 rounded-lg border border-border bg-bg px-2 py-1.5 text-sm">
+                              <option value="">Add staff...</option>
+                              {(users as any[])
+                                .filter((staff: any) => staff.id !== u.id)
+                                .map((staff: any) => <option key={staff.id} value={staff.id}>{staff.fullName}</option>)}
+                            </select>
+                            <Button variant="secondary" className="px-3 py-1.5 text-xs" type="submit">Add</Button>
+                          </form>
+                        </div>
+                      </td>
+                      <td className="p-2">
+                        <div className="flex flex-col gap-2">
+                          <form action={toggleActive}>
+                            <input type="hidden" name="id" value={u.id} />
+                            <input type="hidden" name="active" value={String(u.isActive)} />
+                            <Button variant="secondary" className="w-full px-3 py-1.5 text-xs" type="submit">{u.isActive ? "Deactivate" : "Activate"}</Button>
+                          </form>
+                          <form action={resetPassword} className="flex gap-2">
+                            <input type="hidden" name="id" value={u.id} />
+                            <input name="password" placeholder="New password" className="min-w-0 flex-1 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs" />
+                            <Button variant="ghost" className="px-2 py-1 text-xs" type="submit">Reset</Button>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

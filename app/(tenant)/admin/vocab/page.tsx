@@ -1,6 +1,9 @@
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/admin";
-import { revalidatePath } from "next/cache";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 
 const REQUIRED_KEYS = ["positive_points", "detentions", "internal_exclusions", "on_calls", "suspensions"];
 
@@ -17,7 +20,7 @@ export default async function AdminVocabPage() {
       await prisma.tenantVocab.upsert({
         where: { tenantId_key: { tenantId: admin.tenantId, key } },
         create: { tenantId: admin.tenantId, key, labelSingular: singular, labelPlural: plural },
-        update: { labelSingular: singular, labelPlural: plural }
+        update: { labelSingular: singular, labelPlural: plural },
       });
     }
     revalidatePath("/tenant/admin/vocab");
@@ -27,19 +30,19 @@ export default async function AdminVocabPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Vocabulary</h1>
+      <PageHeader title="Vocabulary" subtitle="Set singular and plural labels for behaviour events across the app." />
       <form action={saveVocab} className="space-y-3">
         {REQUIRED_KEYS.map((key) => {
           const row = byKey.get(key);
           return (
-            <div key={key} className="grid grid-cols-3 gap-2 rounded border bg-white p-3">
-              <div className="font-medium">{key}</div>
-              <input className="border p-2" name={`${key}_singular`} defaultValue={row?.labelSingular || ""} placeholder="Singular" />
-              <input className="border p-2" name={`${key}_plural`} defaultValue={row?.labelPlural || ""} placeholder="Plural" />
-            </div>
+            <Card key={key} className="grid gap-3 sm:grid-cols-[220px_1fr_1fr] sm:items-center">
+              <div className="text-sm font-semibold uppercase tracking-[0.04em] text-muted">{key}</div>
+              <input className="rounded-lg border border-border bg-bg px-3 py-2 text-sm" name={`${key}_singular`} defaultValue={row?.labelSingular || ""} placeholder="Singular" />
+              <input className="rounded-lg border border-border bg-bg px-3 py-2 text-sm" name={`${key}_plural`} defaultValue={row?.labelPlural || ""} placeholder="Plural" />
+            </Card>
           );
         })}
-        <button className="rounded bg-slate-900 px-3 py-2 text-white" type="submit">Save labels</button>
+        <Button type="submit">Save labels</Button>
       </form>
     </div>
   );
