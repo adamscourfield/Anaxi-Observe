@@ -8,7 +8,9 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
-NEXTAUTH_URL = "https://0b3e2b11-5923-478d-9871-7d2832a8a2af-00-3c4czhg3n4o2e.kirk.replit.dev"
+# NEXTAUTH_URL is auto-detected from REPLIT_DEV_DOMAIN at startup (next.config.mjs).
+# You only need to set it here if you want to override the detected URL.
+# NEXTAUTH_URL = "https://<your-replit-domain>"
 
 [workflows]
 runButton = "Project"

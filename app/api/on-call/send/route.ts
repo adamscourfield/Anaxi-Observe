@@ -64,7 +64,7 @@ export async function POST(req: Request) {
             `Category: ${requestRow.category}`,
             `Reason: ${requestRow.reason?.label || "-"}`,
             `Timestamp: ${new Date(requestRow.createdAt).toISOString()}`,
-            `Link: ${process.env.NEXTAUTH_URL || "http://localhost:3000"}/tenant/on-call/${requestRow.id}`,
+            `Link: ${process.env.NEXTAUTH_URL || "http://localhost:5000"}/on-call/${requestRow.id}`,
             `Notes: ${requestRow.notes || "-"}`
           ].join("\n")
         }]
