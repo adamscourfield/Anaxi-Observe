@@ -96,8 +96,9 @@ export function TenantNav({
                   <Link
                     key={item.href}
                     href={item.href}
-                    title={item.label}
-                    className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm calm-transition ${
+                    title={collapsed ? item.label : undefined}
+                    aria-label={item.label}
+                    className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm calm-transition ${
                       active
                         ? "bg-primaryBtn text-white shadow-sm"
                         : "text-muted hover:bg-[var(--surface-subtle)] hover:text-text"
@@ -110,6 +111,12 @@ export function TenantNav({
                         {item.badgeCount}
                       </span>
                     ) : null}
+
+                    {collapsed && (
+                      <span className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-30 hidden -translate-y-1/2 whitespace-nowrap rounded-md border border-border bg-surface px-2 py-1 text-xs font-medium text-text shadow-md group-hover:block">
+                        {item.label}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
