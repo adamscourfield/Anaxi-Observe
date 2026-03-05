@@ -4,9 +4,18 @@ import { TenantNav } from "@/components/tenant-nav";
 import { getOpenOnCallCount } from "@/lib/oncall/badge";
 import { canManageLoa } from "@/lib/loa";
 import { hasPermission } from "@/lib/rbac";
+import { redirect } from "next/navigation";
 
 export default async function TenantLayout({ children }: { children: React.ReactNode }) {
-  const user = await getSessionUserOrThrow();
+  let user: Awaited<ReturnType<typeof getSessionUserOrThrow>>;
+  try {
+    user = await getSessionUserOrThrow();
+  } catch (e) {
+    if (e instanceof Error && e.message === "UNAUTHENTICATED") {
+      redirect("/login");
+    }
+    throw e;
+  }
   const features = await prisma.tenantFeature.findMany({ where: { tenantId: user.tenantId, enabled: true } });
 
   const canSeeOnCallBadge = hasPermission(user.role, "oncall:view_all");

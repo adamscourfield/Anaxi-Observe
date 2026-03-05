@@ -8,5 +8,22 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: ["/tenant/:path*", "/api/students/:path*", "/api/on-call/:path*", "/api/email/:path*", "/api/csv/:path*"]
+  matcher: [
+    "/home",
+    "/admin/:path*",
+    "/analysis/:path*",
+    "/behaviour/:path*",
+    "/explorer",
+    "/leave/:path*",
+    "/meetings/:path*",
+    "/my-actions",
+    "/observe/:path*",
+    "/on-call/:path*",
+    "/onboarding",
+    "/students/:path*",
+    "/api/students/:path*",
+    "/api/on-call/:path*",
+    "/api/email/:path*",
+    "/api/csv/:path*"
+  ]
 };
