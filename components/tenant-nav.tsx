@@ -2,18 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FeatureKey, UserRole } from "@/lib/types";
 
 type NavItem = {
   label: string;
   href: string;
+  icon: string;
   badgeCount?: number;
-};
-
-type NavSection = {
-  label: string;
-  items: NavItem[];
 };
 
 export function TenantNav({
@@ -28,110 +24,75 @@ export function TenantNav({
   leaveCount?: number;
 }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   const has = (feature: FeatureKey) => enabledFeatures.includes(feature);
   const canImport = role === "SLT" || role === "ADMIN";
 
-  const sections: NavSection[] = [
-    {
-      label: "Overview",
-      items: [{ label: "Home", href: "/home" }, { label: "My actions", href: "/my-actions" }],
-    },
-    {
-      label: "Observations",
-      items: [
-        ...(has("OBSERVATIONS") ? [{ label: "Observation feed", href: "/tenant/observe" }] : []),
-        ...(has("OBSERVATIONS") ? [{ label: "Signals history", href: "/tenant/observe/history" }] : []),
-        ...(has("ANALYSIS") ? [{ label: "Explorer", href: "/explorer" }] : []),
-      ],
-    },
-    {
-      label: "Students & conduct",
-      items: [
-        ...(has("STUDENTS") ? [{ label: "Students", href: "/tenant/students" }] : []),
-        ...(has("STUDENTS_IMPORT") && canImport ? [{ label: "Behaviour import", href: "/tenant/behaviour/import" }] : []),
-      ],
-    },
-    {
-      label: "Pastoral workflows",
-      items: [
-        ...(has("ON_CALL") ? [{ label: "On call", href: "/tenant/on-call", badgeCount: onCallCount }] : []),
-        ...(has("MEETINGS") ? [{ label: "Meetings", href: "/tenant/meetings" }] : []),
-        ...(has("LEAVE") ? [{ label: "Leave of absence", href: "/tenant/leave", badgeCount: leaveCount }] : []),
-      ],
-    },
-    {
-      label: "Analytics",
-      items: [
-        ...(has("ANALYSIS") ? [{ label: "Teacher analysis", href: "/analysis/teachers" }] : []),
-        ...(has("ANALYSIS") ? [{ label: "CPD priorities", href: "/analysis/cpd" }] : []),
-        ...(has("ANALYSIS") ? [{ label: "Student priorities", href: "/analysis/students" }] : []),
-      ],
-    },
-    {
-      label: "Administration",
-      items: [
-        ...(role === "ADMIN" && has("ADMIN") ? [{ label: "Admin dashboard", href: "/tenant/admin" }] : []),
-        ...(role === "ADMIN" && has("ADMIN") ? [{ label: "User management", href: "/tenant/admin/users" }] : []),
-        ...(role === "ADMIN" && has("ADMIN") ? [{ label: "Departments", href: "/tenant/admin/departments" }] : []),
-        ...(role === "ADMIN" && has("ADMIN") ? [{ label: "Feature flags", href: "/tenant/admin/features" }] : []),
-      ],
-    },
-  ].filter((section) => section.items.length > 0);
+  const items = useMemo<NavItem[]>(
+    () => [
+      { label: "Home", href: "/home", icon: "⌂" },
+      ...(has("OBSERVATIONS") ? [{ label: "Observe", href: "/observe", icon: "◉" }] : []),
+      ...(has("OBSERVATIONS") ? [{ label: "Signals", href: "/observe/history", icon: "◌" }] : []),
+      ...(has("ANALYSIS") ? [{ label: "Explorer", href: "/explorer", icon: "◎" }] : []),
+      ...(has("ANALYSIS") ? [{ label: "Teacher analysis", href: "/analysis/teachers", icon: "◍" }] : []),
+      ...(has("ANALYSIS") ? [{ label: "Student priorities", href: "/analysis/students", icon: "◈" }] : []),
+      ...(has("STUDENTS") ? [{ label: "Students", href: "/students", icon: "◫" }] : []),
+      ...(has("STUDENTS_IMPORT") && canImport ? [{ label: "Import", href: "/behaviour/import", icon: "⇪" }] : []),
+      ...(has("ON_CALL") ? [{ label: "On call", href: "/on-call", icon: "!", badgeCount: onCallCount }] : []),
+      ...(has("MEETINGS") ? [{ label: "Meetings", href: "/meetings", icon: "✦" }] : []),
+      ...(has("LEAVE") ? [{ label: "Leave", href: "/leave", icon: "◔", badgeCount: leaveCount }] : []),
+      { label: "My actions", href: "/my-actions", icon: "✓" },
+      ...(role === "ADMIN" && has("ADMIN") ? [{ label: "Admin", href: "/admin", icon: "⚙" }] : []),
+    ],
+    [enabledFeatures, onCallCount, leaveCount, role]
+  );
 
   return (
     <aside
-      className={`sticky top-4 h-fit rounded-xl border border-border bg-surface p-3 shadow-sm calm-transition ${
-        collapsed ? "w-[76px]" : "w-full md:w-[280px]"
+      className={`sticky top-4 h-[calc(100vh-2rem)] rounded-[24px] border border-border bg-surface p-3 shadow-sm calm-transition ${
+        collapsed ? "w-[86px]" : "w-[250px]"
       }`}
       aria-label="Sidebar menu"
     >
-      <button
-        onClick={() => setCollapsed((previous) => !previous)}
-        className="mb-2 w-full rounded-md border border-border px-3 py-2 text-left text-sm text-muted hover:bg-divider"
-        type="button"
-        aria-expanded={!collapsed}
-      >
-        {collapsed ? "☰" : "Collapse menu"}
-      </button>
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface-subtle)] text-lg">⌁</div>
+        {!collapsed && <span className="text-sm font-semibold text-text">Anaxi</span>}
+      </div>
 
-      <nav className="space-y-2 text-sm">
-        {sections.map((section) => {
-          const sectionHasCurrent = section.items.some((item) => pathname?.startsWith(item.href));
-
+      <nav className="space-y-2">
+        {items.map((item) => {
+          const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
           return (
-            <details key={section.label} open={sectionHasCurrent || !collapsed} className="rounded-lg border border-border/70 bg-[var(--surface-subtle)]">
-              <summary className="cursor-pointer list-none px-3 py-2 font-medium text-text">
-                {collapsed ? section.label.slice(0, 1) : section.label}
-              </summary>
-              {!collapsed && (
-                <ul className="space-y-1 border-t border-border/70 px-2 py-2">
-                  {section.items.map((item) => {
-                    const active = pathname?.startsWith(item.href);
-
-                    return (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          className={`flex items-center justify-between rounded-md px-2 py-1.5 text-sm calm-transition ${
-                            active ? "bg-accent/15 text-text" : "text-muted hover:bg-divider hover:text-text"
-                          }`}
-                        >
-                          <span>{item.label}</span>
-                          {item.badgeCount && item.badgeCount > 0 ? (
-                            <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-xs text-white">{item.badgeCount}</span>
-                          ) : null}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </details>
+            <Link
+              key={item.href}
+              href={item.href}
+              title={item.label}
+              className={`group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm calm-transition ${
+                active
+                  ? "bg-primaryBtn text-white shadow-sm"
+                  : "bg-[var(--surface-subtle)] text-muted hover:bg-divider hover:text-text"
+              }`}
+            >
+              <span className="flex h-5 w-5 items-center justify-center text-base">{item.icon}</span>
+              {!collapsed && <span className="truncate">{item.label}</span>}
+              {item.badgeCount && item.badgeCount > 0 ? (
+                <span className={`ml-auto rounded-full px-1.5 py-0.5 text-[10px] ${active ? "bg-white/25 text-white" : "bg-amber-500 text-white"}`}>
+                  {item.badgeCount}
+                </span>
+              ) : null}
+            </Link>
           );
         })}
       </nav>
+
+      <button
+        onClick={() => setCollapsed((prev) => !prev)}
+        className="absolute bottom-3 left-3 right-3 rounded-lg border border-border bg-[var(--surface-subtle)] px-3 py-2 text-xs text-muted hover:bg-divider"
+        type="button"
+      >
+        {collapsed ? "Expand" : "Collapse"}
+      </button>
     </aside>
   );
 }

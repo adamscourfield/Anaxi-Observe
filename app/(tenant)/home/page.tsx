@@ -127,8 +127,8 @@ function LeadershipHome({
       {/* 1. Instructional Movement — 7/5 col split */}
       <section className="space-y-3">
         <div className="grid gap-6 md:grid-cols-12">
-          {/* Left 7 cols: CPD priorities */}
-          <div className="space-y-3 md:col-span-7">
+          {/* Left 8 cols: CPD priorities */}
+          <div className="space-y-3 md:col-span-8">
             <SectionHeader
               title="CPD priorities"
               href={`/analysis/cpd?window=${windowDays}`}
@@ -157,8 +157,8 @@ function LeadershipHome({
             </Card>
           </div>
 
-          {/* Right 5 cols: Teacher support priorities */}
-          <div className="space-y-3 md:col-span-5">
+          {/* Right 4 cols: Teacher support priorities */}
+          <div className="space-y-3 md:col-span-4">
             <SectionHeader
               title="Teacher support priorities"
               href={`/analysis/teachers?window=${windowDays}`}
@@ -202,8 +202,8 @@ function LeadershipHome({
       {/* 2. Pastoral Signals — 7/5 col split */}
       <section className="space-y-3">
         <div className="grid gap-6 md:grid-cols-12">
-          {/* Left 7 cols: Cohort change */}
-          <div className="space-y-3 md:col-span-7">
+          {/* Left 6 cols: Cohort change */}
+          <div className="space-y-3 md:col-span-6">
             <SectionHeader title="Cohort change" />
             {!hasBehaviourData ? (
               <Card className="space-y-2">
@@ -256,8 +256,8 @@ function LeadershipHome({
             )}
           </div>
 
-          {/* Right 5 cols: Student support priorities */}
-          <div className="space-y-3 md:col-span-5">
+          {/* Right 6 cols: Student support priorities */}
+          <div className="space-y-3 md:col-span-6">
             <SectionHeader
               title="Student support priorities"
               href={`/analysis/students?window=${windowDays}`}
@@ -298,24 +298,28 @@ function LeadershipHome({
         </div>
       </section>
 
-      {/* 3. Positive Momentum — full width, 6/6 */}
+      {/* 3. Positive Momentum — collapsible */}
       {momentumSignals.length > 0 && (
         <section className="space-y-3">
-          <SectionHeader title="Positive momentum" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            {momentumSignals.map((row) => (
-              <Link
-                key={row.signalKey}
-                href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`}
-                className="block rounded-lg border border-border bg-surface p-4 shadow-sm hover:border-accentHover calm-transition transition duration-200 ease-calm"
-              >
-                <p className="text-sm font-medium text-text">{row.label}</p>
-                <MetaText className="mt-1">
-                  {Math.round(row.improvingRate * 100)}% improving · {row.teachersCovered} covered
-                </MetaText>
-              </Link>
-            ))}
-          </div>
+          <details className="rounded-lg border border-border bg-surface" open={false}>
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-text">
+              Positive momentum
+            </summary>
+            <div className="grid gap-4 border-t border-border px-4 py-4 sm:grid-cols-2">
+              {momentumSignals.map((row) => (
+                <Link
+                  key={row.signalKey}
+                  href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`}
+                  className="block rounded-lg border border-border bg-surface p-4 shadow-sm hover:border-accentHover calm-transition transition duration-200 ease-calm"
+                >
+                  <p className="text-sm font-medium text-text">{row.label}</p>
+                  <MetaText className="mt-1">
+                    {Math.round(row.improvingRate * 100)}% improving · {row.teachersCovered} covered
+                  </MetaText>
+                </Link>
+              ))}
+            </div>
+          </details>
         </section>
       )}
 
