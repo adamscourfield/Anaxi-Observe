@@ -18,7 +18,11 @@ export default function LoginPage() {
     const password = String(form.get("password") || "");
     const res = await signIn("credentials", { email, password, redirect: false, callbackUrl: "/tenant" });
     if (res?.error) {
-      setError("Invalid credentials or auth configuration issue. Check NEXTAUTH_URL and NEXTAUTH_SECRET.");
+      if (res.error === "CredentialsSignin") {
+        setError("Invalid email or password. Please try again.");
+      } else {
+        setError("Authentication service error. Please contact support if this persists.");
+      }
       return;
     }
     router.push(res?.url || "/tenant");
