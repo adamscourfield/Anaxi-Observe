@@ -2,6 +2,10 @@ import Link from "next/link";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function ObservationHistoryPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
   const user = await getSessionUserOrThrow();
@@ -43,39 +47,48 @@ export default async function ObservationHistoryPage({ searchParams }: { searchP
   ]);
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Observation History</h1>
+    <div className="space-y-5">
+      <PageHeader title="Observation history" subtitle="Filter by teacher, observer, subject, year group, and date range." />
 
-      <form className="grid max-w-5xl grid-cols-6 gap-2 rounded border bg-white p-3 text-sm">
-        {user.role !== "TEACHER" ? (
-          <>
-            <select name="teacherId" defaultValue={teacherId} className="border p-2">
-              <option value="">All teachers</option>
-              {(teachers as any[]).map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName}</option>)}
-            </select>
-            <select name="observerId" defaultValue={observerId} className="border p-2">
-              <option value="">All observers</option>
-              {(observers as any[]).map((observer) => <option key={observer.id} value={observer.id}>{observer.fullName}</option>)}
-            </select>
-          </>
-        ) : null}
-        <input name="subject" defaultValue={subject} placeholder="Subject" className="border p-2" />
-        <input name="yearGroup" defaultValue={yearGroup} placeholder="Year group" className="border p-2" />
-        <input name="from" type="date" defaultValue={from} className="border p-2" />
-        <input name="to" type="date" defaultValue={to} className="border p-2" />
-        <button className="rounded bg-slate-900 px-3 py-2 text-white" type="submit">Filter</button>
-      </form>
+      <Card>
+        <form className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
+          {user.role !== "TEACHER" ? (
+            <>
+              <select name="teacherId" defaultValue={teacherId} className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text">
+                <option value="">All teachers</option>
+                {(teachers as any[]).map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName}</option>)}
+              </select>
+              <select name="observerId" defaultValue={observerId} className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text">
+                <option value="">All observers</option>
+                {(observers as any[]).map((observer) => <option key={observer.id} value={observer.id}>{observer.fullName}</option>)}
+              </select>
+            </>
+          ) : null}
+          <input name="subject" defaultValue={subject} placeholder="Subject" className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text placeholder:text-muted" />
+          <input name="yearGroup" defaultValue={yearGroup} placeholder="Year group" className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text placeholder:text-muted" />
+          <input name="from" type="date" defaultValue={from} className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text" />
+          <input name="to" type="date" defaultValue={to} className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text" />
+          <Button className="lg:col-span-1" type="submit">Apply filters</Button>
+        </form>
+      </Card>
 
-      <ul className="space-y-2 rounded border bg-white p-4 text-sm">
-        {(observations as any[]).map((observation) => (
-          <li key={observation.id}>
-            <Link className="underline" href={`/tenant/observe/${observation.id}`}>
-              {new Date(observation.observedAt).toLocaleDateString()} · {observation.subject} · {observation.yearGroup} · {observation.observedTeacher?.fullName} · by {observation.observer?.fullName}
-            </Link>
-          </li>
-        ))}
-        {observations.length === 0 ? <li className="text-slate-600">No observations found.</li> : null}
-      </ul>
+      <Card className="p-0">
+        {(observations as any[]).length === 0 ? (
+          <div className="p-4">
+            <EmptyState title="No observations found" description="Try widening your filters or selecting a different date range." />
+          </div>
+        ) : (
+          <ul className="divide-y divide-border/70 p-3 text-sm">
+            {(observations as any[]).map((observation) => (
+              <li key={observation.id} className="px-1 py-2">
+                <Link className="font-medium text-accent hover:text-accentHover" href={`/tenant/observe/${observation.id}`}>
+                  {new Date(observation.observedAt).toLocaleDateString()} · {observation.subject} · {observation.yearGroup} · {observation.observedTeacher?.fullName} · by {observation.observer?.fullName}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { canManageLoa } from "@/lib/loa";
 import { prisma } from "@/lib/prisma";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 
 function dayKey(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -37,23 +39,23 @@ export default async function LeaveCalendarPage() {
   }).filter((d) => d.getMonth() === start.getMonth());
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Leave Calendar ({start.toLocaleString("default", { month: "long" })})</h1>
+    <div className="space-y-5">
+      <PageHeader title={`Leave calendar (${start.toLocaleString("default", { month: "long" })})`} subtitle="Month view of pending and approved leave requests." />
       <div className="grid grid-cols-1 gap-2">
         {days.map((day) => {
           const entries = (requests as any[]).filter((request) => day >= new Date(request.startAt) && day <= new Date(request.endAt));
           return (
-            <div key={dayKey(day)} className="rounded border bg-white p-3 text-sm">
-              <p className="font-medium">{day.toLocaleDateString()}</p>
-              {entries.length === 0 ? <p className="text-slate-500">No leave</p> : null}
-              <ul className="mt-1 space-y-1">
+            <Card key={dayKey(day)} className="space-y-1 p-3 text-sm">
+              <p className="font-medium text-text">{day.toLocaleDateString()}</p>
+              {entries.length === 0 ? <p className="text-muted">No leave</p> : null}
+              <ul className="space-y-1">
                 {entries.map((request) => (
                   <li key={request.id} className={request.status === "APPROVED" ? "text-emerald-700" : "text-amber-700"}>
                     {request.requester?.fullName} · {request.status}
                   </li>
                 ))}
               </ul>
-            </div>
+            </Card>
           );
         })}
       </div>

@@ -2,6 +2,9 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { createLoaRequest } from "../actions";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function LeaveRequestPage() {
   const user = await getSessionUserOrThrow();
@@ -12,28 +15,30 @@ export default async function LeaveRequestPage() {
   });
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Request Leave</h1>
-      <form action={createLoaRequest} className="grid max-w-2xl grid-cols-2 gap-3 rounded border bg-white p-4">
-        <label className="text-sm">Start</label>
-        <input required type="datetime-local" name="startAt" className="border p-2" />
+    <div className="space-y-5">
+      <PageHeader title="Request leave" subtitle="Submit a leave request with dates, reason, and optional notes for cover." />
+      <Card>
+        <form action={createLoaRequest} className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="text-sm text-muted">Start</label>
+          <input required type="datetime-local" name="startAt" className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text" />
 
-        <label className="text-sm">End</label>
-        <input required type="datetime-local" name="endAt" className="border p-2" />
+          <label className="text-sm text-muted">End</label>
+          <input required type="datetime-local" name="endAt" className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text" />
 
-        <label className="col-span-2 text-sm">Reason</label>
-        <select required name="reasonId" className="col-span-2 border p-2">
-          <option value="">Select reason</option>
-          {(reasons as any[]).map((reason: any) => (
-            <option key={reason.id} value={reason.id}>{reason.label}</option>
-          ))}
-        </select>
+          <label className="sm:col-span-2 text-sm text-muted">Reason</label>
+          <select required name="reasonId" className="sm:col-span-2 rounded-md border border-border bg-bg/60 p-2 text-sm text-text">
+            <option value="">Select reason</option>
+            {(reasons as any[]).map((reason: any) => (
+              <option key={reason.id} value={reason.id}>{reason.label}</option>
+            ))}
+          </select>
 
-        <label className="col-span-2 text-sm">Cover notes (optional)</label>
-        <textarea name="coverNotes" className="col-span-2 border p-2" rows={4} />
+          <label className="sm:col-span-2 text-sm text-muted">Cover notes (optional)</label>
+          <textarea name="coverNotes" className="sm:col-span-2 rounded-md border border-border bg-bg/60 p-2 text-sm text-text" rows={4} />
 
-        <button className="col-span-2 rounded bg-slate-900 px-3 py-2 text-white" type="submit">Submit request</button>
-      </form>
+          <Button className="sm:col-span-2" type="submit">Submit request</Button>
+        </form>
+      </Card>
     </div>
   );
 }

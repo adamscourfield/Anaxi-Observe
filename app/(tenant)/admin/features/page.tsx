@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/admin";
 import { revalidatePath } from "next/cache";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function AdminFeaturesPage() {
   const user = await requireAdminUser();
@@ -21,15 +24,17 @@ export default async function AdminFeaturesPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Features</h1>
+      <PageHeader title="Features" subtitle="Enable or disable modules for this tenant." />
       {features.map((f: any) => (
-        <form key={f.key} action={toggleFeature} className="flex items-center gap-3 rounded border bg-white p-3">
-          <input type="hidden" name="key" value={f.key} />
-          <input type="hidden" name="enabled" value={String(f.enabled)} />
-          <span className="w-48 font-medium">{f.key}</span>
-          <span>{f.enabled ? "Enabled" : "Disabled"}</span>
-          <button className="underline" type="submit">Toggle</button>
-        </form>
+        <Card key={f.key} className="flex items-center gap-3">
+          <form action={toggleFeature} className="flex w-full flex-wrap items-center gap-3">
+            <input type="hidden" name="key" value={f.key} />
+            <input type="hidden" name="enabled" value={String(f.enabled)} />
+            <span className="w-48 font-medium text-text">{f.key}</span>
+            <span className="text-sm text-muted">{f.enabled ? "Enabled" : "Disabled"}</span>
+            <Button variant="secondary" type="submit">Toggle</Button>
+          </form>
+        </Card>
       ))}
     </div>
   );

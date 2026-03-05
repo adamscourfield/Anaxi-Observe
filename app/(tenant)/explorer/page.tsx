@@ -4,7 +4,11 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
-import { H1, H2, MetaText, BodyText } from "@/components/ui/typography";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionHeader } from "@/components/ui/section-header";
+import { MetaText } from "@/components/ui/typography";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import {
   canViewExplorer,
@@ -310,18 +314,11 @@ export default async function ExplorerPage({
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
-      <div className="space-y-1">
-        <div className="flex flex-wrap items-center gap-3">
-          <H1>Explorer</H1>
-          <span className="rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-muted">
-            Evidence &amp; pivots
-          </span>
-        </div>
-        <MetaText>
-          Updated {computedAtStr} · Window: last {windowDays} days · Coverage thresholds applied
-        </MetaText>
-      </div>
+      <PageHeader
+        title="Explorer"
+        subtitle={<>Updated {computedAtStr} · Window: last {windowDays} days · Coverage thresholds applied</>}
+        actions={<span className="rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-muted">Evidence &amp; pivots</span>}
+      />
 
       {/* Filters panel */}
       <Card>
@@ -410,12 +407,7 @@ export default async function ExplorerPage({
               </div>
             )}
 
-            <button
-              type="submit"
-              className="calm-transition rounded-lg border border-border bg-surface px-4 py-1.5 text-sm font-medium text-text transition duration-200 ease-calm hover:border-accentHover"
-            >
-              Apply
-            </button>
+            <Button type="submit" variant="secondary" className="px-4 py-1.5">Apply</Button>
 
             <Link
               href={`/explorer?view=${view}&windowDays=${windowDays}`}
@@ -496,12 +488,7 @@ export default async function ExplorerPage({
             <input type="hidden" name="teacherMembershipId" value={filterTeacherId} />
             <input type="hidden" name="subject" value={filterSubject} />
             <input type="hidden" name="studentSearch" value={studentSearch} />
-            <button
-              type="submit"
-              className="calm-transition rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-text transition duration-200 ease-calm hover:border-accentHover"
-            >
-              Export CSV
-            </button>
+            <Button type="submit" variant="secondary">Export CSV</Button>
           </form>
         ) : (
           <span className="cursor-not-allowed rounded-lg border border-border bg-bg px-4 py-2 text-sm text-muted" title="Export not available for your role">
@@ -516,12 +503,12 @@ export default async function ExplorerPage({
       {view === "INSTRUCTION_TEACHERS_PIVOT" && (
         <Card className="overflow-x-auto p-0">
           <div className="border-b border-border px-4 py-3">
-            <H2>Teachers × signals</H2>
+            <SectionHeader title="Teachers × signals" />
             <MetaText>{teacherPivotRows.length} teacher{teacherPivotRows.length !== 1 ? "s" : ""} in scope · Window: {windowDays} days</MetaText>
           </div>
           {teacherPivotRows.length === 0 ? (
             <div className="p-6">
-              <BodyText className="text-muted">No teachers with observations in this window.</BodyText>
+              <EmptyState title="No teachers in scope" description="No teachers with observations in this window." />
             </div>
           ) : (
             <>
@@ -647,12 +634,12 @@ export default async function ExplorerPage({
       {view === "INSTRUCTION_DEPARTMENTS_PIVOT" && (
         <Card className="overflow-x-auto p-0">
           <div className="border-b border-border px-4 py-3">
-            <H2>Departments × signals</H2>
+            <SectionHeader title="Departments × signals" />
             <MetaText>{deptPivotRows.length} department{deptPivotRows.length !== 1 ? "s" : ""} in scope · Window: {windowDays} days</MetaText>
           </div>
           {deptPivotRows.length === 0 ? (
             <div className="p-6">
-              <BodyText className="text-muted">No departments with data in this window.</BodyText>
+              <EmptyState title="No departments in scope" description="No departments with data in this window." />
             </div>
           ) : (
             <>
@@ -767,12 +754,12 @@ export default async function ExplorerPage({
       {view === "INSTRUCTION_LIST" && (
         <Card className="overflow-hidden p-0">
           <div className="border-b border-border px-4 py-3">
-            <H2>Observation list</H2>
+            <SectionHeader title="Observation list" />
             <MetaText>{observationList.length} observation{observationList.length !== 1 ? "s" : ""} shown · Window: {windowDays} days</MetaText>
           </div>
           {observationList.length === 0 ? (
             <div className="p-6">
-              <BodyText className="text-muted">No observations found with the selected filters.</BodyText>
+              <EmptyState title="No observations found" description="Try adjusting your filters or expanding the window." />
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -813,12 +800,12 @@ export default async function ExplorerPage({
       {view === "BEHAVIOUR_STUDENTS_TABLE" && (
         <Card className="overflow-hidden p-0">
           <div className="border-b border-border px-4 py-3">
-            <H2>Student risk table</H2>
+            <SectionHeader title="Student risk table" />
             <MetaText>{studentRows.length} student{studentRows.length !== 1 ? "s" : ""} in scope · Window: {windowDays} days</MetaText>
           </div>
           {studentRows.length === 0 ? (
             <div className="p-6">
-              <BodyText className="text-muted">No students with snapshot data in this window.</BodyText>
+              <EmptyState title="No students found" description="No students have snapshot data in this window." />
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -893,12 +880,12 @@ export default async function ExplorerPage({
       {view === "BEHAVIOUR_COHORTS_PIVOT" && (
         <Card className="overflow-x-auto p-0">
           <div className="border-b border-border px-4 py-3">
-            <H2>Behaviour cohort pivot</H2>
+            <SectionHeader title="Behaviour cohort pivot" />
             <MetaText>{cohortRows.length} year group{cohortRows.length !== 1 ? "s" : ""} · Window: {windowDays} days</MetaText>
           </div>
           {cohortRows.length === 0 ? (
             <div className="p-6">
-              <BodyText className="text-muted">No cohort data available in this window.</BodyText>
+              <EmptyState title="No cohort data" description="No cohort data is available in this window." />
             </div>
           ) : (
             <table className="w-full text-sm">

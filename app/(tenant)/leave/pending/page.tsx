@@ -3,6 +3,9 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { canManageLoa, loaManageableRequesterIds } from "@/lib/loa";
 import { prisma } from "@/lib/prisma";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function LeavePendingPage() {
   const user = await getSessionUserOrThrow();
@@ -24,18 +27,23 @@ export default async function LeavePendingPage() {
   });
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Pending Leave Approvals</h1>
-      <ul className="space-y-2 rounded border bg-white p-4 text-sm">
-        {(pending as any[]).map((request) => (
-          <li key={request.id}>
-            <Link className="underline" href={`/tenant/leave/${request.id}`}>
-              {request.requester?.fullName} · {new Date(request.startAt).toLocaleDateString()} - {new Date(request.endAt).toLocaleDateString()} · {request.reason?.label}
-            </Link>
-          </li>
-        ))}
-        {pending.length === 0 ? <li className="text-slate-600">No pending requests.</li> : null}
-      </ul>
+    <div className="space-y-5">
+      <PageHeader title="Pending leave approvals" subtitle="Review and action open requests in your approval scope." />
+      <Card>
+        {pending.length === 0 ? (
+          <EmptyState title="No pending requests" description="You're all caught up for now." />
+        ) : (
+          <ul className="space-y-2 text-sm">
+            {(pending as any[]).map((request) => (
+              <li key={request.id}>
+                <Link className="font-medium text-accent hover:text-accentHover" href={`/tenant/leave/${request.id}`}>
+                  {request.requester?.fullName} · {new Date(request.startAt).toLocaleDateString()} - {new Date(request.endAt).toLocaleDateString()} · {request.reason?.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
     </div>
   );
 }

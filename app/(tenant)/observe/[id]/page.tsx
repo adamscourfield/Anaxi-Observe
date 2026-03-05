@@ -4,6 +4,9 @@ import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import { getTenantSignalLabels } from "@/modules/observations/tenantSignalLabels";
+import { Card } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/section-header";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ObservationDetailPage({ params }: { params: { id: string } }) {
   const user = await getSessionUserOrThrow();
@@ -20,9 +23,10 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
   const signalMap = new Map((observation.signals as any[]).map((signal) => [signal.signalKey, signal]));
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Observation Detail</h1>
-      <div className="rounded border bg-white p-4 text-sm space-y-1">
+    <div className="space-y-5">
+      <PageHeader title="Observation detail" subtitle="Review context and signal-level evidence." />
+
+      <Card className="space-y-1 text-sm">
         <p><strong>Teacher:</strong> {observation.observedTeacher?.fullName}</p>
         <p><strong>Observer:</strong> {observation.observer?.fullName}</p>
         <p><strong>Date:</strong> {new Date(observation.observedAt).toLocaleString()}</p>
@@ -31,20 +35,21 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
         <p><strong>Phase:</strong> {observation.phase}</p>
         <p><strong>Class code:</strong> {observation.classCode || "-"}</p>
         <p><strong>Context:</strong> {observation.contextNote || "-"}</p>
-      </div>
+      </Card>
 
-      <section className="space-y-2">
+      <section className="space-y-3">
+        <SectionHeader title="Signal records" />
         {(SIGNAL_DEFINITIONS as any[]).map((signal) => {
           const override = (labelMap as any)[signal.key];
           const displayName = override?.displayName || signal.displayNameDefault;
           const description = override?.description || signal.descriptionDefault;
           const value = signalMap.get(signal.key);
           return (
-            <div className="rounded border bg-white p-3 text-sm" key={signal.key}>
+            <Card key={signal.key} className="space-y-1 text-sm">
               <p className="font-medium">{displayName}</p>
-              <p className="text-slate-600">{description}</p>
-              <p className="mt-1"><strong>Recorded:</strong> {value?.notObserved ? "Not observed" : value?.valueKey || "-"}</p>
-            </div>
+              <p className="text-muted">{description}</p>
+              <p><strong>Recorded:</strong> {value?.notObserved ? "Not observed" : value?.valueKey || "-"}</p>
+            </Card>
           );
         })}
       </section>

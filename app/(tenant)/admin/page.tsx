@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { requireAdminUser } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function AdminIndexPage() {
   const user = await requireAdminUser();
@@ -28,32 +31,27 @@ export default async function AdminIndexPage() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Admin</h1>
-        {!onboardingDone?.onboardingCompletedAt && (
-          <Link
-            href="/tenant/onboarding"
-            className="rounded bg-slate-900 px-4 py-2 text-sm text-white"
-          >
-            Run onboarding wizard →
-          </Link>
-        )}
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Admin"
+        subtitle="Configure users, taxonomies, and tenant settings for your school."
+        actions={
+          !onboardingDone?.onboardingCompletedAt ? (
+            <Link href="/tenant/onboarding"><Button>Run onboarding wizard</Button></Link>
+          ) : undefined
+        }
+      />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
-          <Link
-            key={card.href}
-            href={card.href}
-            className="rounded-lg border bg-white p-4 shadow-sm transition hover:bg-slate-50"
-          >
-            <div className="font-semibold">{card.label}</div>
-            <div className="mt-1 text-sm text-slate-500">{card.desc}</div>
+          <Link key={card.href} href={card.href}>
+            <Card className="h-full transition hover:border-accent/50 hover:bg-bg/40">
+              <div className="font-semibold text-text">{card.label}</div>
+              <div className="mt-1 text-sm text-muted">{card.desc}</div>
+            </Card>
           </Link>
         ))}
       </div>
     </div>
   );
 }
-
