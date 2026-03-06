@@ -11,12 +11,12 @@ export async function createLoaRequest(formData: FormData) {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "LEAVE");
 
-  const startAt = new Date(String(formData.get("startAt") || ""));
-  const endAt = new Date(String(formData.get("endAt") || ""));
+  const startDate = new Date(String(formData.get("startAt") || ""));
+  const endDate = new Date(String(formData.get("endAt") || ""));
   const reasonId = String(formData.get("reasonId") || "");
-  const coverNotes = String(formData.get("coverNotes") || "").trim() || null;
+  const notes = String(formData.get("coverNotes") || "").trim() || null;
 
-  if (!reasonId || Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime()) || endAt < startAt) {
+  if (!reasonId || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate < startDate) {
     throw new Error("INVALID_REQUEST");
   }
 
@@ -27,10 +27,10 @@ export async function createLoaRequest(formData: FormData) {
     data: {
       tenantId: user.tenantId,
       requesterId: user.id,
-      startAt,
-      endAt,
+      startDate,
+      endDate,
       reasonId,
-      coverNotes,
+      notes,
       status: "PENDING"
     }
   });
@@ -46,7 +46,6 @@ export async function decideLoaRequest(formData: FormData) {
   await requireFeature(user.tenantId, "LEAVE");
   const requestId = String(formData.get("requestId") || "");
   const decisionType = String(formData.get("decisionType") || "");
-  const decisionNotes = String(formData.get("decisionNotes") || "").trim() || null;
 
   const request = await (prisma as any).lOARequest.findFirst({ where: { id: requestId, tenantId: user.tenantId } });
   if (!request) throw new Error("NOT_FOUND");
@@ -60,11 +59,7 @@ export async function decideLoaRequest(formData: FormData) {
   await (prisma as any).lOARequest.update({
     where: { id: requestId },
     data: {
-      status,
-      decisionType,
-      decisionNotes,
-      decisionAt: new Date(),
-      decisionById: user.id
+      status
     }
   });
 

@@ -15,10 +15,11 @@ export default function LoginPage() {
     const form = new FormData(e.currentTarget);
     const email = String(form.get("email") || "");
     const password = String(form.get("password") || "");
-    const res = await signIn("credentials", { email, password, redirect: false, callbackUrl: "/home" });
+    const tenantId = String(form.get("tenantId") || "").trim();
+    const res = await signIn("credentials", { email, password, tenantId, redirect: false, callbackUrl: "/home" });
     if (res?.error) {
       if (res.error === "CredentialsSignin") {
-        setError("Invalid email or password. Please try again.");
+        setError("Invalid credentials, inactive account, or ambiguous tenant login. Please try again.");
       } else {
         setError("Authentication service error. Please contact support if this persists.");
       }
@@ -46,6 +47,11 @@ export default function LoginPage() {
           <div>
             <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-text">Password</label>
             <input id="password" name="password" type="password" placeholder="Enter your password" className="field" required />
+          </div>
+
+          <div>
+            <label htmlFor="tenantId" className="mb-1.5 block text-sm font-medium text-text">Tenant ID <span className="text-muted">(optional)</span></label>
+            <input id="tenantId" name="tenantId" type="text" placeholder="Only needed if your email exists in multiple tenants" className="field" />
           </div>
 
           <div className="flex justify-end">

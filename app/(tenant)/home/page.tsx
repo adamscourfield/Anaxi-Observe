@@ -651,9 +651,9 @@ function TeacherHome({
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <BodyText className="text-sm">
-                        {new Date(loaRequest.startAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        {new Date(loaRequest.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         {" – "}
-                        {new Date(loaRequest.endAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        {new Date(loaRequest.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                       </BodyText>
                       <StatusPill variant={loaStatusPill[loaRequest.status] ?? "neutral"}>
                         {loaStatusLabel[loaRequest.status] ?? loaRequest.status}

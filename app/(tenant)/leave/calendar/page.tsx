@@ -25,11 +25,11 @@ export default async function LeaveCalendarPage() {
       tenantId: user.tenantId,
       ...(manager ? {} : { requesterId: user.id }),
       status: { in: ["PENDING", "APPROVED"] },
-      startAt: { lt: end },
-      endAt: { gte: start }
+      startDate: { lt: end },
+      endDate: { gte: start }
     },
     include: { requester: true },
-    orderBy: { startAt: "asc" }
+    orderBy: { startDate: "asc" }
   });
 
   const days = Array.from({ length: 31 }, (_, i) => {
@@ -43,7 +43,7 @@ export default async function LeaveCalendarPage() {
       <PageHeader title={`Leave calendar (${start.toLocaleString("default", { month: "long" })})`} subtitle="Month view of pending and approved leave requests." />
       <div className="grid grid-cols-1 gap-2">
         {days.map((day) => {
-          const entries = (requests as any[]).filter((request) => day >= new Date(request.startAt) && day <= new Date(request.endAt));
+          const entries = (requests as any[]).filter((request) => day >= new Date(request.startDate) && day <= new Date(request.endDate));
           return (
             <Card key={dayKey(day)} className="space-y-1 p-3 text-sm">
               <p className="font-medium text-text">{day.toLocaleDateString()}</p>

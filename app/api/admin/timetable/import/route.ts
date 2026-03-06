@@ -72,47 +72,60 @@ export async function POST(req: Request) {
       }
     }
 
-    // Replace existing entries for this tenant
-    await (prisma as any).timetableEntry.deleteMany({
-      where: { tenantId: user.tenantId },
-    });
+    const conflictErrors = allConflicts.map((c) => ({
+      rowNumber: c.rowNumber,
+      classCode: c.classCode,
+      errorCode: c.conflictCode,
+      message: c.message,
+    }));
+    const allErrors = [...errors, ...conflictErrors];
+    const rowsFailed = allErrors.length;
 
-    let rowsProcessed = 0;
-    const dbErrors: Array<{ rowNumber: number; classCode: string; errorCode: string; message: string }> = [];
+    // Fail closed on parser/validation issues and keep existing timetable intact.
+    if (rowsFailed > 0) {
+      await (prisma as any).timetableImportJob.update({
+        where: { id: importJob.id },
+        data: {
+          status: "FAILED",
+          rowCount: rows.length + errors.length,
+          rowsProcessed: 0,
+          rowsFailed,
+          errorReportJson: allErrors,
+          conflictsJson: allConflicts.length > 0 ? allConflicts : null,
+          finishedAt: new Date(),
+        },
+      });
 
-    for (const row of rows) {
-      try {
-        const teacherUserId = userByEmail.get(row.teacherEmail.toLowerCase()) ?? null;
-        await (prisma as any).timetableEntry.create({
-          data: {
-            tenantId: user.tenantId,
-            classCode: row.classCode,
-            subject: row.subject,
-            yearGroup: row.yearGroup,
-            teacherUserId,
-            teacherEmailRaw: row.teacherEmail,
-            room: row.room,
-            dayOfWeek: row.dayOfWeek,
-            period: row.period,
-            weekPattern: row.weekPattern,
-            startTime: row.startTime,
-            endTime: row.endTime,
-            slotKey: row.slotKey,
-          },
-        });
-        rowsProcessed++;
-      } catch (dbErr: unknown) {
-        dbErrors.push({
-          rowNumber: row.rowNumber,
-          classCode: row.classCode,
-          errorCode: "DB_ERROR",
-          message: String((dbErr as Error)?.message ?? dbErr),
-        });
-      }
+      return NextResponse.json({
+        importJobId: importJob.id,
+        rowsProcessed: 0,
+        rowsFailed,
+        conflictCount: allConflicts.length,
+      });
     }
 
-    const allErrors = [...errors, ...dbErrors];
-    const rowsFailed = allErrors.length;
+    const entriesToCreate = rows.map((row) => ({
+      tenantId: user.tenantId,
+      classCode: row.classCode,
+      subject: row.subject,
+      yearGroup: row.yearGroup,
+      teacherUserId: userByEmail.get(row.teacherEmail.toLowerCase()) ?? null,
+      teacherEmailRaw: row.teacherEmail,
+      room: row.room,
+      dayOfWeek: row.dayOfWeek,
+      period: row.period,
+      weekPattern: row.weekPattern,
+      startTime: row.startTime,
+      endTime: row.endTime,
+      slotKey: row.slotKey,
+    }));
+
+    await prisma.$transaction(async (tx) => {
+      await (tx as any).timetableEntry.deleteMany({ where: { tenantId: user.tenantId } });
+      await (tx as any).timetableEntry.createMany({ data: entriesToCreate });
+    });
+
+    const rowsProcessed = entriesToCreate.length;
 
     await (prisma as any).timetableImportJob.update({
       where: { id: importJob.id },

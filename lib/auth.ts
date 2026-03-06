@@ -11,17 +11,39 @@ export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
-      credentials: { email: { label: "Email", type: "email" }, password: { label: "Password", type: "password" } },
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+        tenantId: { label: "Tenant ID (optional)", type: "text" }
+      },
       async authorize(credentials) {
         const email = credentials?.email?.toLowerCase().trim();
         const password = credentials?.password ?? "";
+        const tenantId = credentials?.tenantId?.trim() || null;
         if (!email || !password) return null;
 
-        const user = await prisma.user.findFirst({ where: { email, isActive: true } });
-        if (!user || !user.passwordHash) return null;
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok) return null;
+        const candidates = await prisma.user.findMany({
+          where: {
+            email,
+            isActive: true,
+            ...(tenantId ? { tenantId } : {})
+          }
+        });
+        if (!candidates.length) return null;
 
+        const matches: typeof candidates = [];
+        for (const candidate of candidates) {
+          if (!candidate.passwordHash) continue;
+          const ok = await bcrypt.compare(password, candidate.passwordHash);
+          if (ok) matches.push(candidate);
+        }
+
+        if (matches.length !== 1) {
+          // Ambiguous identity across tenants (or bad credentials): fail closed.
+          return null;
+        }
+
+        const user = matches[0];
         return {
           id: user.id,
           tenantId: user.tenantId,
@@ -50,9 +72,16 @@ export const authOptions: NextAuthOptions = {
 
 export async function getSessionUserOrThrow(): Promise<SessionUser> {
   const session = await getServerSession(authOptions);
-  const user = (session as any)?.user as SessionUser | undefined;
-  if (!user?.id || !user?.tenantId) throw new Error("UNAUTHENTICATED");
-  return user;
+  const tokenUser = (session as any)?.user as SessionUser | undefined;
+  if (!tokenUser?.id || !tokenUser?.tenantId) throw new Error("UNAUTHENTICATED");
+
+  const freshUser = await prisma.user.findFirst({
+    where: { id: tokenUser.id, tenantId: tokenUser.tenantId, isActive: true },
+    select: { id: true, tenantId: true, email: true, fullName: true, role: true, isActive: true }
+  });
+  if (!freshUser) throw new Error("UNAUTHENTICATED");
+
+  return freshUser as SessionUser;
 }
 
 export function assertTenantRecord(recordTenantId: string, userTenantId: string) {

@@ -44,7 +44,7 @@ export default async function LeavePage() {
             {(requests as any[]).map((request) => (
               <li key={request.id}>
                 <Link className="font-medium text-accent hover:text-accentHover" href={`/tenant/leave/${request.id}`}>
-                  {new Date(request.startAt).toLocaleDateString()} - {new Date(request.endAt).toLocaleDateString()} · {request.reason?.label} · {request.status}
+                  {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()} · {request.reason?.label} · {request.status}
                 </Link>
               </li>
             ))}

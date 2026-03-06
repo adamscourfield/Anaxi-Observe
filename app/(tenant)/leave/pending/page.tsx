@@ -23,7 +23,7 @@ export default async function LeavePendingPage() {
       ]
     },
     include: { requester: true, reason: true },
-    orderBy: { startAt: "asc" }
+    orderBy: { startDate: "asc" }
   });
 
   return (
@@ -37,7 +37,7 @@ export default async function LeavePendingPage() {
             {(pending as any[]).map((request) => (
               <li key={request.id}>
                 <Link className="font-medium text-accent hover:text-accentHover" href={`/tenant/leave/${request.id}`}>
-                  {request.requester?.fullName} · {new Date(request.startAt).toLocaleDateString()} - {new Date(request.endAt).toLocaleDateString()} · {request.reason?.label}
+                  {request.requester?.fullName} · {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()} · {request.reason?.label}
                 </Link>
               </li>
             ))}
