@@ -88,7 +88,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
             <Card key={signal.key} className="space-y-1 text-sm">
               <p className="font-medium">{displayName}</p>
               <p className="text-muted">{description}</p>
-              <p><strong>Recorded:</strong> {value?.notObserved ? "Not observed" : value?.valueKey || "-"}</p>
+              <p><strong>Recorded:</strong> {value?.notObserved ? "Skipped" : value?.valueKey || "-"}</p>
             </Card>
           );
         })}

@@ -53,7 +53,7 @@ export function ReviewList({
           {orderedSignals.map((signal, index) => {
             const state = draft.signalState[signal.key];
             const selectedLabel = state?.notObserved
-              ? "Not observed"
+              ? "Skipped"
               : GLOBAL_SCALE.find((scale) => scale.key === state?.valueKey)?.label || "Not answered";
             const displayName = labelMap[signal.key]?.displayName || signal.displayNameDefault;
 

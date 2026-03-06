@@ -139,7 +139,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         onSelect={(value) => saveSignal({ valueKey: value as ScaleKey, notObserved: false })}
       />
       <NotObservedButton onClick={() => saveSignal({ valueKey: null, notObserved: true })} />
-      <BodyText className="text-xs text-muted">Use “Not observed” if there wasn’t enough evidence in this moment — you can revisit any signal in review.</BodyText>
+      <BodyText className="text-xs text-muted">Use “Skip for now” if there wasn’t enough evidence in this moment — you can revisit any signal in review.</BodyText>
 
       <SignalHelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} description={description} lookFors={currentSignal.lookFors} scaleRows={scaleRows} />
 
@@ -153,7 +153,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
             onClick={(event) => event.stopPropagation()}
           >
             <h3 id="speed-prompt-title" className="text-sm font-semibold text-text">Finish quickly?</h3>
-            <BodyText>You’ve captured the key signals for this lesson phase. Mark the remaining signals as Not Observed?</BodyText>
+            <BodyText>You’ve captured the key signals for this lesson phase. Mark the remaining signals as Skipped?</BodyText>
             <div className="mt-3 flex gap-2">
               <Button
                 ref={speedPromptContinueRef}
@@ -178,7 +178,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
                   router.push("/tenant/observe/new/review");
                 }}
               >
-                Mark remaining as Not Observed
+                Mark remaining as Skipped
               </Button>
             </div>
           </Card>
