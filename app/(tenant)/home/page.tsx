@@ -678,7 +678,7 @@ function TeacherHome({
                     {onCallRequests.slice(0, 3).map((req: any) => (
                       <li key={req.id}>
                         <Link
-                          href="/on-call"
+                          href="/on-call/new"
                           className="flex items-center justify-between rounded-md p-1 hover:bg-bg calm-transition"
                         >
                           <MetaText>
@@ -692,8 +692,11 @@ function TeacherHome({
                     ))}
                   </ul>
                 )}
+                <Link href="/on-call/new" className="block text-xs text-accent hover:underline">
+                  Log on-call now →
+                </Link>
                 <Link href="/on-call" className="block text-xs text-accent hover:underline">
-                  On-call requests →
+                  View on-call requests →
                 </Link>
               </Card>
             )}
