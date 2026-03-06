@@ -187,6 +187,7 @@ model User {
   watchlistEntries            StudentWatchlist[]  @relation("WatchlistCreator")
 
   @@unique([tenantId, email])
+  @@unique([tenantId, id])
 }
 
 model TenantFeature {
@@ -238,7 +239,7 @@ model LOAAuthoriser {
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [tenantId, userId], references: [tenantId, id], onDelete: Cascade)
 
   @@unique([tenantId, userId])
 }
@@ -248,9 +249,9 @@ model LOAApprovalScope {
   tenantId     String
   tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   approverId   String
-  approver     User   @relation("ApprovalScopeApprover", fields: [approverId], references: [id])
+  approver     User   @relation("ApprovalScopeApprover", fields: [tenantId, approverId], references: [tenantId, id])
   targetUserId String
-  targetUser   User   @relation("ApprovalScopeTarget", fields: [targetUserId], references: [id])
+  targetUser   User   @relation("ApprovalScopeTarget", fields: [tenantId, targetUserId], references: [tenantId, id])
 
   @@unique([tenantId, approverId, targetUserId])
 }
@@ -260,7 +261,7 @@ model LOARequest {
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   requesterId String
-  requester   User     @relation(fields: [requesterId], references: [id])
+  requester   User     @relation(fields: [tenantId, requesterId], references: [tenantId, id])
   reasonId    String?
   startDate   DateTime
   endDate     DateTime
@@ -320,6 +321,7 @@ model Student {
   watchlistEntries StudentWatchlist[]
 
   @@unique([tenantId, upn])
+  @@unique([tenantId, id])
 }
 
 model StudentSnapshot {
@@ -364,15 +366,16 @@ model Subject {
   subjectTeachers StudentSubjectTeacher[]
 
   @@unique([tenantId, name])
+  @@unique([tenantId, id])
 }
 
 model StudentSubjectTeacher {
   id            String    @id @default(cuid())
   tenantId      String
   studentId     String
-  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student       Student   @relation(fields: [tenantId, studentId], references: [tenantId, id], onDelete: Cascade)
   subjectId     String
-  subject       Subject   @relation(fields: [subjectId], references: [id])
+  subject       Subject   @relation(fields: [tenantId, subjectId], references: [tenantId, id])
   teacherId     String
   effectiveFrom DateTime
   effectiveTo   DateTime?
@@ -451,10 +454,10 @@ model OnCallRequest {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   requesterUserId String
-  requester       User   @relation("OnCallRequester", fields: [requesterUserId], references: [id])
+  requester       User   @relation("OnCallRequester", fields: [tenantId, requesterUserId], references: [tenantId, id])
 
   studentId String
-  student   Student @relation(fields: [studentId], references: [id])
+  student   Student @relation(fields: [tenantId, studentId], references: [tenantId, id])
 
   requestType             OnCallRequestType
   location                String
@@ -464,7 +467,7 @@ model OnCallRequest {
   status OnCallStatus @default(OPEN)
 
   responderUserId String?
-  responder       User?   @relation("OnCallResponder", fields: [responderUserId], references: [id], onDelete: SetNull)
+  responder       User?   @relation("OnCallResponder", fields: [tenantId, responderUserId], references: [tenantId, id], onDelete: SetNull)
 
   createdAt      DateTime  @default(now())
   acknowledgedAt DateTime?
@@ -709,7 +712,7 @@ model Meeting {
   notes             String?
 
   createdByUserId   String
-  createdBy         User              @relation("MeetingCreator", fields: [createdByUserId], references: [id])
+  createdBy         User              @relation("MeetingCreator", fields: [tenantId, createdByUserId], references: [tenantId, id])
 
   attendees         MeetingAttendee[]
   actions           MeetingAction[]
@@ -719,14 +722,15 @@ model Meeting {
 
   @@index([tenantId, startDateTime])
   @@index([createdByUserId])
+  @@unique([tenantId, id])
 }
 
 model MeetingAttendee {
   id          String   @id @default(cuid())
   meetingId   String
-  meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meeting     Meeting  @relation(fields: [tenantId, meetingId], references: [tenantId, id], onDelete: Cascade)
   userId      String
-  user        User     @relation("MeetingAttendee", fields: [userId], references: [id], onDelete: Cascade)
+  user        User     @relation("MeetingAttendee", fields: [tenantId, userId], references: [tenantId, id], onDelete: Cascade)
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -739,21 +743,21 @@ model MeetingAction {
   tenantId          String
   tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   meetingId         String
-  meeting           Meeting       @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meeting           Meeting       @relation(fields: [tenantId, meetingId], references: [tenantId, id], onDelete: Cascade)
 
   description       String
   ownerUserId       String
-  owner             User          @relation("ActionOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  owner             User          @relation("ActionOwner", fields: [tenantId, ownerUserId], references: [tenantId, id], onDelete: Cascade)
 
   dueDate           DateTime?
   status            ActionStatus  @default(OPEN)
 
   createdByUserId   String?
-  createdBy         User?         @relation("ActionCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdBy         User?         @relation("ActionCreator", fields: [tenantId, createdByUserId], references: [tenantId, id], onDelete: SetNull)
 
   completedAt       DateTime?
   completedByUserId String?
-  completedBy       User?         @relation("ActionCompleter", fields: [completedByUserId], references: [id], onDelete: SetNull)
+  completedBy       User?         @relation("ActionCompleter", fields: [tenantId, completedByUserId], references: [tenantId, id], onDelete: SetNull)
 
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
