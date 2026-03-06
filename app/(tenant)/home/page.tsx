@@ -663,8 +663,11 @@ function TeacherHome({
                 ) : (
                   <MetaText>No recent requests.</MetaText>
                 )}
+                <Link href="/leave/request" className="block text-xs text-accent hover:underline">
+                  Request leave now →
+                </Link>
                 <Link href="/leave" className="block text-xs text-accent hover:underline">
-                  Leave requests →
+                  View leave status →
                 </Link>
               </Card>
             )}

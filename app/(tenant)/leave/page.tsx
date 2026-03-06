@@ -9,10 +9,12 @@ import { PageHeader } from "@/components/ui/page-header";
 import { SectionHeader } from "@/components/ui/section-header";
 import { EmptyState } from "@/components/ui/empty-state";
 
-export default async function LeavePage() {
+export default async function LeavePage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "LEAVE");
   const manager = await canManageLoa(user);
+
+  const created = String(searchParams?.created || "") === "1";
 
   const requests = await (prisma as any).lOARequest.findMany({
     where: manager ? { tenantId: user.tenantId } : { tenantId: user.tenantId, requesterId: user.id },
@@ -34,6 +36,12 @@ export default async function LeavePage() {
           </>
         }
       />
+
+      {created ? (
+        <Card className="border-emerald-200 bg-emerald-50/60 text-sm text-emerald-800">
+          Leave request submitted. You can track approval status below.
+        </Card>
+      ) : null}
 
       <Card className="space-y-3">
         <SectionHeader title="Recent requests" />
