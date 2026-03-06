@@ -41,6 +41,7 @@ export function ReviewList({
           <H1 className="text-[20px]">Review observation</H1>
           <MetaText>{completed}/{orderedSignals.length} complete</MetaText>
         </div>
+        <MetaText>Tap any signal row to revise your judgement before submitting.</MetaText>
 
         <input type="hidden" name="observedTeacherId" value={draft.context.teacherId} />
         <input type="hidden" name="yearGroup" value={draft.context.yearGroup} />

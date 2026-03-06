@@ -36,7 +36,7 @@ export function ObservationContextForm({ teachers, draftKey, signalKeys }: { tea
   return (
     <Card className="mx-auto max-w-xl space-y-4">
       <div className="flex items-center justify-between">
-        <Button type="button" variant="ghost" onClick={() => router.push("/tenant/observe")}>Back</Button>
+        <Button type="button" variant="ghost" onClick={() => router.back()}>Back</Button>
         <Button type="button" variant="ghost" onClick={() => router.push("/tenant/observe")}>Close</Button>
       </div>
       <H1>New observation</H1>

@@ -139,6 +139,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         onSelect={(value) => saveSignal({ valueKey: value as ScaleKey, notObserved: false })}
       />
       <NotObservedButton onClick={() => saveSignal({ valueKey: null, notObserved: true })} />
+      <BodyText className="text-xs text-muted">Use “Not observed” if there wasn’t enough evidence in this moment — you can revisit any signal in review.</BodyText>
 
       <SignalHelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} description={description} lookFors={currentSignal.lookFors} scaleRows={scaleRows} />
 
@@ -155,7 +156,18 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
             <BodyText>You’ve captured the key signals for this lesson phase. Mark the remaining signals as Not Observed?</BodyText>
             <div className="mt-3 flex gap-2">
               <Button
+                ref={speedPromptContinueRef}
                 type="button"
+                onClick={() => {
+                  setShowSpeedPrompt(false);
+                  goToIndex(currentIndex + 1);
+                }}
+              >
+                Continue reviewing
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
                 onClick={() => {
                   const next = { ...draft, signalState: { ...draft.signalState } };
                   for (const signal of orderedSignals.list.slice(orderedSignals.keyCount)) {
@@ -166,18 +178,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
                   router.push("/tenant/observe/new/review");
                 }}
               >
-                Mark remaining
-              </Button>
-              <Button
-                ref={speedPromptContinueRef}
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  setShowSpeedPrompt(false);
-                  goToIndex(currentIndex + 1);
-                }}
-              >
-                Continue reviewing
+                Mark remaining as Not Observed
               </Button>
             </div>
           </Card>
