@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { OnCallRequestInput, AcknowledgeOnCallInput, ResolveOnCallInput } from "./types";
 
@@ -23,7 +24,7 @@ export async function createOnCallRequest(
   });
   if (!student) throw new Error("student not found");
 
-  return (prisma as any).onCallRequest.create({
+  const created = await (prisma as any).onCallRequest.create({
     data: {
       tenantId,
       requesterUserId,
@@ -36,6 +37,9 @@ export async function createOnCallRequest(
     },
     include: REQUEST_INCLUDE,
   });
+
+  logger.info("oncall.created", { tenantId, requestId: created.id, requesterUserId });
+  return created;
 }
 
 export async function acknowledgeOnCallRequest(
@@ -48,15 +52,21 @@ export async function acknowledgeOnCallRequest(
     where: { id: requestId, tenantId },
   });
   if (!existing) throw new Error("request not found");
-  if (existing.status !== "OPEN") throw new Error("request is not OPEN");
 
-  return (prisma as any).onCallRequest.update({
-    where: { id: requestId },
+  const updated = await (prisma as any).onCallRequest.updateMany({
+    where: { id: requestId, tenantId, status: "OPEN" },
     data: {
       status: "ACKNOWLEDGED",
       responderUserId: responderId,
       acknowledgedAt: new Date(),
     },
+  });
+
+  if (updated.count !== 1) throw new Error("request is not OPEN");
+
+  logger.info("oncall.acknowledged", { tenantId, requestId, responderId });
+  return (prisma as any).onCallRequest.findFirst({
+    where: { id: requestId, tenantId },
     include: REQUEST_INCLUDE,
   });
 }
@@ -69,18 +79,27 @@ export async function resolveOnCallRequest(
 ) {
   const existing = await (prisma as any).onCallRequest.findFirst({
     where: { id: requestId, tenantId },
+    select: { status: true, responderUserId: true },
   });
   if (!existing) throw new Error("request not found");
-  if (existing.status === "RESOLVED") throw new Error("request already resolved");
-  if (existing.status === "CANCELLED") throw new Error("request is cancelled");
 
-  return (prisma as any).onCallRequest.update({
-    where: { id: requestId },
+  const updated = await (prisma as any).onCallRequest.updateMany({
+    where: { id: requestId, tenantId, status: { in: ["OPEN", "ACKNOWLEDGED"] } },
     data: {
       status: "RESOLVED",
       responderUserId: existing.responderUserId ?? responderId,
       resolvedAt: new Date(),
     },
+  });
+
+  if (updated.count !== 1) {
+    if (existing.status === "RESOLVED") throw new Error("request already resolved");
+    throw new Error("request is cancelled");
+  }
+
+  logger.info("oncall.resolved", { tenantId, requestId, responderId });
+  return (prisma as any).onCallRequest.findFirst({
+    where: { id: requestId, tenantId },
     include: REQUEST_INCLUDE,
   });
 }
@@ -92,14 +111,20 @@ export async function cancelOnCallRequest(
 ) {
   const existing = await (prisma as any).onCallRequest.findFirst({
     where: { id: requestId, tenantId },
+    select: { requesterUserId: true },
   });
   if (!existing) throw new Error("request not found");
-  if (existing.status !== "OPEN") throw new Error("only OPEN requests can be cancelled");
   if (existing.requesterUserId !== userId) throw new Error("only the requester can cancel");
 
-  return (prisma as any).onCallRequest.update({
-    where: { id: requestId },
+  const updated = await (prisma as any).onCallRequest.updateMany({
+    where: { id: requestId, tenantId, requesterUserId: userId, status: "OPEN" },
     data: { status: "CANCELLED" },
+  });
+  if (updated.count !== 1) throw new Error("only OPEN requests can be cancelled");
+
+  logger.info("oncall.cancelled", { tenantId, requestId, userId });
+  return (prisma as any).onCallRequest.findFirst({
+    where: { id: requestId, tenantId },
     include: REQUEST_INCLUDE,
   });
 }

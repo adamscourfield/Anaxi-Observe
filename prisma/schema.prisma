@@ -376,6 +376,9 @@ model StudentSubjectTeacher {
   teacherId     String
   effectiveFrom DateTime
   effectiveTo   DateTime?
+
+  @@index([tenantId, studentId, subjectId, effectiveFrom])
+  @@unique([tenantId, studentId, subjectId, teacherId, effectiveFrom])
 }
 
 // ─── Import Models ────────────────────────────────────────────────────────────

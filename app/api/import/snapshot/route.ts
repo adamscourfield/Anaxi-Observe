@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { hasPermission } from "@/lib/rbac";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { parseSnapshotCsv, SnapshotMapping } from "@/modules/students/snapshot-import";
 import { computeHeaderSignature } from "@/modules/students/snapshot-fields";
@@ -176,6 +177,12 @@ export async function POST(req: Request) {
       });
     }
 
+    logger.info("import.snapshot.completed", {
+      tenantId: user.tenantId,
+      importJobId: importJob.id,
+      rowsProcessed,
+      rowsFailed,
+    });
     return NextResponse.json({
       importJobId: importJob.id,
       rowsProcessed,
@@ -190,6 +197,11 @@ export async function POST(req: Request) {
         errorSummary: String(err?.message ?? err),
         finishedAt: new Date(),
       },
+    });
+    logger.error("import.snapshot.failed", {
+      tenantId: user.tenantId,
+      importJobId: importJob.id,
+      error: String(err?.message ?? err),
     });
     return NextResponse.json({ error: "Import failed", detail: String(err?.message ?? err) }, { status: 500 });
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireRole } from "@/lib/guards";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { parseTimetableCsv, TimetableMapping } from "@/modules/timetable/timetable-import";
 import { computeHeaderSignature } from "@/modules/timetable/timetable-fields";
@@ -96,6 +97,12 @@ export async function POST(req: Request) {
         },
       });
 
+      logger.warn("import.timetable.failed-validation", {
+        tenantId: user.tenantId,
+        importJobId: importJob.id,
+        rowsFailed,
+        conflictCount: allConflicts.length,
+      });
       return NextResponse.json({
         importJobId: importJob.id,
         rowsProcessed: 0,
@@ -154,6 +161,13 @@ export async function POST(req: Request) {
       });
     }
 
+    logger.info("import.timetable.completed", {
+      tenantId: user.tenantId,
+      importJobId: importJob.id,
+      rowsProcessed,
+      rowsFailed,
+      conflictCount: allConflicts.length,
+    });
     return NextResponse.json({
       importJobId: importJob.id,
       rowsProcessed,
@@ -167,6 +181,11 @@ export async function POST(req: Request) {
         status: "FAILED",
         finishedAt: new Date(),
       },
+    });
+    logger.error("import.timetable.failed", {
+      tenantId: user.tenantId,
+      importJobId: importJob.id,
+      error: String((err as Error)?.message ?? err),
     });
     return NextResponse.json(
       { error: "Import failed", detail: String((err as Error)?.message ?? err) },
