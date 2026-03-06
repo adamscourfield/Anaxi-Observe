@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { requireAdminUser } from "@/lib/admin";
 import { requireFeature } from "@/lib/guards";
@@ -43,6 +44,7 @@ export default async function AdminSignalsPage() {
 
   return (
     <div className="space-y-4">
+      <Link href="/tenant/admin/terminology" className="text-xs text-accent hover:underline">← Back to Terminology</Link>
       <PageHeader title="Observation signals" subtitle="Edit signal display names and descriptions used in observation workflows." />
       <Card className="text-sm text-muted">
         Use this for signal-level wording only. For cross-module wording, use <a className="text-accent hover:underline" href="/tenant/admin/language">Language</a>.
@@ -98,7 +100,7 @@ export default async function AdminSignalsPage() {
               </tbody>
             </table>
           </div>
-          <Button type="submit">Save all</Button>
+          <Button type="submit">Save changes</Button>
         </form>
       </Card>
     </div>

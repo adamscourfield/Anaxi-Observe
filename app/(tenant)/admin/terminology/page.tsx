@@ -33,6 +33,7 @@ export default async function AdminTerminologyPage() {
 
   return (
     <div className="space-y-5">
+      <Link href="/tenant/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
       <PageHeader title="Terminology" subtitle="Central place for language, vocabulary, and signal wording." />
       <Card>
         <SectionHeader

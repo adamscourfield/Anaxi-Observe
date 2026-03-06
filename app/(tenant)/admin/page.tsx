@@ -25,9 +25,6 @@ function CardGrid({ cards }: { cards: AdminCard[] }) {
 
 export default async function AdminIndexPage() {
   const user = await requireAdminUser();
-  const observationsFeature = await prisma.tenantFeature.findUnique({
-    where: { tenantId_key: { tenantId: user.tenantId, key: "OBSERVATIONS" } }
-  });
   const onboardingDone = await (prisma as any).tenantSettings.findUnique({
     where: { tenantId: user.tenantId },
     select: { onboardingCompletedAt: true }
@@ -46,9 +43,6 @@ export default async function AdminIndexPage() {
 
   const languageCards: AdminCard[] = [
     { href: "/tenant/admin/terminology", label: "Terminology", desc: "Language, vocabulary, and signal labels" },
-    ...(observationsFeature?.enabled
-      ? [{ href: "/tenant/admin/signals", label: "Observation signals", desc: "Signal label/description overrides" }]
-      : []),
   ];
 
   const operationsCards: AdminCard[] = [

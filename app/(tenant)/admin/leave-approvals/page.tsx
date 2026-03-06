@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/admin";
@@ -99,6 +100,7 @@ export default async function AdminLeaveApprovalsPage() {
 
   return (
     <div className="space-y-4">
+      <Link href="/tenant/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
       <PageHeader title="Leave approval rules" subtitle="Manage approval groups, approvers, and optional scoped staff coverage." />
 
       <Card className="text-sm text-muted">

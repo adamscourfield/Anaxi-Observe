@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/admin";
@@ -61,6 +62,7 @@ export default async function AdminLanguagePage() {
 
   return (
     <div className="space-y-4">
+      <Link href="/tenant/admin/terminology" className="text-xs text-accent hover:underline">← Back to Terminology</Link>
       <PageHeader title="Terminology · Language" subtitle="Configure wording used in behaviour and observation experiences." />
 
       <Card className="text-sm text-muted">
@@ -82,7 +84,7 @@ export default async function AdminLanguagePage() {
             </div>
           ))}
           <div className="sm:col-span-2">
-            <Button type="submit">Save behaviour labels</Button>
+            <Button type="submit">Save changes</Button>
           </div>
         </form>
       </Card>
@@ -140,7 +142,7 @@ export default async function AdminLanguagePage() {
               </tbody>
             </table>
           </div>
-          <Button type="submit">Save signal labels</Button>
+          <Button type="submit">Save changes</Button>
         </form>
       </Card>
     </div>

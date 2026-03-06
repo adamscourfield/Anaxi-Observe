@@ -10,6 +10,23 @@ import { SectionHeader } from "@/components/ui/section-header";
 const TABS = ["school", "modules"] as const;
 type Tab = (typeof TABS)[number];
 
+const FEATURE_DESCRIPTIONS: Record<string, string> = {
+  OBSERVATIONS: "Observation workflows, review history, and signal capture.",
+  SIGNALS: "Signal definitions and signal-based analysis capabilities.",
+  STUDENTS: "Student directory, student views, and related workflows.",
+  STUDENTS_IMPORT: "Student import tooling and mapping workflows.",
+  BEHAVIOUR_IMPORT: "Behaviour snapshot and attendance import workflows.",
+  LEAVE: "Leave request and approval workflows.",
+  LEAVE_OF_ABSENCE: "Legacy alias for leave module availability.",
+  ON_CALL: "On-call request, inbox, and response workflows.",
+  MEETINGS: "Meeting agendas, attendees, and actions.",
+  TIMETABLE: "Timetable upload and class context enrichment.",
+  ADMIN: "Admin configuration pages and management tools.",
+  ADMIN_SETTINGS: "Tenant-level settings and configuration pages.",
+  ANALYSIS: "Teacher and school analysis dashboards.",
+  STUDENT_ANALYSIS: "Student risk and student-level analysis pages.",
+};
+
 export default async function AdminSettingsPage({ searchParams }: { searchParams?: { tab?: string } }) {
   const user = await requireAdminUser();
   const tab = (TABS.includes((searchParams?.tab as Tab) || "school") ? (searchParams?.tab as Tab) : "school") as Tab;
@@ -63,6 +80,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
 
   return (
     <div className="space-y-4">
+      <Link href="/tenant/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
       <PageHeader title="Platform" subtitle="Configure school metadata, thresholds, and module availability." />
 
       <div className="flex flex-wrap gap-2">
@@ -131,7 +149,10 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
               <form key={feature.key} action={toggleFeature} className="flex flex-wrap items-center gap-3 rounded-lg border border-border/70 px-3 py-2">
                 <input type="hidden" name="key" value={feature.key} />
                 <input type="hidden" name="enabled" value={String(feature.enabled)} />
-                <span className="w-48 text-sm font-medium text-text">{feature.key}</span>
+                <div className="w-72 min-w-[16rem]">
+                  <span className="text-sm font-medium text-text">{feature.key}</span>
+                  <p className="text-xs text-muted">{FEATURE_DESCRIPTIONS[feature.key] ?? "Controls access to this module across the tenant."}</p>
+                </div>
                 <span className="text-sm text-muted">{feature.enabled ? "Enabled" : "Disabled"}</span>
                 <Button variant="secondary" type="submit">Toggle</Button>
               </form>
