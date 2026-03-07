@@ -51,9 +51,13 @@ A card should render only when:
 - Empty state text must be explicit and action-oriented.
 - Query errors should degrade gracefully (card-level fallback), not crash whole home page.
 
+## Implementation status
+
+✅ Initial assembler now exists at `modules/home/assembler.ts` and is wired into the home page for card-visibility gating by role + feature.
+
 ## Next implementation step
 
-Introduce a simple home assembler in a later pass:
+Extend assembler to hydrate card payloads in parallel:
 - evaluate contracts for current user + features
 - execute card data sources in parallel
 - return typed payload for UI sections

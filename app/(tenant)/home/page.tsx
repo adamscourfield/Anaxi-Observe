@@ -21,6 +21,7 @@ import {
 import { computeStudentRiskIndex, StudentRiskRow } from "@/modules/analysis/studentRisk";
 import { computeCohortPivot, CohortPivotRow } from "@/modules/analysis/cohortPivot";
 import { UserRole } from "@/lib/types";
+import { assembleHomeCards } from "@/modules/home/assembler";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -772,6 +773,11 @@ export default async function HomePage({
   const hasOnCallFeature = enabledFeatures.has("ON_CALL");
   const hasAnalysisFeature = enabledFeatures.has("ANALYSIS");
 
+  const homeAssembly = assembleHomeCards({
+    role: user.role,
+    enabledFeatures: Array.from(enabledFeatures),
+  });
+
   const computedAt = new Date();
 
   const pageContent = async () => {
@@ -802,7 +808,7 @@ export default async function HomePage({
           cohortRows={cohortResult.rows}
           studentRows={studentResult.rows}
           topImproving={topImproving}
-          hasLeaveFeature={hasLeaveFeature}
+          hasLeaveFeature={homeAssembly.has("operations.leave-approvals")}
         />
       );
     }
@@ -916,9 +922,9 @@ export default async function HomePage({
         onCallRequests={onCallData as any[]}
         wholeSchoolTop1={wholeSchoolTop1}
         userId={user.id}
-        hasMeetingsFeature={hasMeetingsFeature}
-        hasLeaveFeature={hasLeaveFeature}
-        hasOnCallFeature={hasOnCallFeature}
+        hasMeetingsFeature={homeAssembly.has("operations.my-open-actions") || homeAssembly.has("operations.meetings-today")}
+        hasLeaveFeature={homeAssembly.has("operations.my-leave-status")}
+        hasOnCallFeature={homeAssembly.has("culture.my-oncall-status")}
       />
     );
   };
