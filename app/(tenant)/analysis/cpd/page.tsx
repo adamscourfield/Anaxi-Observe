@@ -162,6 +162,17 @@ export default async function CpdPrioritiesPage({
         )}
       </div>
 
+      {/* Metric definitions */}
+      <details className="rounded-lg border border-border bg-surface p-4">
+        <summary className="cursor-pointer text-sm font-medium text-text">Metric definitions</summary>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
+          <li><strong>Drift rate</strong>: Percentage of covered teachers showing weakening for a signal.</li>
+          <li><strong>Avg negative delta</strong>: Mean size of decline where decline is present.</li>
+          <li><strong>Teachers covered</strong>: Number of teachers with sufficient observations in window.</li>
+          <li><strong>Improving rate</strong>: Percentage of covered teachers improving on that signal.</li>
+        </ul>
+      </details>
+
       {/* Main ranked table */}
       <Card className="overflow-hidden p-0">
         <div className="border-b border-border px-4 py-3">
@@ -175,7 +186,8 @@ export default async function CpdPrioritiesPage({
             </BodyText>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
                 <th className="px-4 py-3">Signal</th>
@@ -226,6 +238,7 @@ export default async function CpdPrioritiesPage({
               })}
             </tbody>
           </table>
+          </div>
         )}
       </Card>
 

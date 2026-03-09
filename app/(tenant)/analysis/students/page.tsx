@@ -214,6 +214,17 @@ export default async function StudentAnalysisPage({
         </button>
       </form>
 
+      {/* Metric definitions */}
+      <details className="rounded-lg border border-border bg-surface p-4">
+        <summary className="cursor-pointer text-sm font-medium text-text">Metric definitions</summary>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
+          <li><strong>Band</strong>: Overall risk priority based on recent trend signals.</li>
+          <li><strong>Score</strong>: Composite risk score used to sort support priorities.</li>
+          <li><strong>Detentions Δ / On calls Δ</strong>: Change from baseline window (positive means increase).</li>
+          <li><strong>Confidence</strong>: Data confidence based on recency and coverage quality.</li>
+        </ul>
+      </details>
+
       {/* Table */}
       <Card className="overflow-hidden p-0">
         {rows.length === 0 ? (
@@ -223,7 +234,8 @@ export default async function StudentAnalysisPage({
             </BodyText>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
                 <th className="px-4 py-3">Student</th>
@@ -325,6 +337,7 @@ export default async function StudentAnalysisPage({
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </Card>
 

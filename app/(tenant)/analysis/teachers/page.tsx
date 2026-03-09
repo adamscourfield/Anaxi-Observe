@@ -102,6 +102,17 @@ export default async function TeacherAnalysisPage({
         ))}
       </div>
 
+      {/* Metric definitions */}
+      <details className="rounded-lg border border-border bg-surface p-4">
+        <summary className="cursor-pointer text-sm font-medium text-text">Metric definitions</summary>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
+          <li><strong>Coverage</strong>: Number of observations in the selected window.</li>
+          <li><strong>Drift status</strong>: Whether recent signals are stable or declining.</li>
+          <li><strong>Drift score</strong>: Normalized decline score (higher means greater drift).</li>
+          <li><strong>Last observed</strong>: Most recent observation date in the window.</li>
+        </ul>
+      </details>
+
       {/* Table */}
       <Card className="overflow-hidden p-0">
         {rows.length === 0 ? (
@@ -111,7 +122,8 @@ export default async function TeacherAnalysisPage({
             </BodyText>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
                 <th className="px-4 py-3">Teacher</th>
@@ -162,6 +174,7 @@ export default async function TeacherAnalysisPage({
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </Card>
 
