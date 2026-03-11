@@ -6,14 +6,16 @@ export function SectionHeader({
   subtitle,
   href,
   linkLabel = "View all →",
+  className = "",
 }: {
   title: string;
   subtitle?: string;
   href?: string;
   linkLabel?: string;
+  className?: string;
 }) {
   return (
-    <div className="mb-1 flex items-start justify-between gap-3">
+    <div className={`mb-1 flex items-start justify-between gap-3 ${className}`}>
       <div>
         <H2>{title}</H2>
         {subtitle ? <MetaText className="mt-0.5">{subtitle}</MetaText> : null}

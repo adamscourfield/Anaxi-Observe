@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { requireAdminUser } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { Card } from "@/components/ui/card";
+import { InteractiveCard } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { SectionHeader } from "@/components/ui/section-header";
+import { StatusPill } from "@/components/ui/status-pill";
 
 type AdminCard = { href: string; label: string; desc: string };
 
@@ -13,10 +14,18 @@ function CardGrid({ cards }: { cards: AdminCard[] }) {
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {cards.map((card) => (
         <Link key={card.href} href={card.href}>
-          <Card className="h-full transition hover:border-accent/50 hover:bg-bg/40">
-            <div className="font-semibold text-text">{card.label}</div>
-            <div className="mt-1 text-sm text-muted">{card.desc}</div>
-          </Card>
+          <InteractiveCard className="h-full p-4">
+            <div className="flex h-full flex-col justify-between gap-5">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="font-semibold text-text">{card.label}</div>
+                  <StatusPill variant="neutral" size="sm">Open</StatusPill>
+                </div>
+                <div className="text-sm leading-relaxed text-muted">{card.desc}</div>
+              </div>
+              <div className="text-xs font-medium text-accent">Open area →</div>
+            </div>
+          </InteractiveCard>
         </Link>
       ))}
     </div>
@@ -54,8 +63,17 @@ export default async function AdminIndexPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="Administration"
         title="Admin"
         subtitle="Configure people access, platform behaviour, language, and operational data."
+        meta={
+          <>
+            <StatusPill variant="neutral">4 setup areas</StatusPill>
+            <StatusPill variant={onboardingDone?.onboardingCompletedAt ? "success" : "warning"}>
+              {onboardingDone?.onboardingCompletedAt ? "Onboarding complete" : "Onboarding still required"}
+            </StatusPill>
+          </>
+        }
         actions={
           !onboardingDone?.onboardingCompletedAt ? (
             <Link href="/tenant/onboarding"><Button>Run onboarding wizard</Button></Link>

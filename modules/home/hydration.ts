@@ -32,8 +32,8 @@ export async function hydrateLeadershipHomeData({
   const [cpdRows, teacherRows, cohortResult, studentResult] = await Promise.all([
     safe(computeCpdPriorities(user.tenantId, windowDays), [] as CpdPriorityRow[]),
     safe(computeTeacherRiskIndex(user.tenantId, windowDays), [] as TeacherRiskRow[]),
-    safe(computeCohortPivot(user.tenantId, windowDays), { rows: [] as any[] }),
-    safe(computeStudentRiskIndex(user.tenantId, windowDays, user.id), { rows: [] as any[] }),
+    safe(computeCohortPivot(user.tenantId, windowDays), { rows: [] as any[], computedAt: new Date() }),
+    safe(computeStudentRiskIndex(user.tenantId, windowDays, user.id), { rows: [] as any[], computedAt: new Date() }),
   ]);
 
   return {
