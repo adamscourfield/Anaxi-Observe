@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { SectionHeader } from "@/components/ui/section-header";
+import { StatusPill, type PillVariant } from "@/components/ui/status-pill";
 import { MetaText } from "@/components/ui/typography";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import {
@@ -47,11 +48,11 @@ const STATUS_LABELS: Record<RiskStatus, string> = {
   LOW_COVERAGE: "Low coverage",
 };
 
-const STATUS_PILL: Record<RiskStatus, string> = {
-  SIGNIFICANT_DRIFT: "bg-red-100 text-red-700",
-  EMERGING_DRIFT: "bg-amber-100 text-amber-700",
-  STABLE: "bg-green-100 text-green-700",
-  LOW_COVERAGE: "bg-divider text-muted",
+const STATUS_VARIANT: Record<RiskStatus, PillVariant> = {
+  SIGNIFICANT_DRIFT: "error",
+  EMERGING_DRIFT: "warning",
+  STABLE: "success",
+  LOW_COVERAGE: "neutral",
 };
 
 const BAND_LABELS: Record<RiskBand, string> = {
@@ -61,11 +62,11 @@ const BAND_LABELS: Record<RiskBand, string> = {
   STABLE: "Stable",
 };
 
-const BAND_PILL: Record<RiskBand, string> = {
-  URGENT: "bg-red-100 text-red-700",
-  PRIORITY: "bg-amber-100 text-amber-700",
-  WATCH: "bg-yellow-100 text-yellow-700",
-  STABLE: "bg-green-100 text-green-700",
+const BAND_VARIANT: Record<RiskBand, PillVariant> = {
+  URGENT: "error",
+  PRIORITY: "warning",
+  WATCH: "info",
+  STABLE: "success",
 };
 
 function deltaClass(delta: number | null): string {
@@ -526,9 +527,9 @@ export default async function ExplorerPage({
                         <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="font-medium text-text hover:underline">
                           {row.teacherName}
                         </Link>
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_PILL[row.status]}`}>
+                        <StatusPill variant={STATUS_VARIANT[row.status]} size="sm">
                           {STATUS_LABELS[row.status]}
-                        </span>
+                        </StatusPill>
                       </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted">
                         <span>{row.departmentNames.join(", ") || "—"}</span>
@@ -558,7 +559,7 @@ export default async function ExplorerPage({
                 <table className="min-w-full text-sm">
                   <thead className="sticky top-0 z-10">
                     <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
-                      <th className="px-4 py-3 sticky left-0 z-20 bg-bg">Teacher</th>
+                      <th className="sticky-first-column sticky-first-column-header px-4 py-3">Teacher</th>
                       <th className="px-4 py-3">Department</th>
                       <th className="px-4 py-3 text-right">Coverage</th>
                       <th className="px-4 py-3">Band</th>
@@ -584,7 +585,7 @@ export default async function ExplorerPage({
                   <tbody>
                     {teacherPivotRows.map((row) => (
                       <tr key={row.teacherMembershipId} className="border-b border-divider last:border-0 hover:bg-bg">
-                        <td className="px-4 py-3 font-medium text-text sticky left-0 z-10 bg-surface">
+                        <td className="sticky-first-column px-4 py-3 font-medium text-text">
                           <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="hover:underline">
                             {row.teacherName}
                           </Link>
@@ -592,9 +593,9 @@ export default async function ExplorerPage({
                         <td className="px-4 py-3 text-muted text-xs">{row.departmentNames.join(", ") || "—"}</td>
                         <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teacherCoverage}</td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_PILL[row.status]}`}>
+                          <StatusPill variant={STATUS_VARIANT[row.status]} size="sm">
                             {STATUS_LABELS[row.status]}
-                          </span>
+                          </StatusPill>
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums text-muted">{row.normalizedIDS.toFixed(1)}</td>
                         {signalKeys.map((k) => {
@@ -686,7 +687,7 @@ export default async function ExplorerPage({
                 <table className="min-w-full text-sm">
                   <thead className="sticky top-0 z-10">
                     <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
-                      <th className="px-4 py-3 sticky left-0 z-20 bg-bg">Department</th>
+                      <th className="sticky-first-column sticky-first-column-header px-4 py-3">Department</th>
                       <th className="px-4 py-3 text-right">Teachers</th>
                       <th className="px-4 py-3 text-right">Observations</th>
                       {signalKeys.map((k) => {
@@ -710,7 +711,7 @@ export default async function ExplorerPage({
                   <tbody>
                     {deptPivotRows.map((row) => (
                       <tr key={row.departmentId} className="border-b border-divider last:border-0 hover:bg-bg">
-                        <td className="px-4 py-3 font-medium text-text sticky left-0 z-10 bg-surface">
+                        <td className="sticky-first-column px-4 py-3 font-medium text-text">
                           <Link href={`/scope?departmentId=${row.departmentId}&window=${windowDays}`} className="hover:underline">
                             {row.departmentName}
                           </Link>
@@ -762,7 +763,7 @@ export default async function ExplorerPage({
               <EmptyState title="No observations found" description="Try adjusting your filters or expanding the window." />
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
                   <th className="px-4 py-3">Date</th>
@@ -798,7 +799,7 @@ export default async function ExplorerPage({
 
       {/* BEHAVIOUR_STUDENTS_TABLE */}
       {view === "BEHAVIOUR_STUDENTS_TABLE" && (
-        <Card className="overflow-hidden p-0">
+        <Card className="overflow-x-auto p-0">
           <div className="border-b border-border px-4 py-3">
             <SectionHeader title="Student risk table" />
             <MetaText>{studentRows.length} student{studentRows.length !== 1 ? "s" : ""} in scope · Window: {windowDays} days</MetaText>
@@ -808,10 +809,10 @@ export default async function ExplorerPage({
               <EmptyState title="No students found" description="No students have snapshot data in this window." />
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
-                  <th className="px-4 py-3">Student</th>
+                  <th className="sticky-first-column sticky-first-column-header px-4 py-3">Student</th>
                   <th className="px-4 py-3">Year</th>
                   <th className="px-4 py-3">Band</th>
                   <th className="px-4 py-3">Drivers</th>
@@ -825,16 +826,16 @@ export default async function ExplorerPage({
               <tbody>
                 {studentRows.map((row) => (
                   <tr key={row.studentId} className="border-b border-divider last:border-0 hover:bg-bg">
-                    <td className="px-4 py-3 font-medium text-text">
+                    <td className="sticky-first-column px-4 py-3 font-medium text-text">
                       <Link href={`/analysis/students/${row.studentId}?window=${windowDays}`} className="hover:underline">
                         {row.studentName}
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-muted">{row.yearGroup ?? "—"}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${BAND_PILL[row.band]}`}>
+                      <StatusPill variant={BAND_VARIANT[row.band]} size="sm">
                         {BAND_LABELS[row.band]}
-                      </span>
+                      </StatusPill>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">

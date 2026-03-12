@@ -139,3 +139,16 @@ textarea:focus-visible {
 .table-row:hover {
   background: rgba(11, 16, 32, 0.28);
 }
+
+.sticky-first-column {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: rgba(17, 24, 45, 0.96);
+  box-shadow: 1px 0 0 rgba(38, 50, 85, 0.7);
+}
+
+.sticky-first-column-header {
+  z-index: 20;
+  background: rgba(11, 16, 32, 0.94);
+}
