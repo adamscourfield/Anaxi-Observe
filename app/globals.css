@@ -25,6 +25,7 @@
 
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.45);
 
   --primary-btn: #5b7cff;
   --primary-btn-hover: #6d8bff;
@@ -55,6 +56,15 @@
   border-color: var(--border);
 }
 
+::selection {
+  background: rgba(91, 124, 255, 0.3);
+  color: var(--text);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   min-height: 100%;
@@ -62,11 +72,62 @@ body {
 
 body {
   background:
-    radial-gradient(1000px 550px at 12% -5%, rgba(91, 124, 255, 0.2), transparent 55%),
-    radial-gradient(900px 520px at 88% -8%, rgba(139, 92, 246, 0.14), transparent 52%),
+    radial-gradient(ellipse 1100px 600px at 10% -6%, rgba(91, 124, 255, 0.18), transparent 58%),
+    radial-gradient(ellipse 900px 500px at 92% -10%, rgba(139, 92, 246, 0.11), transparent 50%),
+    radial-gradient(ellipse 600px 400px at 50% 100%, rgba(91, 124, 255, 0.05), transparent 60%),
     var(--bg);
   color: var(--text);
 }
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(38, 50, 85, 0.6);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(38, 50, 85, 0.9);
+}
+
+/* ─── Base Form Elements ─────────────────────────────────────────────────── */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+select,
+textarea {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(11, 16, 32, 0.6);
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* ─── Transitions & Interactions ─────────────────────────────────────────── */
 
 button,
 input,
@@ -91,12 +152,52 @@ textarea:focus-visible {
   transition: all 200ms cubic-bezier(0, 0, 0.2, 1);
 }
 
+/* ─── Panel & Field (form containers) ───────────────────────────────────── */
+
+.panel {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    180deg,
+    rgba(17, 24, 45, 0.95) 0%,
+    rgba(11, 16, 32, 0.9) 100%
+  );
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+}
+
+.field {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(11, 16, 32, 0.6);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.field::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.field:hover {
+  border-color: rgba(38, 50, 85, 0.9);
+  background: rgba(11, 16, 32, 0.7);
+}
+
+/* ─── Toolbar ────────────────────────────────────────────────────────────── */
+
 .premium-toolbar {
   border: 1px solid rgba(38, 50, 85, 0.7);
   background: rgba(17, 24, 45, 0.72);
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
 }
+
+/* ─── Tables ─────────────────────────────────────────────────────────────── */
 
 .table-shell {
   overflow: hidden;
@@ -129,7 +230,7 @@ textarea:focus-visible {
 }
 
 .table-row {
-  border-bottom: 1px solid rgba(27, 38, 68, 0.8);
+  border-bottom: 1px solid rgba(27, 38, 68, 0.6);
 }
 
 .table-row:last-child {
@@ -137,7 +238,7 @@ textarea:focus-visible {
 }
 
 .table-row:hover {
-  background: rgba(11, 16, 32, 0.28);
+  background: rgba(91, 124, 255, 0.04);
 }
 
 .sticky-first-column {
@@ -151,4 +252,18 @@ textarea:focus-visible {
 .sticky-first-column-header {
   z-index: 20;
   background: rgba(11, 16, 32, 0.94);
+}
+
+/* ─── Styled Divider ─────────────────────────────────────────────────────── */
+
+.styled-divider {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--border) 20%,
+    var(--border) 80%,
+    transparent 100%
+  );
 }

@@ -16,13 +16,13 @@ export function DriverChips({
       {visible.map((d, i) => (
         <span
           key={i}
-          className="rounded-full border border-border bg-surface px-2 py-0.5 text-[11px] text-muted"
+          className="rounded-full border border-border/60 bg-surface/80 px-2 py-0.5 text-[11px] font-medium text-muted"
         >
           {d.label}
         </span>
       ))}
       {overflow > 0 && (
-        <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[11px] text-muted">
+        <span className="rounded-full border border-border/60 bg-surface/80 px-2 py-0.5 text-[11px] font-medium text-muted">
           +{overflow}
         </span>
       )}

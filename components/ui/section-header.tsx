@@ -5,7 +5,7 @@ export function SectionHeader({
   title,
   subtitle,
   href,
-  linkLabel = "View all →",
+  linkLabel = "View all",
   className = "",
 }: {
   title: string;
@@ -21,8 +21,11 @@ export function SectionHeader({
         {subtitle ? <MetaText className="mt-0.5">{subtitle}</MetaText> : null}
       </div>
       {href && (
-        <Link href={href} className="shrink-0 text-xs font-medium text-accent hover:text-accentHover">
-          {linkLabel}
+        <Link
+          href={href}
+          className="calm-transition shrink-0 rounded-lg border border-transparent px-2 py-1 text-xs font-medium text-accent hover:border-accent/20 hover:bg-accent/5 hover:text-accentHover"
+        >
+          {linkLabel} &rarr;
         </Link>
       )}
     </div>

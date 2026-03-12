@@ -15,7 +15,10 @@ export function PageHeader({
   meta?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-surface/55 px-5 py-5 shadow-sm backdrop-blur-sm">
+    <div
+      className="rounded-2xl border border-border/60 bg-surface/55 px-5 py-5 shadow-sm backdrop-blur-sm"
+      style={{ boxShadow: "0 2px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03)" }}
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 space-y-2">
           {eyebrow ? (

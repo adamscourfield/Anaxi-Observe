@@ -70,15 +70,18 @@ function SharedHeader({
   computedAt: Date;
 }) {
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-        <H1>Anaxi briefing</H1>
+    <div className="space-y-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <H1>Anaxi briefing</H1>
+          <MetaText className="mt-1">Your personalised overview of school operations and priorities.</MetaText>
+        </div>
         <div className="flex flex-col gap-0.5 sm:text-right">
-          <MetaText>Updated {formatComputedAt(computedAt)} · Window {windowDays}d</MetaText>
-          <MetaText>Sources: Observations · Behaviour</MetaText>
+          <MetaText>Updated {formatComputedAt(computedAt)}</MetaText>
+          <MetaText className="text-muted/60">Window {windowDays}d · Observations + Behaviour</MetaText>
         </div>
       </div>
-      <hr className="border-border" />
+      <div className="styled-divider" />
     </div>
   );
 }

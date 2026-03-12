@@ -62,6 +62,18 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
   }
 }
 
+function ChevronIcon({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg">
+      {direction === "left" ? (
+        <path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      ) : (
+        <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      )}
+    </svg>
+  );
+}
+
 function iconFor(href: string) {
   if (href === "/home") return "home";
   if (href === "/my-actions") return "check-square";
@@ -157,12 +169,13 @@ export function TenantNav({
 
   return (
     <aside
-      className={`sticky top-4 h-fit rounded-[24px] border border-border/70 bg-surface/90 p-3 shadow-sm backdrop-blur-xl calm-transition ${
+      className={`sticky top-20 h-fit rounded-[24px] border border-border/60 bg-surface/90 p-3 shadow-sm backdrop-blur-xl calm-transition ${
         collapsed ? "w-[92px]" : "w-full md:w-[292px]"
       }`}
+      style={{ boxShadow: "0 2px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.03)" }}
       aria-label="Sidebar menu"
     >
-      <div className={`mb-3 rounded-2xl border border-border/70 bg-bg/25 ${collapsed ? "px-2 py-3" : "px-3 py-3"}`}>
+      <div className={`mb-3 rounded-2xl border border-border/60 bg-bg/30 ${collapsed ? "px-2 py-3" : "px-3 py-3"}`}>
         <div className={`flex ${collapsed ? "justify-center" : "items-start justify-between gap-3"}`}>
           <div className={collapsed ? "hidden" : "min-w-0"}>
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Workspace</p>
@@ -171,56 +184,65 @@ export function TenantNav({
           </div>
           <button
             onClick={() => setCollapsed((previous) => !previous)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-surface/80 text-muted hover:bg-divider/80 hover:text-text"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-surface/80 text-muted calm-transition hover:bg-divider/80 hover:text-text"
             type="button"
             aria-expanded={!collapsed}
             title={collapsed ? "Expand navigation" : "Collapse navigation"}
           >
-            <span className="text-sm">{collapsed ? "→" : "←"}</span>
+            <ChevronIcon direction={collapsed ? "right" : "left"} />
           </button>
         </div>
       </div>
 
-      <nav className="space-y-4 text-sm">
-        {sections.map((section) => (
-          <div key={section.label} className="space-y-1.5">
-            {!collapsed ? <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">{section.label}</div> : null}
-            <ul className="space-y-1">
-              {section.items.map((item) => {
-                const active = pathname?.startsWith(item.href);
-                const showBadge = (item.badgeCount ?? 0) > 0;
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      title={collapsed ? item.label : undefined}
-                      className={`group flex items-center ${collapsed ? "justify-center" : "justify-between"} rounded-2xl px-2.5 py-2.5 calm-transition ${
-                        active
-                          ? "bg-[var(--accent-tint)] text-text"
-                          : "text-muted hover:bg-divider/70 hover:text-text"
-                      }`}
-                    >
-                      <span className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} min-w-0`}>
-                        <span
-                          className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border ${
-                            active ? "border-accent/30 bg-accent/10 text-text" : "border-border/70 bg-bg/25 text-muted"
-                          }`}
-                          aria-hidden
-                        >
-                          <NavIcon name={item.icon} active={!!active} />
+      <nav className="space-y-3 text-sm">
+        {sections.map((section, sectionIndex) => (
+          <div key={section.label}>
+            {sectionIndex > 0 && (
+              <div className="mx-2 mb-3 h-px bg-border/40" />
+            )}
+            <div className="space-y-0.5">
+              {!collapsed ? (
+                <div className="px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted/70">{section.label}</div>
+              ) : null}
+              <ul className="space-y-0.5">
+                {section.items.map((item) => {
+                  const active = pathname?.startsWith(item.href);
+                  const showBadge = (item.badgeCount ?? 0) > 0;
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        title={collapsed ? item.label : undefined}
+                        className={`group flex items-center ${collapsed ? "justify-center" : "justify-between"} rounded-xl px-2.5 py-2 calm-transition ${
+                          active
+                            ? "bg-[var(--accent-tint)] text-text shadow-sm"
+                            : "text-muted hover:bg-divider/50 hover:text-text"
+                        }`}
+                      >
+                        <span className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} min-w-0`}>
+                          <span
+                            className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border ${
+                              active
+                                ? "border-accent/30 bg-accent/12 text-text"
+                                : "border-border/50 bg-bg/20 text-muted group-hover:border-border/70 group-hover:text-text"
+                            } calm-transition`}
+                            aria-hidden
+                          >
+                            <NavIcon name={item.icon} active={!!active} />
+                          </span>
+                          {!collapsed ? <span className="truncate font-medium tracking-[0.01em]">{item.label}</span> : null}
                         </span>
-                        {!collapsed ? <span className="truncate font-medium tracking-[0.01em]">{item.label}</span> : null}
-                      </span>
-                      {!collapsed && showBadge ? (
-                        <StatusPill variant={(item.badgeCount ?? 0) >= 5 ? "warning" : "neutral"} size="sm">
-                          {item.badgeCount}
-                        </StatusPill>
-                      ) : null}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                        {!collapsed && showBadge ? (
+                          <StatusPill variant={(item.badgeCount ?? 0) >= 5 ? "warning" : "neutral"} size="sm">
+                            {item.badgeCount}
+                          </StatusPill>
+                        ) : null}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
         ))}
       </nav>

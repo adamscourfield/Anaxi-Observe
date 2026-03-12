@@ -28,6 +28,8 @@ const config: Config = {
       boxShadow: {
         sm: "var(--shadow-sm)",
         md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
+        glow: "0 0 20px rgba(91, 124, 255, 0.15)",
       },
       transitionTimingFunction: {
         calm: "cubic-bezier(0, 0, 0.2, 1)",
