@@ -9,7 +9,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={inter.className}>
       <body className="bg-bg text-text">
-        <header className="sticky top-0 z-40 border-b border-border bg-white/80 backdrop-blur-sm">
+        <header className="sticky top-0 z-40 border-b border-border bg-white">
           <div className="mx-auto flex max-w-[1680px] items-center justify-between gap-4 px-4 py-3 md:px-6">
             <Link href="/" className="group flex items-center gap-3 text-[18px] font-semibold tracking-[-0.01em]">
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-white shadow-sm calm-transition group-hover:shadow-md">
