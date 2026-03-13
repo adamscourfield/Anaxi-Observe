@@ -2,13 +2,16 @@
 
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { MetaText } from "@/components/ui/typography";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const switchTo = searchParams.get("switchTo") || "";
+  const prefillEmail = searchParams.get("email") || "";
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -64,10 +67,16 @@ export default function LoginPage() {
             <p className="mt-1 text-[14px] text-muted">Sign in to your Anaxi account</p>
           </div>
 
+          {switchTo && (
+            <div className="mb-4 rounded-lg border border-accent/20 bg-[var(--pill-accent-bg)] px-4 py-3">
+              <p className="text-[13px] text-[var(--pill-accent-text)]">Switching school. Enter your password to continue.</p>
+            </div>
+          )}
+
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-text">Email</label>
-              <input id="email" name="email" type="email" placeholder="you@school.edu" className="field" required autoComplete="email" />
+              <input id="email" name="email" type="email" placeholder="you@school.edu" className="field" required autoComplete="email" defaultValue={prefillEmail} />
             </div>
 
             <div>
@@ -79,7 +88,7 @@ export default function LoginPage() {
               <label htmlFor="tenantId" className="mb-1.5 block text-[13px] font-medium text-text">
                 Tenant ID <span className="text-muted/50">(optional)</span>
               </label>
-              <input id="tenantId" name="tenantId" type="text" placeholder="Only needed for multi-tenant accounts" className="field" />
+              <input id="tenantId" name="tenantId" type="text" placeholder="Only needed for multi-tenant accounts" className="field" defaultValue={switchTo} />
             </div>
 
             <div className="flex items-center justify-end">
