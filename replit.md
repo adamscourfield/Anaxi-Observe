@@ -37,13 +37,18 @@ The workflow `Start application` runs `npm run dev` which starts Next.js on port
 - `modules/` — Feature modules
 - `prisma/` — Schema, migrations, and seed scripts
 
-## Design System
-- Light mode design — white backgrounds, light grey (#f8f9fb) page bg, dark text
-- CSS custom properties in `app/globals.css` define all design tokens (colours, shadows, radii, pill variants)
-- Tailwind config (`tailwind.config.ts`) maps CSS vars to Tailwind utility classes
-- Core UI components in `components/ui/` — Card, Button, PageHeader, StatusPill, SectionHeader, CollapsibleCard, EmptyState, TileOption, DriverChips
-- Sidebar nav in `components/tenant-nav.tsx` — clean white sidebar with accent-coloured active states
-- Layout in `app/(tenant)/layout.tsx` — flat content area next to sidebar (no nested containers)
+## Design System (v2 — Premium Redesign)
+- **Layout**: No top header on authenticated pages. Full-height sidebar owns brand + nav + logout. Content area uses `px-8 py-8` with `max-w-[1400px]`.
+- **Sidebar**: Fixed full-height (`h-screen`), white bg, border-right. Brand mark at top, nav sections in middle, logout anchored at bottom. Collapsible with expand button.
+- **Accent colour**: Indigo (`#4f46e5`) — used for active nav items (solid fill), buttons, links, and focus rings.
+- **Typography**: H1 = 30px/bold, H2 = 20px/semibold, H3 = 16px/semibold. Inter font.
+- **Tokens**: All design tokens in `app/globals.css` (:root). Tailwind maps them in `tailwind.config.ts`.
+- **Cards**: `rounded-xl p-5`, subtle shadow, no translate-y hover effects.
+- **Buttons**: Active press uses `scale-[0.98]`, not translate. Focus ring uses `ring-offset-2`.
+- **Login page**: Full-viewport split layout — left panel has indigo gradient with brand messaging, right panel has the form.
+- **Nav active state**: Solid `bg-accent text-white` pill with shadow — not a tinted background.
+- **Core UI components**: `components/ui/` — Card, Button, PageHeader, StatusPill, SectionHeader, CollapsibleCard, EmptyState, TileOption, DriverChips.
+- **Sidebar CSS var**: `--sidebar-width: 260px`, `--sidebar-collapsed-width: 72px`.
 
 ## Replit Migration Notes
 - Dev/start scripts updated to use `-p 5000 -H 0.0.0.0`

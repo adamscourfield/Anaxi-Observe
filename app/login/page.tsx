@@ -35,58 +35,69 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[78vh] w-full max-w-md flex-col items-center justify-center gap-8 px-4">
-      <div className="text-center">
-        <div className="mx-auto mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl border border-border bg-white shadow-md">
-          <Image
-            src="/anaxi-logo.png"
-            alt="Anaxi logo"
-            width={48}
-            height={48}
-            priority
-            className="h-12 w-12 object-contain"
-          />
+    <div className="flex min-h-screen">
+      <div className="hidden lg:flex lg:w-[45%] lg:flex-col lg:justify-between bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-500 p-12 text-white">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+            <Image src="/anaxi-logo.png" alt="Anaxi" width={22} height={22} priority className="h-[22px] w-[22px] object-contain brightness-0 invert" />
+          </span>
+          <span className="text-[17px] font-bold tracking-[-0.02em]">Anaxi</span>
         </div>
-        <p className="text-[42px] font-semibold tracking-[-0.03em] text-text">Anaxi</p>
-        <p className="mt-1 text-sm font-medium text-muted">Future Education</p>
+        <div className="max-w-md">
+          <h2 className="text-[36px] font-bold leading-[1.15] tracking-[-0.03em]">
+            School operations,<br />simplified.
+          </h2>
+          <p className="mt-4 text-[15px] leading-relaxed text-white/70">
+            Observations, behaviour, leave, meetings, and analytics — all in one place. Built for school leadership teams that move fast.
+          </p>
+        </div>
+        <p className="text-[12px] text-white/40">&copy; 2026 Anaxi. All rights reserved.</p>
       </div>
 
-      <div className="panel w-full p-7">
-        <form onSubmit={onSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-text">Email address</label>
-            <input id="email" name="email" type="email" placeholder="teacher@school.edu" className="field" required autoComplete="email" />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-text">Password</label>
-            <input id="password" name="password" type="password" placeholder="Enter your password" className="field" required autoComplete="current-password" />
-          </div>
-
-          <div>
-            <label htmlFor="tenantId" className="mb-1.5 block text-sm font-medium text-text">
-              Tenant ID <span className="text-muted/60">(optional)</span>
-            </label>
-            <input id="tenantId" name="tenantId" type="text" placeholder="Only needed for multi-tenant accounts" className="field" />
-          </div>
-
-          <div className="flex justify-end">
-            <a className="calm-transition text-sm text-muted hover:text-accent" href="#">Forgot password?</a>
-          </div>
-
-          {error ? (
-            <div className="rounded-lg border border-error/20 bg-[var(--pill-error-bg)] px-3 py-2.5">
-              <MetaText className="text-[var(--pill-error-text)]">{error}</MetaText>
+      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
+        <div className="w-full max-w-[400px]">
+          <div className="mb-8 text-center lg:text-left">
+            <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 lg:hidden">
+              <Image src="/anaxi-logo.png" alt="Anaxi" width={28} height={28} priority className="h-7 w-7 object-contain" />
             </div>
-          ) : null}
+            <h1 className="text-[28px] font-bold tracking-[-0.03em] text-text">Welcome back</h1>
+            <p className="mt-1 text-[14px] text-muted">Sign in to your Anaxi account</p>
+          </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Log in"}
-          </Button>
-        </form>
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-text">Email</label>
+              <input id="email" name="email" type="email" placeholder="you@school.edu" className="field" required autoComplete="email" />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="mb-1.5 block text-[13px] font-medium text-text">Password</label>
+              <input id="password" name="password" type="password" placeholder="Enter your password" className="field" required autoComplete="current-password" />
+            </div>
+
+            <div>
+              <label htmlFor="tenantId" className="mb-1.5 block text-[13px] font-medium text-text">
+                Tenant ID <span className="text-muted/50">(optional)</span>
+              </label>
+              <input id="tenantId" name="tenantId" type="text" placeholder="Only needed for multi-tenant accounts" className="field" />
+            </div>
+
+            <div className="flex items-center justify-end">
+              <a className="calm-transition text-[13px] text-muted hover:text-accent" href="#">Forgot password?</a>
+            </div>
+
+            {error ? (
+              <div className="rounded-lg border border-error/20 bg-[var(--pill-error-bg)] px-4 py-3">
+                <p className="text-[13px] text-[var(--pill-error-text)]">{error}</p>
+              </div>
+            ) : null}
+
+            <Button type="submit" className="w-full py-3" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
+            </Button>
+          </form>
+        </div>
       </div>
-
-      <MetaText className="text-muted/50">&copy; 2026 Anaxi. All rights reserved.</MetaText>
     </div>
   );
 }

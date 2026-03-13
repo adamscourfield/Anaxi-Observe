@@ -4,10 +4,10 @@ type CardTone = "default" | "subtle" | "inset" | "interactive";
 
 const toneClasses: Record<CardTone, string> = {
   default: "border border-border bg-white shadow-sm",
-  subtle: "border border-border/80 bg-white shadow-sm",
-  inset: "border border-border/80 bg-bg",
+  subtle: "border border-border/60 bg-white",
+  inset: "border border-border/60 bg-bg",
   interactive:
-    "border border-border bg-white shadow-sm calm-transition hover:-translate-y-[1px] hover:border-accent/30 hover:shadow-md",
+    "border border-border bg-white shadow-sm calm-transition hover:border-accent/25 hover:shadow-md",
 };
 
 export function Card({
@@ -21,7 +21,7 @@ export function Card({
   tone?: CardTone;
 } & HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`rounded-xl p-4 ${toneClasses[tone]} ${className}`} {...props}>
+    <div className={`rounded-xl p-5 ${toneClasses[tone]} ${className}`} {...props}>
       {children}
     </div>
   );
