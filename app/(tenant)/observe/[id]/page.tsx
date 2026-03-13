@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { canViewObservation } from "@/modules/authz";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import { getTenantSignalLabels } from "@/modules/observations/tenantSignalLabels";
+import { formatPhaseLabel } from "@/modules/observations/phaseLabel";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { PageHeader } from "@/components/ui/page-header";
@@ -58,7 +59,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
         <p><strong>Date:</strong> {new Date(observation.observedAt).toLocaleString()}</p>
         <p><strong>Subject:</strong> {observation.subject}</p>
         <p><strong>Year group:</strong> {observation.yearGroup}</p>
-        <p><strong>Phase:</strong> {observation.phase}</p>
+        <p><strong>Phase:</strong> {formatPhaseLabel(observation.phase as string)}</p>
         <p><strong>Class code:</strong> {observation.classCode || "-"}</p>
         <p><strong>Context:</strong> {observation.contextNote || "-"}</p>
       </Card>

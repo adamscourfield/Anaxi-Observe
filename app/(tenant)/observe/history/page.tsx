@@ -5,21 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
-import { StatusPill, type PillVariant } from "@/components/ui/status-pill";
+import { StatusPill } from "@/components/ui/status-pill";
 
-const PHASE_LABEL: Record<string, string> = {
-  INSTRUCTION: "Instruction",
-  GUIDED_PRACTICE: "Guided practice",
-  INDEPENDENT_PRACTICE: "Independent",
-  UNKNOWN: "Not recorded",
-};
-
-const PHASE_VARIANT: Record<string, PillVariant> = {
-  INSTRUCTION: "info",
-  GUIDED_PRACTICE: "success",
-  INDEPENDENT_PRACTICE: "accent",
-  UNKNOWN: "neutral",
-};
+import { formatPhaseLabel, phaseVariant } from "@/modules/observations/phaseLabel";
 
 export default async function ObservationHistoryPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
   const user = await getSessionUserOrThrow();
@@ -205,8 +193,8 @@ export default async function ObservationHistoryPage({ searchParams }: { searchP
                       <td className="px-4 py-3 text-text">{obs.subject}</td>
                       <td className="px-4 py-3 text-muted">Yr {obs.yearGroup}</td>
                       <td className="px-4 py-3">
-                        <StatusPill variant={PHASE_VARIANT[phase] ?? "neutral"} size="sm">
-                          {PHASE_LABEL[phase] ?? phase}
+                        <StatusPill variant={phaseVariant(phase)} size="sm">
+                          {formatPhaseLabel(phase)}
                         </StatusPill>
                       </td>
                       <td className="px-4 py-3 tabular-nums text-muted">

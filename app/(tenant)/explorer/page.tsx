@@ -12,6 +12,7 @@ import { StatusPill, type PillVariant } from "@/components/ui/status-pill";
 import { MetaText } from "@/components/ui/typography";
 import { Avatar } from "@/components/ui/avatar";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
+import { formatPhaseLabel } from "@/modules/observations/phaseLabel";
 import {
   canViewExplorer,
   canExportExplorer,
@@ -48,13 +49,6 @@ const VIEW_LABELS: Record<ViewMode, string> = {
   BEHAVIOUR_STUDENTS_TABLE: "Students",
   BEHAVIOUR_COHORTS_PIVOT: "Cohorts",
 };
-
-function formatPhaseLabel(phase: string): string {
-  return phase
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 const STATUS_LABELS: Record<RiskStatus, string> = {
   SIGNIFICANT_DRIFT: "Significant",
@@ -252,6 +246,7 @@ export default async function ExplorerPage({
       include: {
         observedTeacher: { select: { fullName: true } },
         observer: { select: { fullName: true } },
+        signals: { select: { signalKey: true, valueKey: true, notObserved: true } },
       },
       orderBy: { observedAt: "desc" },
       take: 100,
@@ -813,31 +808,50 @@ export default async function ExplorerPage({
                   <th className="px-4 py-3">Year</th>
                   <th className="px-4 py-3">Subject</th>
                   <th className="px-4 py-3">Phase</th>
+                  <th className="px-4 py-3">Signals</th>
                   <th className="px-4 py-3">Observer</th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody>
-                {observationList.map((obs: any) => (
-                  <tr key={obs.id} className="border-b border-divider last:border-0 hover:bg-bg">
-                    <td className="px-4 py-3 tabular-nums text-muted">
-                      {new Date(obs.observedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-text">
-                      <Link href={`/analysis/teachers/${obs.observedTeacherId}?window=${windowDays}`} className="inline-flex items-center gap-2 hover:underline">
-                        <Avatar name={obs.observedTeacher?.fullName ?? "?"} size="sm" />
-                        {obs.observedTeacher?.fullName ?? "—"}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-muted">{obs.yearGroup}</td>
-                    <td className="px-4 py-3 text-muted">{obs.subject}</td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-md bg-[#f4f7fb] px-2 py-0.5 text-xs font-medium text-muted">
-                        {formatPhaseLabel(obs.phase ?? "Unknown")}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-muted">{obs.observer?.fullName ?? "—"}</td>
-                  </tr>
-                ))}
+                {observationList.map((obs: any) => {
+                  const signalCount = Array.isArray(obs.signals)
+                    ? (obs.signals as any[]).filter((s: any) => s.valueKey && !s.notObserved).length
+                    : 0;
+                  const totalSignals = Array.isArray(obs.signals) ? obs.signals.length : 0;
+                  return (
+                    <tr key={obs.id} className="border-b border-divider last:border-0 hover:bg-bg">
+                      <td className="px-4 py-3 tabular-nums text-muted">
+                        <Link href={`/observe/${obs.id}`} className="hover:underline">
+                          {new Date(obs.observedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-text">
+                        <Link href={`/observe/${obs.id}`} className="inline-flex items-center gap-2 hover:underline">
+                          <Avatar name={obs.observedTeacher?.fullName ?? "?"} size="sm" />
+                          {obs.observedTeacher?.fullName ?? "—"}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-muted">{obs.yearGroup}</td>
+                      <td className="px-4 py-3 text-muted">{obs.subject}</td>
+                      <td className="px-4 py-3">
+                        <span className="rounded-md bg-[#f4f7fb] px-2 py-0.5 text-xs font-medium text-muted">
+                          {formatPhaseLabel(obs.phase ?? "Unknown")}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 tabular-nums text-muted">{signalCount}/{totalSignals}</td>
+                      <td className="px-4 py-3 text-muted">{obs.observer?.fullName ?? "—"}</td>
+                      <td className="px-4 py-3 text-right">
+                        <Link
+                          href={`/observe/${obs.id}`}
+                          className="calm-transition inline-flex items-center rounded-lg border border-border bg-white px-3 py-1 text-xs font-medium text-text shadow-sm hover:border-accent/30 hover:text-accent"
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
