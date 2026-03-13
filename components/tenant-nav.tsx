@@ -136,8 +136,8 @@ export function TenantNav({
     {
       label: "Instruction",
       items: [
-        ...(has("OBSERVATIONS") ? [navItem("Observation feed", "/observe")] : []),
-        ...(has("OBSERVATIONS") ? [navItem("Signals history", "/observe/history")] : []),
+        ...(has("OBSERVATIONS") ? [navItem("New observation", "/observe/new")] : []),
+        ...(has("OBSERVATIONS") ? [navItem("Observation history", "/observe/history")] : []),
         ...(has("ANALYSIS") && canSeeAnalysis ? [navItem("Explorer", "/explorer")] : []),
       ],
     },
