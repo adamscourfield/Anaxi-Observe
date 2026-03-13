@@ -40,6 +40,10 @@ const RISK_STATUS_PILL: Record<RiskStatus, PillVariant> = {
   LOW_COVERAGE: "neutral",
 };
 
+type MeetingActionSummary = { id: string; description: string; dueDate: string | null; status: string };
+type LoaSummary = { startDate: string; endDate: string; status: string };
+type OnCallSummary = { id: string; createdAt: string; status: string };
+
 function formatComputedAt(date: Date): string {
   return date.toLocaleDateString("en-GB", {
     day: "numeric",
@@ -81,6 +85,8 @@ function LeadershipHome({
   cohortRows,
   studentRows,
   hasLeaveFeature,
+  pendingLeaveCount,
+  openOnCallCount,
 }: {
   windowDays: number;
   cpdRows: CpdPriorityRow[];
@@ -88,6 +94,8 @@ function LeadershipHome({
   cohortRows: CohortPivotRow[];
   studentRows: StudentRiskRow[];
   hasLeaveFeature: boolean;
+  pendingLeaveCount: number;
+  openOnCallCount: number;
 }) {
   const topCpd = cpdRows.filter((r) => r.teachersDriftingDown > 0).slice(0, 3);
   const topTeachers = teacherRows.slice(0, 5);
@@ -106,9 +114,9 @@ function LeadershipHome({
     .slice(0, 2);
 
   const totalObs = teacherRows.reduce((sum, r) => sum + r.teacherCoverage, 0);
-  const driftingTeachers = teacherRows.filter((r) => r.status === "SIGNIFICANT_DRIFT" || r.status === "EMERGING_DRIFT").length;
   const urgentCount = urgentStudents.length;
   const cpdDriftCount = topCpd.length;
+  const operationalCount = pendingLeaveCount + openOnCallCount;
 
   return (
     <div className="space-y-6">
@@ -135,11 +143,15 @@ function LeadershipHome({
           href={`/analytics?tab=cpd&window=${windowDays}`}
         />
         <StatCard
-          label="Teachers drifting"
-          value={driftingTeachers}
-          context={driftingTeachers > 0 ? "Need support" : "All on track"}
-          accent={driftingTeachers > 0 ? "warning" : "success"}
-          href={`/analytics?tab=teachers&window=${windowDays}`}
+          label="Pending leave / on-call"
+          value={operationalCount}
+          context={
+            operationalCount > 0
+              ? [pendingLeaveCount > 0 ? `${pendingLeaveCount} leave` : null, openOnCallCount > 0 ? `${openOnCallCount} on-call` : null].filter(Boolean).join(" · ")
+              : "No pending requests"
+          }
+          accent={operationalCount > 0 ? "warning" : "success"}
+          href={pendingLeaveCount > 0 ? "/leave/pending" : "/on-call"}
         />
       </div>
 
@@ -466,9 +478,9 @@ function TeacherHome({
 }: {
   windowDays: number;
   selfProfile: Awaited<ReturnType<typeof computeTeacherSignalProfile>>;
-  openActions: { id: string; description: string; dueDate: string | null; status: string }[];
-  loaRequest: { startDate: string; endDate: string; status: string } | null;
-  onCallRequests: { id: string; createdAt: string; status: string }[];
+  openActions: MeetingActionSummary[];
+  loaRequest: LoaSummary | null;
+  onCallRequests: OnCallSummary[];
   wholeSchoolTop1: CpdPriorityRow | null;
   userId: string;
   hasMeetingsFeature: boolean;
@@ -699,7 +711,9 @@ export default async function HomePage({
           </Card>
         );
       }
-      const { cpdRows, teacherRows, cohortRows, studentRows } = await hydrateLeadershipHomeData({ user, windowDays });
+      const hasLeaveFeature = homeAssembly.has("operations.leave-approvals");
+      const hasOnCallFeature = enabledFeatures.has("ON_CALL");
+      const { cpdRows, teacherRows, cohortRows, studentRows, pendingLeaveCount, openOnCallCount } = await hydrateLeadershipHomeData({ user, windowDays, hasLeaveFeature, hasOnCallFeature });
       return (
         <LeadershipHome
           windowDays={windowDays}
@@ -707,7 +721,9 @@ export default async function HomePage({
           teacherRows={teacherRows}
           cohortRows={cohortRows}
           studentRows={studentRows}
-          hasLeaveFeature={homeAssembly.has("operations.leave-approvals")}
+          hasLeaveFeature={hasLeaveFeature}
+          pendingLeaveCount={pendingLeaveCount}
+          openOnCallCount={openOnCallCount}
         />
       );
     }
@@ -744,17 +760,13 @@ export default async function HomePage({
 
     const { selfProfile, wholeSchoolTop1, loaData, onCallData, openActionsData } = await hydrateTeacherHomeData({ user, windowDays, hasAnalysisFeature, assembly: homeAssembly });
 
-    type ActionShape = { id: string; description: string; dueDate: string | null; status: string };
-    type LoaShape = { startDate: string; endDate: string; status: string };
-    type OnCallShape = { id: string; createdAt: string; status: string };
-
     return (
       <TeacherHome
         windowDays={windowDays}
         selfProfile={selfProfile}
-        openActions={openActionsData as ActionShape[]}
-        loaRequest={loaData as LoaShape | null}
-        onCallRequests={onCallData as OnCallShape[]}
+        openActions={openActionsData as MeetingActionSummary[]}
+        loaRequest={loaData as LoaSummary | null}
+        onCallRequests={onCallData as OnCallSummary[]}
         wholeSchoolTop1={wholeSchoolTop1}
         userId={user.id}
         hasMeetingsFeature={homeAssembly.has("operations.my-open-actions") || homeAssembly.has("operations.meetings-today")}
