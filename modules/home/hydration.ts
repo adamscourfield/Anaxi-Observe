@@ -14,7 +14,7 @@ import { computeCohortPivot, CohortPivotRow } from "@/modules/analysis/cohortPiv
 import { computeStudentRiskIndex, StudentRiskRow } from "@/modules/analysis/studentRisk";
 import { HomeAssembly } from "@/modules/home/assembler";
 
-type PrismaAny = Record<string, Record<string, (...args: unknown[]) => unknown>>;
+/* eslint-disable @typescript-eslint/no-explicit-any -- Prisma dynamic model access */
 
 async function safe<T>(task: Promise<T>, fallback: T): Promise<T> {
   try {
@@ -37,7 +37,7 @@ export async function hydrateLeadershipHomeData({
 }) {
   const pendingLeavePromise = hasLeaveFeature
     ? safe(
-        (prisma as PrismaAny).lOARequest.count({
+        (prisma as any).lOARequest.count({
           where: { tenantId: user.tenantId, status: "PENDING" },
         }),
         0 as number
@@ -46,7 +46,7 @@ export async function hydrateLeadershipHomeData({
 
   const openOnCallPromise = hasOnCallFeature
     ? safe(
-        (prisma as PrismaAny).onCallRequest.count({
+        (prisma as any).onCallRequest.count({
           where: { tenantId: user.tenantId, status: "OPEN" },
         }),
         0 as number
@@ -83,7 +83,7 @@ export async function hydrateHodHomeData({
   searchDeptId?: string | null;
 }) {
   const hodMemberships = await safe(
-    (prisma as PrismaAny).departmentMembership.findMany({
+    (prisma as any).departmentMembership.findMany({
       where: { userId: user.id, isHeadOfDepartment: true },
       include: { department: true },
     }),
@@ -118,7 +118,7 @@ export async function hydrateHodHomeData({
     safe(computeTeacherSignalProfile(user.tenantId, user.id, windowDays), null),
     safe(computeCpdPriorities(user.tenantId, windowDays), [] as CpdPriorityRow[]),
     safe(
-      (prisma as PrismaAny).departmentMembership.findMany({
+      (prisma as any).departmentMembership.findMany({
         where: { tenantId: user.tenantId, departmentId: activeDeptId },
       }),
       [] as any[]
@@ -165,7 +165,7 @@ export async function hydrateTeacherHomeData({
 
   const loaDataPromise = assembly.has("operations.my-leave-status")
     ? safe(
-        (prisma as PrismaAny).lOARequest.findFirst({
+        (prisma as any).lOARequest.findFirst({
           where: { tenantId: user.tenantId, requesterId: user.id },
           orderBy: { createdAt: "desc" },
         }),
@@ -175,7 +175,7 @@ export async function hydrateTeacherHomeData({
 
   const onCallDataPromise = assembly.has("culture.my-oncall-status")
     ? safe(
-        (prisma as PrismaAny).onCallRequest.findMany({
+        (prisma as any).onCallRequest.findMany({
           where: { tenantId: user.tenantId, requesterUserId: user.id },
           orderBy: { createdAt: "desc" },
           take: 3,
@@ -186,7 +186,7 @@ export async function hydrateTeacherHomeData({
 
   const openActionsDataPromise = assembly.has("operations.my-open-actions")
     ? safe(
-        (prisma as PrismaAny).meetingAction.findMany({
+        (prisma as any).meetingAction.findMany({
           where: { tenantId: user.tenantId, ownerUserId: user.id, status: "OPEN" },
           orderBy: [{ dueDate: "asc" }],
           take: 5,

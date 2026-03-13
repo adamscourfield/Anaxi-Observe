@@ -57,7 +57,7 @@ export default async function ObservationHistoryPage({ searchParams }: { searchP
 
   const where: any = {
     tenantId: user.tenantId,
-    ...(subject ? { subject: { contains: subject, mode: "insensitive" } } : {}),
+    ...(subject ? { subject } : {}),
     ...(yearGroup ? { yearGroup } : {}),
     ...(observerId ? { observerId } : {}),
     ...((from || to || useWindow)
@@ -94,12 +94,23 @@ export default async function ObservationHistoryPage({ searchParams }: { searchP
     ? (teachers as any[]).filter((t: any) => allowedTeacherIds!.has(t.id))
     : (teachers as any[]);
 
-  const observations = await (prisma as any).observation.findMany({
-    where,
-    include: { observedTeacher: true, observer: true, signals: true },
-    orderBy: { observedAt: "desc" },
-    take: 100
-  });
+  const scopedFilterWhere: any = { tenantId: user.tenantId };
+  if (user.role === "TEACHER") {
+    scopedFilterWhere.observedTeacherId = user.id;
+  } else if (allowedTeacherIds) {
+    scopedFilterWhere.observedTeacherId = { in: Array.from(allowedTeacherIds) };
+  }
+
+  const [observations, distinctSubjects, distinctYearGroups] = await Promise.all([
+    (prisma as any).observation.findMany({
+      where,
+      include: { observedTeacher: true, observer: true, signals: true },
+      orderBy: { observedAt: "desc" },
+      take: 100,
+    }),
+    (prisma as any).observation.findMany({ where: scopedFilterWhere, distinct: ["subject"], select: { subject: true }, orderBy: { subject: "asc" } }),
+    (prisma as any).observation.findMany({ where: scopedFilterWhere, distinct: ["yearGroup"], select: { yearGroup: true }, orderBy: { yearGroup: "asc" } }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -133,8 +144,14 @@ export default async function ObservationHistoryPage({ searchParams }: { searchP
               </select>
             </>
           ) : null}
-          <input name="subject" defaultValue={subject} placeholder="Subject" className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text placeholder:text-muted" />
-          <input name="yearGroup" defaultValue={yearGroup} placeholder="Year group" className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text placeholder:text-muted" />
+          <select name="subject" defaultValue={subject} className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text">
+            <option value="">All subjects</option>
+            {(distinctSubjects as { subject: string }[]).map((row) => <option key={row.subject} value={row.subject}>{row.subject}</option>)}
+          </select>
+          <select name="yearGroup" defaultValue={yearGroup} className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text">
+            <option value="">All year groups</option>
+            {(distinctYearGroups as { yearGroup: string }[]).map((row) => <option key={row.yearGroup} value={row.yearGroup}>Year {row.yearGroup}</option>)}
+          </select>
           <input name="from" type="date" defaultValue={from} className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text" />
           <input name="to" type="date" defaultValue={to} className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text" />
           <Button type="submit" variant="secondary" className="px-4 py-2 text-sm">Apply</Button>

@@ -4,7 +4,7 @@ export function TileOption({ selected = false, className = "", ...props }: Butto
   return (
     <button
       {...props}
-      className={`calm-transition rounded-lg border px-4 py-3 text-left shadow-sm transition duration-200 ease-calm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${selected ? "border-accent/40 bg-accent/5 text-text shadow-md" : "border-border bg-white text-text hover:border-accent/30 hover:bg-bg"} ${className}`}
+      className={`calm-transition rounded-lg border px-4 py-3 text-left shadow-sm transition duration-200 ease-calm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${selected ? "border-accent bg-accent text-white font-medium shadow-md ring-2 ring-accent/20" : "border-border bg-white text-text hover:border-accent/30 hover:bg-bg"} ${className}`}
     />
   );
 }
