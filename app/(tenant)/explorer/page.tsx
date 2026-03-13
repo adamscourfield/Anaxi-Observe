@@ -10,16 +10,20 @@ import { PageHeader } from "@/components/ui/page-header";
 import { SectionHeader } from "@/components/ui/section-header";
 import { StatusPill, type PillVariant } from "@/components/ui/status-pill";
 import { MetaText } from "@/components/ui/typography";
+import { Avatar } from "@/components/ui/avatar";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import {
   canViewExplorer,
   canExportExplorer,
   canViewBehaviourExplorer,
 } from "@/modules/authz";
-import { computeTeacherPivot, RiskStatus } from "@/modules/analysis/teacherRisk";
+import { computeTeacherPivot, computeTeacherRiskIndex, RiskStatus } from "@/modules/analysis/teacherRisk";
+import type { TeacherRiskRow } from "@/modules/analysis/teacherRisk";
 import { computeDepartmentPivot } from "@/modules/analysis/departmentPivot";
 import { computeStudentRiskIndex, RiskBand, BAND_ORDER } from "@/modules/analysis/studentRisk";
 import { computeCohortPivot } from "@/modules/analysis/cohortPivot";
+import { computeCpdPriorities, getTopImprovingSignals } from "@/modules/analysis/cpdPriorities";
+import type { CpdPriorityRow } from "@/modules/analysis/cpdPriorities";
 
 const WINDOW_OPTIONS = [7, 21, 28] as const;
 type WindowDays = (typeof WINDOW_OPTIONS)[number];
@@ -28,6 +32,8 @@ const VIEW_MODES = [
   "INSTRUCTION_TEACHERS_PIVOT",
   "INSTRUCTION_DEPARTMENTS_PIVOT",
   "INSTRUCTION_LIST",
+  "TEACHER_PRIORITIES",
+  "CPD_SIGNALS",
   "BEHAVIOUR_STUDENTS_TABLE",
   "BEHAVIOUR_COHORTS_PIVOT",
 ] as const;
@@ -37,9 +43,18 @@ const VIEW_LABELS: Record<ViewMode, string> = {
   INSTRUCTION_TEACHERS_PIVOT: "Teachers pivot",
   INSTRUCTION_DEPARTMENTS_PIVOT: "Departments pivot",
   INSTRUCTION_LIST: "Observation list",
+  TEACHER_PRIORITIES: "Teacher priorities",
+  CPD_SIGNALS: "CPD signals",
   BEHAVIOUR_STUDENTS_TABLE: "Students",
   BEHAVIOUR_COHORTS_PIVOT: "Cohorts",
 };
+
+function formatPhaseLabel(phase: string): string {
+  return phase
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 const STATUS_LABELS: Record<RiskStatus, string> = {
   SIGNIFICANT_DRIFT: "Significant",
@@ -175,6 +190,9 @@ export default async function ExplorerPage({
   let studentRows: Awaited<ReturnType<typeof computeStudentRiskIndex>>["rows"] = [];
   let cohortRows: Awaited<ReturnType<typeof computeCohortPivot>>["rows"] = [];
   let observationList: any[] = [];
+  let teacherRiskRows: TeacherRiskRow[] = [];
+  let cpdRows: CpdPriorityRow[] = [];
+  let cpdImprovingRows: CpdPriorityRow[] = [];
 
   if (view === "INSTRUCTION_TEACHERS_PIVOT") {
     const result = await computeTeacherPivot(user.tenantId, windowDays);
@@ -239,6 +257,34 @@ export default async function ExplorerPage({
       take: 100,
     });
 
+  } else if (view === "TEACHER_PRIORITIES") {
+    teacherRiskRows = await computeTeacherRiskIndex(user.tenantId, windowDays);
+    if (user.role === "HOD" && hodDepartmentIds.length > 0) {
+      const deptMembers = await (prisma as any).departmentMembership.findMany({
+        where: { tenantId: user.tenantId, departmentId: { in: hodDepartmentIds } },
+      });
+      const allowedIds = new Set((deptMembers as any[]).map((m: any) => m.userId));
+      teacherRiskRows = teacherRiskRows.filter((r) => allowedIds.has(r.teacherMembershipId));
+    }
+    if (filterDepartmentId) {
+      const deptMembers = await (prisma as any).departmentMembership.findMany({
+        where: { tenantId: user.tenantId, departmentId: filterDepartmentId },
+      });
+      const ids = new Set((deptMembers as any[]).map((m: any) => m.userId));
+      teacherRiskRows = teacherRiskRows.filter((r) => ids.has(r.teacherMembershipId));
+    }
+  } else if (view === "CPD_SIGNALS") {
+    let cpdDeptId = filterDepartmentId || undefined;
+    if (user.role === "HOD" && hodDepartmentIds.length > 0) {
+      if (cpdDeptId) {
+        if (!hodDepartmentIds.includes(cpdDeptId)) cpdDeptId = hodDepartmentIds[0];
+      } else {
+        cpdDeptId = hodDepartmentIds[0];
+      }
+    }
+    const deptFilter = cpdDeptId ? { departmentId: cpdDeptId } : undefined;
+    cpdRows = await computeCpdPriorities(user.tenantId, windowDays, deptFilter);
+    cpdImprovingRows = getTopImprovingSignals(cpdRows);
   } else if (view === "BEHAVIOUR_STUDENTS_TABLE") {
     const result = await computeStudentRiskIndex(user.tenantId, windowDays, user.id);
     studentRows = result.rows;
@@ -421,14 +467,14 @@ export default async function ExplorerPage({
       </Card>
 
       {/* View selector */}
-      <div className="flex items-center gap-1 rounded-xl border border-border bg-white p-1 shadow-sm w-fit flex-wrap">
-        {(["INSTRUCTION_TEACHERS_PIVOT", "INSTRUCTION_DEPARTMENTS_PIVOT", "INSTRUCTION_LIST"] as ViewMode[]).map((v) => (
+      <div className="inline-flex items-center rounded-lg border border-border bg-[#f4f7fb] p-0.5 flex-wrap">
+        {(["INSTRUCTION_TEACHERS_PIVOT", "INSTRUCTION_DEPARTMENTS_PIVOT", "INSTRUCTION_LIST", "TEACHER_PRIORITIES", "CPD_SIGNALS"] as ViewMode[]).map((v) => (
           <Link
             key={v}
             href={buildFilterQuery({ view: v })}
-            className={`calm-transition rounded-lg px-4 py-1.5 text-[13px] font-medium transition duration-200 ease-calm ${
+            className={`rounded-md px-3.5 py-1.5 text-sm font-medium calm-transition ${
               v === view
-                ? "bg-accent text-white shadow-sm"
+                ? "bg-white text-text shadow-sm"
                 : "text-muted hover:text-text"
             }`}
           >
@@ -437,14 +483,14 @@ export default async function ExplorerPage({
         ))}
         {canSeeBehaviour && (
           <>
-            <span className="mx-1 h-5 w-px bg-border" />
+            <span className="mx-1 h-5 w-px bg-border/60" />
             {(["BEHAVIOUR_STUDENTS_TABLE", "BEHAVIOUR_COHORTS_PIVOT"] as ViewMode[]).map((v) => (
               <Link
                 key={v}
                 href={buildFilterQuery({ view: v })}
-                className={`calm-transition rounded-lg px-4 py-1.5 text-[13px] font-medium transition duration-200 ease-calm ${
+                className={`rounded-md px-3.5 py-1.5 text-sm font-medium calm-transition ${
                   v === view
-                    ? "bg-accent text-white shadow-sm"
+                    ? "bg-white text-text shadow-sm"
                     : "text-muted hover:text-text"
                 }`}
               >
@@ -581,7 +627,8 @@ export default async function ExplorerPage({
                     {teacherPivotRows.map((row) => (
                       <tr key={row.teacherMembershipId} className="border-b border-divider last:border-0 hover:bg-bg">
                         <td className="sticky-first-column px-4 py-3 font-medium text-text">
-                          <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="hover:underline">
+                          <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="inline-flex items-center gap-2 hover:underline">
+                            <Avatar name={row.teacherName} size="sm" />
                             {row.teacherName}
                           </Link>
                         </td>
@@ -776,13 +823,18 @@ export default async function ExplorerPage({
                       {new Date(obs.observedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
                     <td className="px-4 py-3 font-medium text-text">
-                      <Link href={`/analysis/teachers/${obs.observedTeacherId}?window=${windowDays}`} className="hover:underline">
+                      <Link href={`/analysis/teachers/${obs.observedTeacherId}?window=${windowDays}`} className="inline-flex items-center gap-2 hover:underline">
+                        <Avatar name={obs.observedTeacher?.fullName ?? "?"} size="sm" />
                         {obs.observedTeacher?.fullName ?? "—"}
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-muted">{obs.yearGroup}</td>
                     <td className="px-4 py-3 text-muted">{obs.subject}</td>
-                    <td className="px-4 py-3 text-muted text-xs">{obs.phase}</td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-md bg-[#f4f7fb] px-2 py-0.5 text-xs font-medium text-muted">
+                        {formatPhaseLabel(obs.phase ?? "Unknown")}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-muted">{obs.observer?.fullName ?? "—"}</td>
                   </tr>
                 ))}
@@ -790,6 +842,163 @@ export default async function ExplorerPage({
             </table>
           )}
         </Card>
+      )}
+
+      {/* TEACHER_PRIORITIES */}
+      {view === "TEACHER_PRIORITIES" && (
+        <Card className="overflow-x-auto p-0">
+          <div className="border-b border-border px-4 py-3">
+            <SectionHeader title="Teacher priorities" />
+            <MetaText>{teacherRiskRows.length} teacher{teacherRiskRows.length !== 1 ? "s" : ""} with data · Window: {windowDays} days</MetaText>
+          </div>
+          {teacherRiskRows.length === 0 ? (
+            <div className="p-6">
+              <EmptyState title="No teacher data" description="No teachers have enough observation data in this window." />
+            </div>
+          ) : (
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
+                  <th className="sticky-first-column sticky-first-column-header px-4 py-3">Teacher</th>
+                  <th className="px-4 py-3">Department</th>
+                  <th className="px-4 py-3 text-right">Coverage</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">Drift score</th>
+                  <th className="px-4 py-3">Top drivers</th>
+                  <th className="px-4 py-3">Last observed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teacherRiskRows.map((row) => (
+                  <tr key={row.teacherMembershipId} className="border-b border-divider last:border-0 hover:bg-bg">
+                    <td className="sticky-first-column px-4 py-3 font-medium text-text">
+                      <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="inline-flex items-center gap-2 hover:underline">
+                        <Avatar name={row.teacherName} size="sm" />
+                        {row.teacherName}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-muted text-xs">{row.departmentNames.join(", ") || "—"}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teacherCoverage}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill variant={STATUS_VARIANT[row.status]} size="sm">
+                        {STATUS_LABELS[row.status]}
+                      </StatusPill>
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">{row.normalizedIDS.toFixed(1)}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {row.topDrivers.length > 0 ? row.topDrivers.map((d) => {
+                          const label = SIGNAL_DEFINITIONS.find((s) => s.key === d.signalKey)?.displayNameDefault ?? d.signalKey;
+                          return (
+                            <span key={d.signalKey} className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50/60 px-2 py-0.5 text-xs text-amber-800">
+                              {label.length > 18 ? label.slice(0, 16) + "…" : label}
+                              <span className="tabular-nums">{d.delta > 0 ? "+" : ""}{d.delta.toFixed(1)}</span>
+                            </span>
+                          );
+                        }) : (
+                          <span className="text-xs text-muted">—</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs tabular-nums text-muted">
+                      {row.lastObservationAt
+                        ? new Date(row.lastObservationAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+      )}
+
+      {/* CPD_SIGNALS */}
+      {view === "CPD_SIGNALS" && (
+        <div className="space-y-6">
+          <Card className="overflow-x-auto p-0">
+            <div className="border-b border-border px-4 py-3">
+              <SectionHeader title="CPD priority signals" />
+              <MetaText>Signals ranked by how commonly they are weakening across teachers · Window: {windowDays} days</MetaText>
+            </div>
+            {cpdRows.length === 0 ? (
+              <div className="p-6">
+                <EmptyState title="No CPD data" description="Not enough eligible teachers in this window to compute priorities." />
+              </div>
+            ) : (
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-bg text-left text-xs font-medium text-muted">
+                    <th className="px-4 py-3">Signal</th>
+                    <th className="px-4 py-3 text-right">Teachers covered</th>
+                    <th className="px-4 py-3 text-right">Drifting</th>
+                    <th className="px-4 py-3 text-right">Drift rate</th>
+                    <th className="px-4 py-3 text-right">Avg drift</th>
+                    <th className="px-4 py-3 text-right">Priority score</th>
+                    <th className="px-4 py-3 text-right">Improving</th>
+                    <th className="px-4 py-3 text-right">Improve rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cpdRows.map((row) => (
+                    <tr key={row.signalKey} className="border-b border-divider last:border-0 hover:bg-bg">
+                      <td className="px-4 py-3 font-medium text-text">{row.label}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teachersCovered}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teachersDriftingDown}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                        {(row.driftRate * 100).toFixed(0)}%
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums">
+                        {row.avgNegDeltaAbs !== null ? (
+                          <span className="text-amber-600">−{row.avgNegDeltaAbs.toFixed(2)}</span>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums">
+                        {row.priorityScore > 0 ? (
+                          <span className={`font-medium ${row.priorityScore > 0.1 ? "text-amber-700" : "text-muted"}`}>
+                            {row.priorityScore.toFixed(3)}
+                          </span>
+                        ) : (
+                          <span className="text-muted">0</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teachersImproving}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                        {(row.improvingRate * 100).toFixed(0)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </Card>
+
+          {cpdImprovingRows.length > 0 && (
+            <Card className="p-0">
+              <div className="border-b border-border px-4 py-3">
+                <SectionHeader title="Positive momentum" />
+                <MetaText>Signals showing the strongest improvement across teachers</MetaText>
+              </div>
+              <div className="divide-y divide-divider">
+                {cpdImprovingRows.map((row) => (
+                  <div key={row.signalKey} className="flex items-center justify-between px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium text-text">{row.label}</p>
+                      <p className="text-xs text-muted">
+                        {row.teachersImproving} teacher{row.teachersImproving !== 1 ? "s" : ""} improving · avg +{row.avgPositiveDelta?.toFixed(2) ?? "—"}
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center gap-1 rounded-md border border-green-200 bg-green-50/60 px-2.5 py-1 text-xs font-medium text-green-700">
+                      ↑ {(row.improvingRate * 100).toFixed(0)}% rate
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
       )}
 
       {/* BEHAVIOUR_STUDENTS_TABLE */}

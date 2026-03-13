@@ -68,6 +68,15 @@ The workflow `Start application` runs `npm run dev` which starts Next.js on port
 - Priority lists (CPD, teachers, students) are polished with avatars, status pills, and driver chips.
 - Cohort change shown inline (not collapsible), Leave Approvals and Positive Momentum collapsed sections removed.
 
+## Explorer Page
+- Located at `app/(tenant)/explorer/page.tsx`.
+- 7 view modes: Teachers pivot, Departments pivot, Observation list, Teacher priorities, CPD signals, Students, Cohorts.
+- **Teacher priorities** view uses `computeTeacherRiskIndex` to show per-teacher drift status, coverage, and top signal drivers.
+- **CPD signals** view uses `computeCpdPriorities` + `getTopImprovingSignals` for school-wide signal weakness ranking and positive momentum highlights.
+- View switcher styled to match `SegmentedTabs` component (rounded-lg, bg-[#f4f7fb], white active tab).
+- Observation list includes `Avatar` for teachers and `formatPhaseLabel` utility for human-readable lesson phase display.
+- HOD scope filtering enforced on Teacher priorities and CPD signals views.
+
 ## Replit Migration Notes
 - Dev/start scripts updated to use `-p 5000 -H 0.0.0.0`
 - `NEXTAUTH_URL` set to the Replit dev domain
