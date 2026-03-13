@@ -55,8 +55,18 @@ The workflow `Start application` runs `npm run dev` which starts Next.js on port
 - **Buttons**: Active press uses `scale-[0.98]`, not translate. Focus ring uses `ring-offset-2`.
 - **Login page**: Full-viewport split layout — left panel has indigo gradient with brand messaging, right panel has the form.
 - **Nav active state**: Solid `bg-accent text-white` pill with shadow — not a tinted background.
-- **Core UI components**: `components/ui/` — Card, Button, PageHeader, StatusPill, SectionHeader, CollapsibleCard, EmptyState, TileOption, DriverChips.
+- **Core UI components**: `components/ui/` — Card, Button, PageHeader, StatusPill, SectionHeader, CollapsibleCard, EmptyState, TileOption, DriverChips, StatCard, Avatar.
 - **Sidebar CSS var**: `--sidebar-width: 260px`, `--sidebar-collapsed-width: 72px`.
+
+## Home Page
+- Home page at `/home` has three role-based variants: Leadership (SLT/ADMIN), HOD, and Teacher.
+- **StatCard** (`components/ui/stat-card.tsx`): White card with coloured top accent bar, used for hero stat rows on each variant.
+- **Avatar** (`components/ui/avatar.tsx`): Circular initials badge with deterministic colour, used on teacher name rows.
+- Leadership hero: 4 stat cards (observations, urgent students, CPD drift signals, teachers drifting).
+- HOD hero: 2 stat cards (dept observations, dept CPD signals).
+- Teacher hero: 2 stat cards (your observations, open actions).
+- Priority lists (CPD, teachers, students) are polished with avatars, status pills, and driver chips.
+- Cohort change shown inline (not collapsible), Leave Approvals and Positive Momentum collapsed sections removed.
 
 ## Replit Migration Notes
 - Dev/start scripts updated to use `-p 5000 -H 0.0.0.0`
