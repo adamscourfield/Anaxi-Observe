@@ -97,11 +97,11 @@ function LeadershipHome({
   pendingLeaveCount: number;
   openOnCallCount: number;
 }) {
-  const topCpd = cpdRows.filter((r) => r.teachersDriftingDown > 0).slice(0, 3);
+  const allDriftingCpd = cpdRows.filter((r) => r.teachersDriftingDown > 0);
+  const topCpd = allDriftingCpd.slice(0, 3);
   const topTeachers = teacherRows.slice(0, 5);
-  const urgentStudents = studentRows
-    .filter((r) => r.band === "URGENT" || r.band === "PRIORITY")
-    .slice(0, 8);
+  const allUrgentStudents = studentRows.filter((r) => r.band === "URGENT" || r.band === "PRIORITY");
+  const displayUrgentStudents = allUrgentStudents.slice(0, 8);
   const hasBehaviourData = cohortRows.length > 0 || studentRows.length > 0;
 
   const cohortAlerts = [...cohortRows]
@@ -114,8 +114,8 @@ function LeadershipHome({
     .slice(0, 2);
 
   const totalObs = teacherRows.reduce((sum, r) => sum + r.teacherCoverage, 0);
-  const urgentCount = urgentStudents.length;
-  const cpdDriftCount = topCpd.length;
+  const urgentCount = allUrgentStudents.length;
+  const cpdDriftCount = allDriftingCpd.length;
   const operationalCount = pendingLeaveCount + openOnCallCount;
 
   return (
@@ -251,11 +251,11 @@ function LeadershipHome({
             <p className="text-[14px] font-semibold text-text">Student support priorities</p>
             <Link href={`/analytics?tab=students&window=${windowDays}`} className="text-[12px] text-accent hover:underline">View all →</Link>
           </div>
-          {urgentStudents.length === 0 ? (
+          {displayUrgentStudents.length === 0 ? (
             <MetaText>No urgent or priority students in this window.</MetaText>
           ) : (
             <ul className="space-y-1">
-              {urgentStudents.map((row) => (
+              {displayUrgentStudents.map((row) => (
                 <li key={row.studentId}>
                   <Link href={`/analysis/students/${row.studentId}?window=${windowDays}`} className="block rounded-lg p-3 hover:bg-bg/60 calm-transition">
                     <div className="flex items-center justify-between gap-2">
@@ -309,10 +309,11 @@ function HodHome({
   allDepts: { id: string; name: string }[];
   activeDeptId: string;
 }) {
-  const topDeptCpd = deptCpdRows.filter((r) => r.teachersDriftingDown > 0).slice(0, 2);
+  const allDeptDriftingCpd = deptCpdRows.filter((r) => r.teachersDriftingDown > 0);
+  const topDeptCpd = allDeptDriftingCpd.slice(0, 2);
   const topDeptTeachers = deptTeacherRows.slice(0, 5);
   const deptObsCount = deptTeacherRows.reduce((sum, r) => sum + r.teacherCoverage, 0);
-  const deptCpdDrift = topDeptCpd.length;
+  const deptCpdDrift = allDeptDriftingCpd.length;
 
   return (
     <div className="space-y-6">
