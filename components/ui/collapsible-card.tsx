@@ -21,9 +21,8 @@ export function CollapsibleCard({
 }) {
   return (
     <details
-      className={`h-full rounded-2xl border border-border/70 bg-surface/95 shadow-sm backdrop-blur-sm ${className}`}
+      className={`h-full rounded-xl border border-border bg-white shadow-sm ${className}`}
       open={defaultOpen}
-      style={{ boxShadow: "0 2px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.03)" }}
     >
       <summary className="group flex cursor-pointer list-none items-center justify-between px-4 py-3.5 text-sm font-semibold text-text [&::-webkit-details-marker]:hidden">
         <span>{title}</span>
@@ -31,7 +30,7 @@ export function CollapsibleCard({
           <ChevronDown />
         </span>
       </summary>
-      <div className="border-t border-border/50 p-4">{children}</div>
+      <div className="border-t border-border p-4">{children}</div>
     </details>
   );
 }

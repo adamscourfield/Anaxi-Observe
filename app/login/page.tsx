@@ -37,7 +37,7 @@ export default function LoginPage() {
   return (
     <div className="mx-auto flex min-h-[78vh] w-full max-w-md flex-col items-center justify-center gap-8 px-4">
       <div className="text-center">
-        <div className="mx-auto mb-4 inline-flex h-20 w-20 items-center justify-center rounded-3xl border border-border/50 bg-surface/60 shadow-md backdrop-blur-sm">
+        <div className="mx-auto mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl border border-border bg-white shadow-md">
           <Image
             src="/anaxi-logo.png"
             alt="Anaxi logo"
@@ -75,7 +75,7 @@ export default function LoginPage() {
           </div>
 
           {error ? (
-            <div className="rounded-xl border border-error/20 bg-[var(--pill-error-bg)] px-3 py-2.5">
+            <div className="rounded-lg border border-error/20 bg-[var(--pill-error-bg)] px-3 py-2.5">
               <MetaText className="text-[var(--pill-error-text)]">{error}</MetaText>
             </div>
           ) : null}

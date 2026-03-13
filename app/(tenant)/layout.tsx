@@ -20,18 +20,15 @@ export default async function TenantLayout({ children }: { children: React.React
   ]);
 
   return (
-    <div className="flex items-start gap-4 lg:gap-6">
+    <div className="flex items-start gap-6">
       <TenantNav
         role={user.role}
         enabledFeatures={features.map((f: any) => f.key as any)}
         onCallCount={onCallCount}
         leaveCount={leaveCount}
       />
-      <section
-        className="min-w-0 flex-1 rounded-[28px] border border-border/60 bg-surface/40 p-3 shadow-sm backdrop-blur-sm lg:p-4"
-        style={{ boxShadow: "0 2px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.02)" }}
-      >
-        <div className="min-w-0 rounded-[24px] border border-border/50 bg-bg/18 p-4 lg:p-5">{children}</div>
+      <section className="min-w-0 flex-1 py-1">
+        {children}
       </section>
     </div>
   );

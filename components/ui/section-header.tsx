@@ -23,7 +23,7 @@ export function SectionHeader({
       {href && (
         <Link
           href={href}
-          className="calm-transition shrink-0 rounded-lg border border-transparent px-2 py-1 text-xs font-medium text-accent hover:border-accent/20 hover:bg-accent/5 hover:text-accentHover"
+          className="calm-transition shrink-0 rounded-md px-2 py-1 text-xs font-medium text-accent hover:bg-accent/5 hover:text-accentHover"
         >
           {linkLabel} &rarr;
         </Link>

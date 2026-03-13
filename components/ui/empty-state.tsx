@@ -34,7 +34,7 @@ export function EmptyState({
 
   if (mode === "embedded") {
     return (
-      <div className="rounded-2xl border border-dashed border-border/60 bg-bg/20 px-5 py-10 text-center">
+      <div className="rounded-xl border border-dashed border-border bg-bg px-5 py-10 text-center">
         {content}
       </div>
     );

@@ -37,6 +37,14 @@ The workflow `Start application` runs `npm run dev` which starts Next.js on port
 - `modules/` — Feature modules
 - `prisma/` — Schema, migrations, and seed scripts
 
+## Design System
+- Light mode design — white backgrounds, light grey (#f8f9fb) page bg, dark text
+- CSS custom properties in `app/globals.css` define all design tokens (colours, shadows, radii, pill variants)
+- Tailwind config (`tailwind.config.ts`) maps CSS vars to Tailwind utility classes
+- Core UI components in `components/ui/` — Card, Button, PageHeader, StatusPill, SectionHeader, CollapsibleCard, EmptyState, TileOption, DriverChips
+- Sidebar nav in `components/tenant-nav.tsx` — clean white sidebar with accent-coloured active states
+- Layout in `app/(tenant)/layout.tsx` — flat content area next to sidebar (no nested containers)
+
 ## Replit Migration Notes
 - Dev/start scripts updated to use `-p 5000 -H 0.0.0.0`
 - `NEXTAUTH_URL` set to the Replit dev domain
