@@ -179,31 +179,34 @@ export function TenantNav({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-border bg-white calm-transition ${sidebarWidth}`}
+      className={`fixed left-0 top-0 z-30 flex h-screen flex-col bg-white calm-transition ${sidebarWidth}`}
+      style={{ boxShadow: "2px 0 16px rgba(15,23,42,0.08)" }}
       aria-label="Sidebar menu"
     >
-      <div className={`flex items-center ${collapsed ? "justify-center px-2" : "px-5"} h-16 shrink-0`}>
+      {/* Logo area */}
+      <div className={`flex items-center ${collapsed ? "justify-center px-2" : "px-5"} h-16 shrink-0 border-b border-[#f0f2f5]`}>
         <Link href="/home" className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} group`}>
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">
-            <Image src="/anaxi-logo.png" alt="Anaxi" width={24} height={24} priority className="h-6 w-6 object-contain" />
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
+            <Image src="/anaxi-logo.png" alt="Anaxi" width={22} height={22} priority className="h-[22px] w-[22px] object-contain" />
           </span>
           {!collapsed && (
             <span className="flex flex-col leading-none">
-              <span className="text-[15px] font-bold tracking-[-0.02em] text-text calm-transition group-hover:text-accent">Anaxi</span>
-              <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.1em] text-muted">School Ops</span>
+              <span className="text-[15px] font-bold tracking-[-0.02em] text-text">Anaxi</span>
+              <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted/70">School Ops</span>
             </span>
           )}
         </Link>
       </div>
 
-      <div className="mx-4 h-px bg-border/60" />
-
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="space-y-5">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-5">
+        <div className="space-y-6">
           {sections.map((section) => (
             <div key={section.label}>
               {!collapsed && (
-                <div className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted/60">{section.label}</div>
+                <div className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#b0bec9]">
+                  {section.label}
+                </div>
               )}
               <ul className="space-y-0.5">
                 {section.items.map((item) => {
@@ -214,27 +217,30 @@ export function TenantNav({
                       : pathname?.startsWith(item.href);
                   const showBadge = (item.badgeCount ?? 0) > 0;
                   return (
-                    <li key={item.href}>
+                    <li key={item.href} className="relative">
+                      {active && !collapsed && (
+                        <span className="pointer-events-none absolute inset-y-[3px] left-0 w-[3px] rounded-r-full bg-accent" />
+                      )}
                       <Link
                         href={item.href}
                         title={collapsed ? item.label : undefined}
-                        className={`group flex items-center ${collapsed ? "justify-center" : "justify-between"} rounded-lg px-2 py-[7px] calm-transition ${
+                        className={`group flex items-center ${collapsed ? "justify-center px-2" : "justify-between pl-5 pr-3"} rounded-lg py-2 calm-transition ${
                           active
                             ? "bg-[#eef2ff] text-accent font-semibold"
-                            : "text-[var(--text-muted)] hover:bg-white/70 hover:text-[var(--text)]"
+                            : "text-[#6b7a8d] hover:bg-[#f4f6f9] hover:text-[#1e293b]"
                         }`}
                       >
                         <span className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5"} min-w-0`}>
                           <NavIcon name={item.icon} active={!!active} />
-                          {!collapsed && <span className="truncate text-[13px]">{item.label}</span>}
+                          {!collapsed && <span className="truncate text-[13px] leading-tight">{item.label}</span>}
                         </span>
                         {!collapsed && showBadge && (
-                          <span className={`ml-2 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold ${
+                          <span className={`ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold ${
                             active
                               ? "bg-accent/10 text-accent"
                               : (item.badgeCount ?? 0) >= 5
                                 ? "bg-amber-100 text-amber-700"
-                                : "bg-gray-100 text-gray-600"
+                                : "bg-slate-100 text-slate-600"
                           }`}>
                             {item.badgeCount}
                           </span>
@@ -249,34 +255,36 @@ export function TenantNav({
         </div>
       </nav>
 
-      <div className="mx-4 h-px bg-border/60" />
-
-      <div className={`flex shrink-0 items-center ${collapsed ? "justify-center" : "justify-between"} px-3 py-3`}>
-        <form action="/api/auth/signout" method="post" className={collapsed ? "" : "flex-1"}>
-          <button
-            type="submit"
-            title={collapsed ? "Log out" : undefined}
-            className={`group flex items-center ${collapsed ? "justify-center" : "gap-2.5"} rounded-lg px-2 py-[7px] text-muted calm-transition hover:bg-bg hover:text-text ${collapsed ? "" : "w-full"}`}
-          >
-            <NavIcon name="logout" active={false} />
-            {!collapsed && <span className="text-[13px]">Log out</span>}
-          </button>
-        </form>
-        {!collapsed && (
-          <button
-            onClick={() => setCollapsed(true)}
-            className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted calm-transition hover:bg-bg hover:text-text"
-            type="button"
-            title="Collapse navigation"
-          >
-            <ChevronIcon direction="left" />
-          </button>
-        )}
+      {/* Bottom: sign out + collapse */}
+      <div className="border-t border-[#f0f2f5] px-3 py-3">
+        <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"}`}>
+          <form action="/api/auth/signout" method="post" className={collapsed ? "" : "flex-1"}>
+            <button
+              type="submit"
+              title={collapsed ? "Log out" : undefined}
+              className={`group flex items-center ${collapsed ? "justify-center px-2" : "gap-2.5 pl-5 pr-3"} w-full rounded-lg py-2 text-[#6b7a8d] calm-transition hover:bg-[#f4f6f9] hover:text-[#1e293b]`}
+            >
+              <NavIcon name="logout" active={false} />
+              {!collapsed && <span className="text-[13px]">Log out</span>}
+            </button>
+          </form>
+          {!collapsed && (
+            <button
+              onClick={() => setCollapsed(true)}
+              className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#b0bec9] calm-transition hover:bg-[#f4f6f9] hover:text-[#1e293b]"
+              type="button"
+              title="Collapse navigation"
+            >
+              <ChevronIcon direction="left" />
+            </button>
+          )}
+        </div>
       </div>
+
       {collapsed && (
         <button
           onClick={() => setCollapsed(false)}
-          className="absolute -right-3 top-20 z-40 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-white text-muted shadow-sm calm-transition hover:text-text"
+          className="absolute -right-3.5 top-20 z-40 inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-white text-muted shadow-md calm-transition hover:text-accent"
           type="button"
           title="Expand navigation"
         >

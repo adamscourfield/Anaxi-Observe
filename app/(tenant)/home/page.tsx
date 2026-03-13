@@ -70,18 +70,20 @@ function SharedHeader({
   computedAt: Date;
 }) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mb-6 overflow-hidden rounded-xl border border-[#dae3ed] bg-white shadow-md">
+      <div className="h-1 bg-[#4f46e5]" />
+      <div className="flex flex-col gap-3 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <H1>Anaxi briefing</H1>
-          <MetaText className="mt-1">Your personalised overview of school operations and priorities.</MetaText>
+          <h1 className="text-[24px] font-bold tracking-[-0.025em] text-[#0f172a]">Anaxi briefing</h1>
+          <p className="mt-0.5 text-[13px] text-[#64748b]">Your personalised overview of school operations and priorities.</p>
         </div>
-        <div className="flex flex-col gap-0.5 sm:text-right">
-          <MetaText>Updated {formatComputedAt(computedAt)}</MetaText>
-          <MetaText className="text-muted/60">Window {windowDays}d · Observations + Behaviour</MetaText>
+        <div className="flex items-center gap-4">
+          <div className="text-left sm:text-right">
+            <p className="text-[12px] font-medium text-[#0f172a]">Updated {formatComputedAt(computedAt)}</p>
+            <p className="text-[11px] text-[#64748b]">Window {windowDays}d · Observations + Behaviour</p>
+          </div>
         </div>
       </div>
-      <div className="styled-divider" />
     </div>
   );
 }

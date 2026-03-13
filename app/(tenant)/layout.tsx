@@ -40,7 +40,7 @@ export default async function TenantLayout({ children }: { children: React.React
         leaveCount={leaveCount}
       />
       <div className="ml-[var(--sidebar-width)] flex min-h-screen flex-col calm-transition" id="tenant-content">
-        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-end border-b border-border/60 bg-[var(--bg)] px-8 lg:px-10">
+        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-end bg-white px-8 lg:px-10" style={{ boxShadow: "0 1px 0 #e8eff6, 0 2px 8px rgba(15,23,42,0.04)" }}>
           <div className="flex items-center gap-3">
             <span className="hidden text-[13px] text-muted sm:block">{user.fullName || user.email}</span>
             <span

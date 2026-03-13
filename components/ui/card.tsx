@@ -3,11 +3,11 @@ import { HTMLAttributes, ReactNode } from "react";
 type CardTone = "default" | "subtle" | "inset" | "interactive";
 
 const toneClasses: Record<CardTone, string> = {
-  default: "border border-border bg-white shadow-sm",
-  subtle: "border border-border/60 bg-white",
-  inset: "border border-border/60 bg-bg",
+  default: "border border-border bg-white shadow-md",
+  subtle: "border border-border/60 bg-white shadow-sm",
+  inset: "border border-border/60 bg-[#f4f7fb]",
   interactive:
-    "border border-border bg-white shadow-sm calm-transition hover:border-accent/25 hover:shadow-md",
+    "border border-border bg-white shadow-md calm-transition hover:border-accent/30 hover:shadow-lg cursor-pointer",
 };
 
 export function Card({

@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --bg: #edf1f7;
+  --bg: #c8d8e8;
   --surface: #ffffff;
   --text: #0f172a;
   --text-muted: #64748b;
-  --border: #e2e8f0;
-  --divider: #f1f5f9;
+  --border: #dae3ed;
+  --divider: #e8eff6;
 
   --accent: #4f46e5;
   --accent-hover: #4338ca;
   --accent-active: #3730a3;
-  --accent-tint: rgba(79, 70, 229, 0.07);
+  --accent-tint: rgba(79, 70, 229, 0.08);
 
   --success: #059669;
   --warning: #d97706;
@@ -23,9 +23,9 @@
   --radius: 14px;
   --radius-sm: 8px;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 4px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 20px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
 
   --primary-btn: #4f46e5;
   --primary-btn-hover: #4338ca;
@@ -203,7 +203,7 @@ textarea:focus-visible {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: #ffffff;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .table-header-strip {
@@ -219,7 +219,7 @@ textarea:focus-visible {
 
 .table-head-row {
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  background: #f1f5fa;
   color: var(--text-muted);
   font-size: 11px;
   font-weight: 600;
@@ -236,7 +236,7 @@ textarea:focus-visible {
 }
 
 .table-row:hover {
-  background: #f8faff;
+  background: #f5f9ff;
 }
 
 .sticky-first-column {

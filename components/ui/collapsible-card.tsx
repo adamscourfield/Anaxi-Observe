@@ -21,16 +21,16 @@ export function CollapsibleCard({
 }) {
   return (
     <details
-      className={`h-full rounded-xl border border-border bg-white shadow-sm ${className}`}
+      className={`h-full overflow-hidden rounded-xl border border-border bg-white shadow-md ${className}`}
       open={defaultOpen}
     >
-      <summary className="group flex cursor-pointer list-none items-center justify-between px-5 py-4 text-[15px] font-semibold text-text [&::-webkit-details-marker]:hidden">
+      <summary className="group flex cursor-pointer list-none items-center justify-between px-5 py-4 text-[14px] font-semibold tracking-[-0.01em] text-text [&::-webkit-details-marker]:hidden">
         <span>{title}</span>
         <span className="calm-transition text-muted group-open:rotate-180">
           <ChevronDown />
         </span>
       </summary>
-      <div className="border-t border-border px-5 py-4">{children}</div>
+      <div className="border-t border-border px-5 py-4 text-sm">{children}</div>
     </details>
   );
 }
