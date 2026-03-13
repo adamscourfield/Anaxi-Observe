@@ -36,7 +36,7 @@ export default async function AdminCoachingPage() {
       update: {},
       create: { tenantId: admin.tenantId, coachUserId, coacheeUserId },
     });
-    revalidatePath("/tenant/admin/coaching");
+    revalidatePath("/admin/coaching");
   }
 
   async function removeAssignment(formData: FormData) {
@@ -47,7 +47,7 @@ export default async function AdminCoachingPage() {
     await (prisma as any).coachAssignment.deleteMany({
       where: { tenantId: admin.tenantId, coachUserId, coacheeUserId },
     });
-    revalidatePath("/tenant/admin/coaching");
+    revalidatePath("/admin/coaching");
   }
 
   const byCoach = new Map<string, { coach: any; coachees: any[] }>();

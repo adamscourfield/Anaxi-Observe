@@ -13,18 +13,18 @@ export default async function AdminTerminologyPage() {
 
   const cards = [
     {
-      href: "/tenant/admin/language",
+      href: "/admin/language",
       label: "Language",
       desc: "Behaviour terminology and signal copy used across workflows."
     },
     {
-      href: "/tenant/admin/vocab",
+      href: "/admin/vocab",
       label: "Vocabulary",
       desc: "Singular/plural event labels shown in behaviour views."
     },
     ...(observationsFeature?.enabled
       ? [{
-          href: "/tenant/admin/signals",
+          href: "/admin/signals",
           label: "Observation signals",
           desc: "Signal display names and descriptions in observation journeys."
         }]
@@ -33,7 +33,7 @@ export default async function AdminTerminologyPage() {
 
   return (
     <div className="space-y-5">
-      <Link href="/tenant/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
+      <Link href="/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
       <PageHeader title="Terminology" subtitle="Central place for language, vocabulary, and signal wording." />
       <Card>
         <SectionHeader

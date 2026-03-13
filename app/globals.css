@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --bg: #c8d8e8;
+  --bg: #f8f8f8;
   --surface: #ffffff;
   --text: #0f172a;
   --text-muted: #64748b;
-  --border: #dae3ed;
-  --divider: #e8eff6;
+  --border: #e2e5ea;
+  --divider: #eff0f3;
 
   --accent: #4f46e5;
   --accent-hover: #4338ca;
@@ -249,7 +249,7 @@ textarea:focus-visible {
 
 .sticky-first-column-header {
   z-index: 20;
-  background: var(--bg);
+  background: #f1f5fa;
 }
 
 /* ─── Styled Divider ─────────────────────────────────────────────────────── */

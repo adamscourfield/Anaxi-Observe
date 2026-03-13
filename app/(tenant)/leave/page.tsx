@@ -30,9 +30,9 @@ export default async function LeavePage({ searchParams }: { searchParams?: Recor
         subtitle="Track requests, check status, and keep cover arrangements clear."
         actions={
           <>
-            <Link href="/tenant/leave/request"><Button>Request leave</Button></Link>
-            <Link href="/tenant/leave/calendar"><Button variant="secondary">Calendar</Button></Link>
-            {manager ? <Link href="/tenant/leave/pending"><Button variant="secondary">Pending approvals</Button></Link> : null}
+            <Link href="/leave/request"><Button>Request leave</Button></Link>
+            <Link href="/leave/calendar"><Button variant="secondary">Calendar</Button></Link>
+            {manager ? <Link href="/leave/pending"><Button variant="secondary">Pending approvals</Button></Link> : null}
           </>
         }
       />
@@ -51,7 +51,7 @@ export default async function LeavePage({ searchParams }: { searchParams?: Recor
           <ul className="space-y-2 text-sm">
             {(requests as any[]).map((request) => (
               <li key={request.id}>
-                <Link className="font-medium text-accent hover:text-accentHover" href={`/tenant/leave/${request.id}`}>
+                <Link className="font-medium text-accent hover:text-accentHover" href={`/leave/${request.id}`}>
                   {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()} · {request.reason?.label} · {request.status}
                 </Link>
               </li>

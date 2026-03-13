@@ -57,8 +57,8 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
         }
         actions={
           <>
-            <Link href="/tenant/students/import" className="rounded-xl border border-border/70 bg-bg/20 px-3.5 py-2 text-sm text-muted hover:bg-divider/60 hover:text-text">Import snapshots</Link>
-            <Link href="/tenant/students/import-subject-teachers" className="rounded-xl border border-border/70 bg-bg/20 px-3.5 py-2 text-sm text-muted hover:bg-divider/60 hover:text-text">Import subject teachers</Link>
+            <Link href="/students/import" className="rounded-xl border border-border/70 bg-bg/20 px-3.5 py-2 text-sm text-muted hover:bg-divider/60 hover:text-text">Import snapshots</Link>
+            <Link href="/students/import-subject-teachers" className="rounded-xl border border-border/70 bg-bg/20 px-3.5 py-2 text-sm text-muted hover:bg-divider/60 hover:text-text">Import subject teachers</Link>
           </>
         }
       />
@@ -72,7 +72,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
           <select name="status" defaultValue={status} className="rounded-xl border border-border/70 bg-bg/45 px-3 py-2.5 text-sm text-text"><option value="">Status</option><option value="ACTIVE">Active</option><option value="ARCHIVED">Archived</option></select>
           <div className="flex items-center gap-2 xl:justify-end">
             <Button type="submit">Apply</Button>
-            <Link href="/tenant/students" className="rounded-xl border border-border/70 bg-bg/20 px-3.5 py-2.5 text-sm text-muted hover:bg-divider/60 hover:text-text">Reset</Link>
+            <Link href="/students" className="rounded-xl border border-border/70 bg-bg/20 px-3.5 py-2.5 text-sm text-muted hover:bg-divider/60 hover:text-text">Reset</Link>
           </div>
         </form>
       </Card>
@@ -110,7 +110,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
                     <tr key={s.id} className="table-row">
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
-                          <Link className="font-medium text-accent hover:text-accentHover" href={`/tenant/students/${s.id}`}>{s.fullName}</Link>
+                          <Link className="font-medium text-accent hover:text-accentHover" href={`/students/${s.id}`}>{s.fullName}</Link>
                           <div className="flex flex-wrap gap-1.5">
                             {s.sendFlag ? <StatusPill variant="info" size="sm">SEND</StatusPill> : null}
                             {s.ppFlag ? <StatusPill variant="accent" size="sm">PP</StatusPill> : null}

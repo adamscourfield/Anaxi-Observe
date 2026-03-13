@@ -22,7 +22,7 @@ export function MeetingCard({ meeting }: MeetingCardProps) {
 
   return (
     <Card className="hover:border-accent/50 hover:shadow-md">
-      <Link href={`/tenant/meetings/${meeting.id}`} className="block space-y-1">
+      <Link href={`/meetings/${meeting.id}`} className="block space-y-1">
         <div className="flex items-start justify-between gap-2">
           <p className="font-medium text-text">{meeting.title}</p>
           <span className="shrink-0 rounded-full border border-border bg-divider px-2 py-0.5 text-xs text-text">{typeLabel}</span>

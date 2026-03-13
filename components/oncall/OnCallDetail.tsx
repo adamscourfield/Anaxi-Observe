@@ -125,7 +125,7 @@ export function OnCallDetail({ request, canAcknowledge, canResolve, canCancel }:
         )}
       </div>
 
-      <Link href="/tenant/on-call" className="text-sm text-muted underline">
+      <Link href="/on-call" className="text-sm text-muted underline">
         ← Back to On Call inbox
       </Link>
     </div>

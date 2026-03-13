@@ -68,7 +68,7 @@ export function OnCallRequestForm({ students }: OnCallRequestFormProps) {
         setError(data.error ?? "Failed to submit");
         return;
       }
-      router.push("/tenant/on-call");
+      router.push("/on-call");
       router.refresh();
     } catch {
       setError("Network error. Please try again.");

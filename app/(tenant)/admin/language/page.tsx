@@ -36,7 +36,7 @@ export default async function AdminLanguagePage() {
       update: data,
       create: { tenantId: admin.tenantId, ...data },
     });
-    revalidatePath("/tenant/admin/language");
+    revalidatePath("/admin/language");
   }
 
   async function saveSignalLabels(formData: FormData) {
@@ -47,7 +47,7 @@ export default async function AdminLanguagePage() {
       const description = String(formData.get(`description_${signal.key}`) || "");
       await upsertTenantSignalLabel(admin.tenantId, signal.key, displayName || signal.displayNameDefault, description);
     }
-    revalidatePath("/tenant/admin/language");
+    revalidatePath("/admin/language");
   }
 
   async function resetSignal(formData: FormData) {
@@ -57,16 +57,16 @@ export default async function AdminLanguagePage() {
     const signal = SIGNAL_DEFINITIONS.find((s) => s.key === key);
     if (!signal) return;
     await upsertTenantSignalLabel(admin.tenantId, signal.key, signal.displayNameDefault, null);
-    revalidatePath("/tenant/admin/language");
+    revalidatePath("/admin/language");
   }
 
   return (
     <div className="space-y-4">
-      <Link href="/tenant/admin/terminology" className="text-xs text-accent hover:underline">← Back to Terminology</Link>
+      <Link href="/admin/terminology" className="text-xs text-accent hover:underline">← Back to Terminology</Link>
       <PageHeader title="Terminology · Language" subtitle="Configure wording used in behaviour and observation experiences." />
 
       <Card className="text-sm text-muted">
-        Use this page for broad language choices. For event singular/plural wording, use <a className="text-accent hover:underline" href="/tenant/admin/vocab">Vocabulary</a>. For signal-only wording, use <a className="text-accent hover:underline" href="/tenant/admin/signals">Observation signals</a>.
+        Use this page for broad language choices. For event singular/plural wording, use <a className="text-accent hover:underline" href="/admin/vocab">Vocabulary</a>. For signal-only wording, use <a className="text-accent hover:underline" href="/admin/signals">Observation signals</a>.
       </Card>
 
       <Card>

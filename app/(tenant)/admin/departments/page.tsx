@@ -36,7 +36,7 @@ export default async function AdminDepartmentsPage() {
       update: {},
       create: { tenantId: admin.tenantId, name },
     });
-    revalidatePath("/tenant/admin/departments");
+    revalidatePath("/admin/departments");
   }
 
   async function deleteDepartment(formData: FormData) {
@@ -44,7 +44,7 @@ export default async function AdminDepartmentsPage() {
     const admin = await requireAdminUser();
     const id = String(formData.get("id"));
     await (prisma as any).department.deleteMany({ where: { id, tenantId: admin.tenantId } });
-    revalidatePath("/tenant/admin/departments");
+    revalidatePath("/admin/departments");
   }
 
   async function addMember(formData: FormData) {
@@ -60,7 +60,7 @@ export default async function AdminDepartmentsPage() {
       update: {},
       create: { tenantId: admin.tenantId, departmentId, userId, isHeadOfDepartment: false },
     });
-    revalidatePath("/tenant/admin/departments");
+    revalidatePath("/admin/departments");
   }
 
   async function removeMember(formData: FormData) {
@@ -71,7 +71,7 @@ export default async function AdminDepartmentsPage() {
     const dept = await (prisma as any).department.findFirst({ where: { id: departmentId, tenantId: admin.tenantId } });
     if (!dept) return;
     await (prisma as any).departmentMembership.deleteMany({ where: { departmentId, userId } });
-    revalidatePath("/tenant/admin/departments");
+    revalidatePath("/admin/departments");
   }
 
   async function toggleHod(formData: FormData) {
@@ -86,7 +86,7 @@ export default async function AdminDepartmentsPage() {
       where: { departmentId, userId },
       data: { isHeadOfDepartment: !current },
     });
-    revalidatePath("/tenant/admin/departments");
+    revalidatePath("/admin/departments");
   }
 
   return (

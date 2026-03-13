@@ -40,7 +40,7 @@ export default async function AdminUsersPage() {
         receivesOnCallEmails: false,
       },
     });
-    revalidatePath("/tenant/admin/users");
+    revalidatePath("/admin/users");
   }
 
   async function toggleActive(formData: FormData) {
@@ -49,7 +49,7 @@ export default async function AdminUsersPage() {
     const id = String(formData.get("id"));
     const active = String(formData.get("active")) === "true";
     await (prisma as any).user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { isActive: !active } });
-    revalidatePath("/tenant/admin/users");
+    revalidatePath("/admin/users");
   }
 
   async function resetPassword(formData: FormData) {
@@ -59,7 +59,7 @@ export default async function AdminUsersPage() {
     const password = String(formData.get("password") || "Password123!");
     const hash = await bcrypt.hash(password, 10);
     await (prisma as any).user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { passwordHash: hash } });
-    revalidatePath("/tenant/admin/users");
+    revalidatePath("/admin/users");
   }
 
   async function toggleApproveAllLoa(formData: FormData) {
@@ -68,7 +68,7 @@ export default async function AdminUsersPage() {
     const id = String(formData.get("id"));
     const enabled = String(formData.get("enabled")) === "true";
     await (prisma as any).user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { canApproveAllLoa: !enabled } });
-    revalidatePath("/tenant/admin/users");
+    revalidatePath("/admin/users");
   }
 
   async function toggleOnCallEmail(formData: FormData) {
@@ -77,7 +77,7 @@ export default async function AdminUsersPage() {
     const id = String(formData.get("id"));
     const enabled = String(formData.get("enabled")) === "true";
     await (prisma as any).user.updateMany({ where: { id, tenantId: admin.tenantId }, data: { receivesOnCallEmails: !enabled } });
-    revalidatePath("/tenant/admin/users");
+    revalidatePath("/admin/users");
   }
 
   async function addScopedLoaApprover(formData: FormData) {
@@ -98,7 +98,7 @@ export default async function AdminUsersPage() {
       update: {},
       create: { tenantId: admin.tenantId, approverId, targetUserId },
     });
-    revalidatePath("/tenant/admin/users");
+    revalidatePath("/admin/users");
   }
 
   async function removeScopedLoaApprover(formData: FormData) {
@@ -107,7 +107,7 @@ export default async function AdminUsersPage() {
     const approverId = String(formData.get("approverId") || "");
     const targetUserId = String(formData.get("targetUserId") || "");
     await (prisma as any).lOAApprovalScope.deleteMany({ where: { tenantId: admin.tenantId, approverId, targetUserId } });
-    revalidatePath("/tenant/admin/users");
+    revalidatePath("/admin/users");
   }
 
   return (
@@ -116,7 +116,7 @@ export default async function AdminUsersPage() {
         title="Users"
         subtitle="Manage staff access, account status, LOA approval scope, and on-call notification preferences."
         actions={
-          <Link href="/tenant/admin/users/import">
+          <Link href="/admin/users/import">
             <Button variant="secondary" type="button">Import users</Button>
           </Link>
         }

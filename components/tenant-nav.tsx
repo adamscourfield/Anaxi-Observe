@@ -196,15 +196,15 @@ export function TenantNav({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-5">
-        <div className="space-y-6">
+        <div className="space-y-7">
           {sections.map((section) => (
             <div key={section.label}>
               {!collapsed && (
-                <div className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#b0bec9]">
+                <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#b0bec9]">
                   {section.label}
                 </div>
               )}
-              <ul className="space-y-0.5">
+              <ul className="space-y-1">
                 {section.items.map((item) => {
                   const active = item.href === "/home" || item.href === "/my-actions"
                     ? pathname === item.href

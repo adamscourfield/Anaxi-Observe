@@ -17,7 +17,10 @@ function userInitials(name: string): string {
 
 export default async function TenantLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUserOrThrow();
-  const features = await prisma.tenantFeature.findMany({ where: { tenantId: user.tenantId, enabled: true } });
+  const [features, tenant] = await Promise.all([
+    prisma.tenantFeature.findMany({ where: { tenantId: user.tenantId, enabled: true } }),
+    prisma.tenant.findUnique({ where: { id: user.tenantId }, select: { name: true } }),
+  ]);
 
   const canSeeOnCallBadge = hasPermission(user.role, "oncall:view_all");
   const isApprover = await canManageLoa(user);
@@ -40,7 +43,15 @@ export default async function TenantLayout({ children }: { children: React.React
         leaveCount={leaveCount}
       />
       <div className="ml-[var(--sidebar-width)] flex min-h-screen flex-col calm-transition" id="tenant-content">
-        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-end bg-white px-8 lg:px-10" style={{ boxShadow: "0 1px 0 #e8eff6, 0 2px 8px rgba(15,23,42,0.04)" }}>
+        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between bg-white px-8 lg:px-10" style={{ boxShadow: "0 1px 0 var(--divider), 0 2px 8px rgba(15,23,42,0.04)" }}>
+          {tenant?.name ? (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-[10px] font-bold text-accent">
+                {tenant.name.charAt(0).toUpperCase()}
+              </span>
+              <span className="text-[13px] font-medium text-text">{tenant.name}</span>
+            </div>
+          ) : <div />}
           <div className="flex items-center gap-3">
             <span className="hidden text-[13px] text-muted sm:block">{user.fullName || user.email}</span>
             <span

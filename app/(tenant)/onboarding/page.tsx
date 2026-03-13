@@ -53,7 +53,7 @@ export default async function OnboardingPage({
     if (schoolName) {
       await prisma.tenant.update({ where: { id: admin.tenantId }, data: { name: schoolName } });
     }
-    nextRedirect("/tenant/onboarding?step=2");
+    nextRedirect("/onboarding?step=2");
   }
 
   // ── Step 2: Enable modules ───────────────────────────────────────────────────
@@ -68,7 +68,7 @@ export default async function OnboardingPage({
         create: { tenantId: admin.tenantId, key: mod.key, enabled }
       });
     }
-    nextRedirect("/tenant/onboarding?step=3");
+    nextRedirect("/onboarding?step=3");
   }
 
   // ── Step 3: Staff import info (redirect to import page) ──────────────────────
@@ -85,7 +85,7 @@ export default async function OnboardingPage({
       update: data,
       create: { tenantId: admin.tenantId, ...data }
     });
-    nextRedirect("/tenant/onboarding?step=5");
+    nextRedirect("/onboarding?step=5");
   }
 
   // ── Step 5: Signal labels ────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ export default async function OnboardingPage({
       const description = String(formData.get(`description_${signal.key}`) || "");
       await upsertTenantSignalLabel(admin.tenantId, signal.key, displayName || signal.displayNameDefault, description);
     }
-    nextRedirect("/tenant/onboarding?step=6");
+    nextRedirect("/onboarding?step=6");
   }
 
   // ── Step 7: Finish ───────────────────────────────────────────────────────────
@@ -161,7 +161,7 @@ export default async function OnboardingPage({
             ))}
           </div>
           <div className="flex gap-2">
-            <a href="/tenant/onboarding?step=1" className="rounded border px-4 py-2 text-sm">← Back</a>
+            <a href="/onboarding?step=1" className="rounded border px-4 py-2 text-sm">← Back</a>
             <button type="submit" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Next →</button>
           </div>
         </form>
@@ -174,9 +174,9 @@ export default async function OnboardingPage({
             Use the Users admin page to bulk-import or add staff manually. Come back here when done.
           </p>
           <div className="flex gap-2">
-            <a href="/tenant/onboarding?step=2" className="rounded border px-4 py-2 text-sm">← Back</a>
-            <a href="/tenant/admin/users" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Go to Users</a>
-            <a href="/tenant/onboarding?step=4" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Next →</a>
+            <a href="/onboarding?step=2" className="rounded border px-4 py-2 text-sm">← Back</a>
+            <a href="/admin/users" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Go to Users</a>
+            <a href="/onboarding?step=4" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Next →</a>
           </div>
         </div>
       )}
@@ -198,7 +198,7 @@ export default async function OnboardingPage({
             ))}
           </div>
           <div className="flex gap-2">
-            <a href="/tenant/onboarding?step=3" className="rounded border px-4 py-2 text-sm">← Back</a>
+            <a href="/onboarding?step=3" className="rounded border px-4 py-2 text-sm">← Back</a>
             <button type="submit" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Next →</button>
           </div>
         </form>
@@ -242,7 +242,7 @@ export default async function OnboardingPage({
             </table>
           </div>
           <div className="flex gap-2">
-            <a href="/tenant/onboarding?step=4" className="rounded border px-4 py-2 text-sm">← Back</a>
+            <a href="/onboarding?step=4" className="rounded border px-4 py-2 text-sm">← Back</a>
             <button type="submit" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Next →</button>
           </div>
         </form>
@@ -255,9 +255,9 @@ export default async function OnboardingPage({
             Optionally upload a timetable CSV. This can be done later from the Admin panel.
           </p>
           <div className="flex gap-2">
-            <a href="/tenant/onboarding?step=5" className="rounded border px-4 py-2 text-sm">← Back</a>
-            <a href="/tenant/admin/timetable" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Upload timetable</a>
-            <a href="/tenant/onboarding?step=7" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Skip →</a>
+            <a href="/onboarding?step=5" className="rounded border px-4 py-2 text-sm">← Back</a>
+            <a href="/admin/timetable" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Upload timetable</a>
+            <a href="/onboarding?step=7" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Skip →</a>
           </div>
         </div>
       )}

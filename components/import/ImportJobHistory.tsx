@@ -74,7 +74,7 @@ export function ImportJobHistory() {
               )}
             </td>
             <td className="p-2 flex gap-2">
-              <Link href={`/tenant/behaviour/import/job/${job.id}`} className="text-xs underline text-text">
+              <Link href={`/behaviour/import/job/${job.id}`} className="text-xs underline text-text">
                 View report
               </Link>
               {job.rowsFailed > 0 && (

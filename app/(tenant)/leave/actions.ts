@@ -35,10 +35,10 @@ export async function createLoaRequest(formData: FormData) {
     }
   });
 
-  revalidatePath("/tenant/leave");
-  revalidatePath("/tenant/leave/calendar");
-  revalidatePath("/tenant/leave/pending");
-  redirect("/tenant/leave?created=1");
+  revalidatePath("/leave");
+  revalidatePath("/leave/calendar");
+  revalidatePath("/leave/pending");
+  redirect("/leave?created=1");
 }
 
 export async function decideLoaRequest(formData: FormData) {
@@ -71,8 +71,8 @@ export async function decideLoaRequest(formData: FormData) {
     }
   });
 
-  revalidatePath(`/tenant/leave/${requestId}`);
-  revalidatePath("/tenant/leave/calendar");
-  revalidatePath("/tenant/leave/pending");
-  redirect(`/tenant/leave/${requestId}`);
+  revalidatePath(`/leave/${requestId}`);
+  revalidatePath("/leave/calendar");
+  revalidatePath("/leave/pending");
+  redirect(`/leave/${requestId}`);
 }

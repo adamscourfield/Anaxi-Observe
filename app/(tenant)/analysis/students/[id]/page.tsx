@@ -334,7 +334,7 @@ export default async function StudentProfilePage({
             {profile.onWatchlist ? "★ On watchlist" : "Add to watchlist"}
           </Button>
         </form>
-        <Link href={`/tenant/students/${profile.studentId}`} passHref>
+        <Link href={`/students/${profile.studentId}`} passHref>
           <Button variant="secondary">View behaviour history</Button>
         </Link>
       </div>

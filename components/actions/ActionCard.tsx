@@ -52,7 +52,7 @@ export function ActionCard({ action, currentUserId, onComplete }: ActionCardProp
         <span>{action.owner.fullName}</span>
         <DueDateIndicator dueDate={action.dueDate} status={action.status} />
         {action.meeting && (
-          <Link href={`/tenant/meetings/${action.meeting.id}`} className="font-medium text-accent hover:text-accentHover">
+          <Link href={`/meetings/${action.meeting.id}`} className="font-medium text-accent hover:text-accentHover">
             {action.meeting.title}
           </Link>
         )}

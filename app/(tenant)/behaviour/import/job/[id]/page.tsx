@@ -27,7 +27,7 @@ export default async function ImportJobPage({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Link href="/tenant/behaviour/import?tab=history" className="text-sm underline">
+        <Link href="/behaviour/import?tab=history" className="text-sm underline">
           ← Back to Import History
         </Link>
       </div>

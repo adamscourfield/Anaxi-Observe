@@ -256,7 +256,7 @@ export default async function CpdSignalDrilldownPage({
 
       {/* CTAs */}
       <div className="flex flex-wrap items-center gap-3">
-        <Link href={`/tenant/observe/history?signalKey=${signalKey}&window=${windowDays}`} passHref>
+        <Link href={`/observe/history?signalKey=${signalKey}&window=${windowDays}`} passHref>
           <Button variant="secondary">View observations</Button>
         </Link>
       </div>
