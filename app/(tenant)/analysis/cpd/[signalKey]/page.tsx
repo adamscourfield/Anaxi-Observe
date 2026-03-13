@@ -94,7 +94,7 @@ export default async function CpdSignalDrilldownPage({
     <div className="space-y-6">
       {/* Back link */}
       <Link
-        href={`/analysis/cpd?${backParams.toString()}`}
+        href={`/analytics?tab=cpd&${backParams.toString()}`}
         className="text-sm text-muted hover:underline"
       >
         ← Back to CPD priorities

@@ -149,7 +149,7 @@ function LeadershipHome({
               ))}
             </ul>
           )}
-          <Link href={`/analysis/cpd?window=${windowDays}`} className="mt-2 block text-xs text-accent hover:underline">View all →</Link>
+          <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="mt-2 block text-xs text-accent hover:underline">View all →</Link>
         </CollapsibleCard>
 
         <CollapsibleCard title="Teacher support priorities" defaultOpen className="min-h-[320px]">
@@ -170,7 +170,7 @@ function LeadershipHome({
               ))}
             </ul>
           )}
-          <Link href={`/analysis/teachers?window=${windowDays}`} className="mt-2 block text-xs text-accent hover:underline">View all →</Link>
+          <Link href={`/analytics?tab=teachers&window=${windowDays}`} className="mt-2 block text-xs text-accent hover:underline">View all →</Link>
         </CollapsibleCard>
       </section>
 
@@ -233,7 +233,7 @@ function LeadershipHome({
               ))}
             </ul>
           )}
-          <Link href={`/analysis/students?window=${windowDays}`} className="mt-2 block text-xs text-accent hover:underline">View all →</Link>
+          <Link href={`/analytics?tab=students&window=${windowDays}`} className="mt-2 block text-xs text-accent hover:underline">View all →</Link>
         </CollapsibleCard>
       </section>
 
@@ -348,7 +348,7 @@ function HodHome({
                 </ul>
               )}
               <Link
-                href={`/analysis/cpd?window=${windowDays}&department=${deptId}`}
+                href={`/analytics?tab=cpd&window=${windowDays}&department=${deptId}`}
                 className="block text-xs text-accent hover:underline"
               >
                 View dept CPD →
@@ -381,7 +381,7 @@ function HodHome({
                 </ul>
               )}
               <Link
-                href={`/analysis/teachers?window=${windowDays}&department=${deptId}`}
+                href={`/analytics?tab=teachers&window=${windowDays}&department=${deptId}`}
                 className="block text-xs text-accent hover:underline"
               >
                 View dept teachers →
@@ -486,7 +486,7 @@ function HodHome({
               {wholeSchoolTop1.teachersCovered} covered
             </MetaText>
             <Link
-              href={`/analysis/cpd?window=${windowDays}`}
+              href={`/analytics?tab=cpd&window=${windowDays}`}
               className="block text-xs text-accent hover:underline"
             >
               See CPD priorities →
@@ -737,7 +737,7 @@ function TeacherHome({
             </p>
             <MetaText>School-wide signal movement this window.</MetaText>
             <Link
-              href={`/analysis/cpd?window=${windowDays}`}
+              href={`/analytics?tab=cpd&window=${windowDays}`}
               className="block text-xs text-accent hover:underline"
             >
               See CPD priorities →

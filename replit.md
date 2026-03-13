@@ -37,6 +37,14 @@ The workflow `Start application` runs `npm run dev` which starts Next.js on port
 - `modules/` — Feature modules
 - `prisma/` — Schema, migrations, and seed scripts
 
+## Analytics Consolidation
+- The three analytics list pages (`/analysis/teachers`, `/analysis/cpd`, `/analysis/students`) have been consolidated into a single tabbed page at `/analytics`.
+- Tab switching uses `?tab=teachers|cpd|students` query parameter.
+- Permanent redirects from old URLs are configured in `next.config.mjs`.
+- Detail pages remain at their original routes (`/analysis/teachers/[memberId]`, `/analysis/cpd/[signalKey]`, `/analysis/students/[id]`).
+- The sidebar shows a single "Analytics" nav item instead of three separate items.
+- The `actions.ts` file for student watchlist toggle remains at `app/(tenant)/analysis/students/actions.ts`.
+
 ## Design System (v2 — Premium Redesign)
 - **Layout**: No top header on authenticated pages. Full-height sidebar owns brand + nav + logout. Content area uses `px-8 py-8` with `max-w-[1400px]`.
 - **Sidebar**: Fixed full-height (`h-screen`), white bg, border-right. Brand mark at top, nav sections in middle, logout anchored at bottom. Collapsible with expand button.

@@ -86,9 +86,7 @@ function iconFor(href: string) {
   if (href.includes("/on-call")) return "flag";
   if (href.includes("/meetings")) return "calendar";
   if (href.includes("/leave")) return "moon";
-  if (href.includes("/analysis/teachers")) return "triangle";
-  if (href.includes("/analysis/cpd")) return "spark";
-  if (href.includes("/analysis/students")) return "chart";
+  if (href.includes("/analytics")) return "chart";
   if (href.includes("/admin/users")) return "shield";
   if (href.includes("/admin/departments")) return "building";
   if (href.includes("/admin/features")) return "toggle";
@@ -159,9 +157,7 @@ export function TenantNav({
     {
       label: "Analytics",
       items: [
-        ...(has("ANALYSIS") && canSeeAnalysis ? [navItem("Teacher analysis", "/analysis/teachers")] : []),
-        ...(has("ANALYSIS") && canSeeAnalysis ? [navItem("CPD priorities", "/analysis/cpd")] : []),
-        ...(has("ANALYSIS") && canSeeAnalysis ? [navItem("Student priorities", "/analysis/students")] : []),
+        ...(has("ANALYSIS") && canSeeAnalysis ? [navItem("Analytics", "/analytics")] : []),
       ],
     },
     {

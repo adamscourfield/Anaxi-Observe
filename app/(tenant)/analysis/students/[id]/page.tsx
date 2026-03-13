@@ -92,7 +92,7 @@ export default async function StudentProfilePage({
     <div className="space-y-6">
       {/* Back link */}
       <Link
-        href={`/analysis/students?window=${windowDays}`}
+        href={`/analytics?tab=students&window=${windowDays}`}
         className="text-sm text-muted hover:underline"
       >
         ← Back to student support priorities
