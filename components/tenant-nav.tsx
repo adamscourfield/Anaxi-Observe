@@ -48,6 +48,8 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
       return <svg {...common}><path d="M10 4.2 15.8 15H4.2L10 4.2Z" stroke={stroke} strokeWidth="1.5" strokeLinejoin="round" /></svg>;
     case "spark":
       return <svg {...common}><path d="M10 3.5 11.7 8.3 16.5 10l-4.8 1.7L10 16.5l-1.7-4.8L3.5 10l4.8-1.7L10 3.5Z" stroke={stroke} strokeWidth="1.5" strokeLinejoin="round" /></svg>;
+    case "strategy":
+      return <svg {...common}><path d="M4 5.5h12M4 10h8M4 14.5h5" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" /><circle cx="14.5" cy="13" r="3" stroke={stroke} strokeWidth="1.5" /><path d="m16.6 15.1 1.4 1.4" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" /></svg>;
     case "chart":
       return <svg {...common}><path d="M4 15.5h12" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" /><path d="M6 13V9.5M10 13V6.5M14 13v-3" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" /></svg>;
     case "shield":
@@ -87,6 +89,7 @@ function iconFor(href: string) {
   if (href.includes("/meetings")) return "calendar";
   if (href.includes("/leave")) return "moon";
   if (href.includes("/analytics")) return "chart";
+  if (href.includes("/strategy")) return "strategy";
   if (href.includes("/admin/users")) return "shield";
   if (href.includes("/admin/departments")) return "building";
   if (href.includes("/admin/features")) return "toggle";
@@ -121,6 +124,7 @@ export function TenantNav({
   const canAccessAdminUsers = hasPermission(role, "admin:users");
   const canAccessAdminSettings = hasPermission(role, "admin:settings");
   const canSeeAnalysis = hasAnyPermission(role, ["analysis:view", "analysis:export"]);
+  const canViewStrategy = role === "ADMIN" || role === "SLT";
 
   const navItem = (label: string, href: string, badgeCount?: number): NavItem => ({
     label,
@@ -152,6 +156,7 @@ export function TenantNav({
       items: [
         ...(has("MEETINGS") ? [navItem("Meetings", "/meetings")] : []),
         ...(has("LEAVE") ? [navItem("Leave of absence", "/leave", leaveCount)] : []),
+        ...(canViewStrategy ? [navItem("Strategy Board", "/strategy")] : []),
       ],
     },
     {

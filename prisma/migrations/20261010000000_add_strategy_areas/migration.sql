@@ -1,6 +1,4 @@
--- Migration: add_strategy_areas
--- Run via: npx prisma migrate dev --name add_strategy_areas
-
+-- CreateTable
 CREATE TABLE "StrategyArea" (
   "id"          TEXT NOT NULL,
   "tenantId"    TEXT NOT NULL,
@@ -17,6 +15,7 @@ CREATE TABLE "StrategyArea" (
   CONSTRAINT "StrategyArea_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE "StrategyNote" (
   "id"             TEXT NOT NULL,
   "strategyAreaId" TEXT NOT NULL,
@@ -28,20 +27,26 @@ CREATE TABLE "StrategyNote" (
   CONSTRAINT "StrategyNote_pkey" PRIMARY KEY ("id")
 );
 
--- Foreign keys
+-- CreateIndex
+CREATE INDEX "StrategyArea_tenantId_idx" ON "StrategyArea"("tenantId");
+
+-- CreateIndex
+CREATE INDEX "StrategyArea_tenantId_completed_idx" ON "StrategyArea"("tenantId", "completed");
+
+-- CreateIndex
+CREATE INDEX "StrategyNote_strategyAreaId_idx" ON "StrategyNote"("strategyAreaId");
+
+-- AddForeignKey
 ALTER TABLE "StrategyArea"
   ADD CONSTRAINT "StrategyArea_tenantId_fkey"
   FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
 ALTER TABLE "StrategyNote"
   ADD CONSTRAINT "StrategyNote_strategyAreaId_fkey"
   FOREIGN KEY ("strategyAreaId") REFERENCES "StrategyArea"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
 ALTER TABLE "StrategyNote"
   ADD CONSTRAINT "StrategyNote_tenantId_fkey"
   FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- Indexes for common queries
-CREATE INDEX "StrategyArea_tenantId_idx" ON "StrategyArea"("tenantId");
-CREATE INDEX "StrategyArea_tenantId_completed_idx" ON "StrategyArea"("tenantId", "completed");
-CREATE INDEX "StrategyNote_strategyAreaId_idx" ON "StrategyNote"("strategyAreaId");
