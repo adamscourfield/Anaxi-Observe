@@ -159,6 +159,8 @@ model Tenant {
   studentWatchlist   StudentWatchlist[]
   analysisRuns       AnalysisRun[]
   auditLogs          AuditLog[]
+  strategyAreas      StrategyArea[]
+  strategyNotes      StrategyNote[]
 }
 
 model User {
@@ -844,4 +846,38 @@ model SchoolAdminInvite {
   createdAt     DateTime @default(now())
 
   @@index([tenantId, email])
+}
+
+model StrategyArea {
+  id          String   @id @default(cuid())
+  tenantId    String
+  title       String
+  category    String?
+  description String?
+  priority    String   @default("medium") // "critical" | "high" | "medium" | "low"
+  owner       String?
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  notes  StrategyNote[]
+
+  @@index([tenantId])
+  @@index([tenantId, completed])
+}
+
+model StrategyNote {
+  id             String   @id @default(cuid())
+  strategyAreaId String
+  tenantId       String
+  text           String
+  createdAt      DateTime @default(now())
+  createdById    String
+
+  strategyArea StrategyArea @relation(fields: [strategyAreaId], references: [id], onDelete: Cascade)
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([strategyAreaId])
 }
