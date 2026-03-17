@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { H2, H3, BodyText } from "@/components/ui/typography";
+import { H2, BodyText } from "@/components/ui/typography";
 import { GLOBAL_SCALE } from "@/modules/observations/signalDefinitions";
 import { clearDraft, loadDraft, persistDraft, ScaleKey } from "./observationDraft";
 import { NotObservedButton } from "./NotObservedButton";
@@ -30,21 +30,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
   const params = useSearchParams();
   const [pendingValue, setPendingValue] = useState<ScaleKey | null>(null);
   const [pendingNotObserved, setPendingNotObserved] = useState(false);
-  const [showSpeedPrompt, setShowSpeedPrompt] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const speedPromptContinueRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    if (!showSpeedPrompt) return;
-    speedPromptContinueRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setShowSpeedPrompt(false);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [showSpeedPrompt]);
 
   const orderedByOrder = useMemo(() => [...signals].sort((a, b) => a.order - b.order), [signals]);
   const signalKeys = useMemo(() => orderedByOrder.map((signal) => signal.key), [orderedByOrder]);
@@ -56,9 +42,8 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
     const phaseRelevant = orderedByOrder.filter((signal) => signal.phaseRelevance.includes(draft.context.phase));
     const included = new Set(phaseRelevant.map((signal) => signal.key));
     const universal = orderedByOrder.filter((signal) => signal.isUniversal && !included.has(signal.key));
-    for (const signal of universal) included.add(signal.key);
-    const other = orderedByOrder.filter((signal) => !included.has(signal.key));
-    return { list: [...phaseRelevant, ...universal, ...other], keyCount: phaseRelevant.length + universal.length };
+    const list = [...phaseRelevant, ...universal];
+    return { list, keyCount: list.length };
   }, [draft.context.phase, orderedByOrder]);
 
   const total = orderedSignals.list.length;
@@ -92,20 +77,19 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
       router.push("/observe/new/review");
       return;
     }
+    goToIndex(nextIndex);
+  };
 
-    if (nextIndex === orderedSignals.keyCount && nextIndex < total) {
-      const remaining = orderedSignals.list.slice(nextIndex);
-      const hasUnanswered = remaining.some((signal) => {
-        const state = draft.signalState[signal.key];
-        return !state?.valueKey && !state?.notObserved;
-      });
-      if (hasUnanswered) {
-        setShowSpeedPrompt(true);
-        return;
+  const finishEarly = () => {
+    const next = { ...draft, signalState: { ...draft.signalState } };
+    for (const signal of orderedSignals.list.slice(currentIndex + 1)) {
+      const state = next.signalState[signal.key];
+      if (!state?.valueKey && !state?.notObserved) {
+        next.signalState[signal.key] = { valueKey: null, notObserved: true };
       }
     }
-
-    goToIndex(nextIndex);
+    updateDraft(next);
+    router.push("/observe/new/review");
   };
 
   const updateDraft = (updated: typeof draft) => {
@@ -187,7 +171,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         <BodyText className="line-clamp-2 text-muted">{description}</BodyText>
       </Card>
 
-      <div className="flex gap-6">
+      <div className="flex items-stretch gap-6">
         <div className="flex-1 space-y-3">
           <SignalTileGroup
             options={GLOBAL_SCALE.map((scale) => ({ key: scale.key, label: scale.label }))}
@@ -214,15 +198,24 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
           >
             {isLastSignal ? "Review observation →" : "Next →"}
           </Button>
-          <BodyText className="text-xs text-muted">Select a rating or skip, then press Next to continue.</BodyText>
+          {!isLastSignal && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={finishEarly}
+              className="w-full text-xs"
+            >
+              Complete &amp; review now →
+            </Button>
+          )}
 
           <div id="signal-info-panel" className="md:hidden">
             {infoPanel}
           </div>
         </div>
 
-        <aside className="hidden md:block w-80 shrink-0 sticky top-4 self-start">
-          <Card className="space-y-3 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <aside className="hidden md:block w-80 shrink-0">
+          <Card className="h-full space-y-3 overflow-y-auto">
             {infoPanel}
           </Card>
         </aside>
@@ -236,47 +229,6 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         scaleRows={scaleRows}
       />
 
-      {showSpeedPrompt ? (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-[var(--overlay)] p-4 pt-40" role="presentation" onClick={() => setShowSpeedPrompt(false)}>
-          <Card
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="speed-prompt-title"
-            className="w-full max-w-md space-y-3"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div id="speed-prompt-title"><H3>Finish quickly?</H3></div>
-            <BodyText className="text-muted">You&rsquo;ve captured the key signals for this lesson phase. Mark the remaining signals as Skipped?</BodyText>
-            <div className="flex gap-2">
-              <Button
-                ref={speedPromptContinueRef}
-                type="button"
-                onClick={() => {
-                  setShowSpeedPrompt(false);
-                  goToIndex(currentIndex + 1);
-                }}
-              >
-                Continue reviewing
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  const next = { ...draft, signalState: { ...draft.signalState } };
-                  for (const signal of orderedSignals.list.slice(orderedSignals.keyCount)) {
-                    const state = next.signalState[signal.key];
-                    if (!state.valueKey && !state.notObserved) next.signalState[signal.key] = { valueKey: null, notObserved: true };
-                  }
-                  updateDraft(next);
-                  router.push("/observe/new/review");
-                }}
-              >
-                Mark remaining as Skipped
-              </Button>
-            </div>
-          </Card>
-        </div>
-      ) : null}
     </div>
   );
 }
