@@ -40,7 +40,7 @@ export function ObservationContextForm({ teachers, draftKey, signalKeys }: { tea
           <svg viewBox="0 0 16 16" fill="none" className="mr-1 h-3.5 w-3.5"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
           Back
         </Button>
-        <Button type="button" variant="ghost" onClick={() => router.push("/tenant/observe")}>
+        <Button type="button" variant="ghost" onClick={() => router.push("/observe")}>
           <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
         </Button>
       </div>

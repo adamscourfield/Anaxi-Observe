@@ -24,7 +24,7 @@ export function MeetingCard({ meeting }: MeetingCardProps) {
 
   return (
     <Card tone="interactive">
-      <Link href={`/tenant/meetings/${meeting.id}`} className="block space-y-2">
+      <Link href={`/meetings/${meeting.id}`} className="block space-y-2">
         <div className="flex items-start justify-between gap-2">
           <p className="font-medium text-text">{meeting.title}</p>
           <StatusPill variant="neutral" size="sm">{typeLabel}</StatusPill>
