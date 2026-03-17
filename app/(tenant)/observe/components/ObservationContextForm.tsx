@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { H1, MetaText } from "@/components/ui/typography";
+import { H1, MetaText, Label } from "@/components/ui/typography";
 import { TileOption } from "@/components/ui/tile-option";
 import { DEFAULT_CONTEXT, loadDraft, persistDraft, Phase } from "./observationDraft";
 
@@ -34,62 +34,75 @@ export function ObservationContextForm({ teachers, draftKey, signalKeys }: { tea
   const canContinue = Boolean(context.teacherId && context.yearGroup && context.subject.trim());
 
   return (
-    <Card className="mx-auto max-w-xl space-y-4">
+    <Card className="mx-auto max-w-xl space-y-5">
       <div className="flex items-center justify-between">
-        <Button type="button" variant="ghost" onClick={() => router.back()}>Back</Button>
-        <Button type="button" variant="ghost" onClick={() => router.push("/tenant/observe")}>Close</Button>
+        <Button type="button" variant="ghost" onClick={() => router.back()}>
+          <svg viewBox="0 0 16 16" fill="none" className="mr-1 h-3.5 w-3.5"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          Back
+        </Button>
+        <Button type="button" variant="ghost" onClick={() => router.push("/tenant/observe")}>
+          <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+        </Button>
       </div>
       <H1>New observation</H1>
 
-      <label className="block text-sm text-text">Teacher</label>
-      <input
-        className="w-full rounded-md border border-border bg-surface p-2 text-sm"
-        placeholder="Search teacher"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-      />
-      <select
-        className="w-full rounded-md border border-border bg-surface p-2"
-        value={context.teacherId}
-        onChange={(event) => setContext((current) => ({ ...current, teacherId: event.target.value }))}
-      >
-        <option value="">Select teacher</option>
-        {filteredTeachers.map((teacher) => (
-          <option key={teacher.id} value={teacher.id}>{teacher.fullName} ({teacher.email})</option>
-        ))}
-      </select>
+      <div>
+        <Label>Teacher</Label>
+        <input
+          className="field mb-2"
+          placeholder="Search teacher"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <select
+          className="field"
+          value={context.teacherId}
+          onChange={(event) => setContext((current) => ({ ...current, teacherId: event.target.value }))}
+        >
+          <option value="">Select teacher</option>
+          {filteredTeachers.map((teacher) => (
+            <option key={teacher.id} value={teacher.id}>{teacher.fullName} ({teacher.email})</option>
+          ))}
+        </select>
+      </div>
 
-      <label className="block text-sm text-text">Year group</label>
-      <select
-        className="w-full rounded-md border border-border bg-surface p-2"
-        value={context.yearGroup}
-        onChange={(event) => setContext((current) => ({ ...current, yearGroup: event.target.value }))}
-      >
-        <option value="">Select year group</option>
-        {YEAR_GROUPS.map((year) => <option key={year} value={year}>Year {year}</option>)}
-      </select>
+      <div>
+        <Label>Year group</Label>
+        <select
+          className="field"
+          value={context.yearGroup}
+          onChange={(event) => setContext((current) => ({ ...current, yearGroup: event.target.value }))}
+        >
+          <option value="">Select year group</option>
+          {YEAR_GROUPS.map((year) => <option key={year} value={year}>Year {year}</option>)}
+        </select>
+      </div>
 
-      <label className="block text-sm text-text">Subject</label>
-      <input
-        className="w-full rounded-md border border-border bg-surface p-2"
-        placeholder="e.g. Maths"
-        value={context.subject}
-        onChange={(event) => setContext((current) => ({ ...current, subject: event.target.value }))}
-      />
+      <div>
+        <Label>Subject</Label>
+        <input
+          className="field"
+          placeholder="e.g. Maths"
+          value={context.subject}
+          onChange={(event) => setContext((current) => ({ ...current, subject: event.target.value }))}
+        />
+      </div>
 
-      <label className="block text-sm text-text">Lesson phase</label>
-      <div className="grid grid-cols-2 gap-2">
-        {PHASE_OPTIONS.map((phase) => (
-          <TileOption
-            key={phase.key}
-            type="button"
-            selected={context.phase === phase.key}
-            onClick={() => setContext((current) => ({ ...current, phase: phase.key }))}
-            className="text-sm"
-          >
-            {phase.label}
-          </TileOption>
-        ))}
+      <div>
+        <Label>Lesson phase</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {PHASE_OPTIONS.map((phase) => (
+            <TileOption
+              key={phase.key}
+              type="button"
+              selected={context.phase === phase.key}
+              onClick={() => setContext((current) => ({ ...current, phase: phase.key }))}
+              className="text-sm"
+            >
+              {phase.label}
+            </TileOption>
+          ))}
+        </div>
       </div>
 
       <Button
@@ -103,7 +116,7 @@ export function ObservationContextForm({ teachers, draftKey, signalKeys }: { tea
       >
         Continue
       </Button>
-      <MetaText>Deliberate, calm, and transparent capture flow.</MetaText>
+      <MetaText className="text-center">Deliberate, calm, and transparent capture flow.</MetaText>
     </Card>
   );
 }

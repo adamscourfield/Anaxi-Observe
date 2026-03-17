@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { H2, BodyText } from "@/components/ui/typography";
+import { H2, H3, BodyText } from "@/components/ui/typography";
 import { GLOBAL_SCALE } from "@/modules/observations/signalDefinitions";
 import { clearDraft, loadDraft, persistDraft, ScaleKey } from "./observationDraft";
 import { NotObservedButton } from "./NotObservedButton";
@@ -125,10 +125,13 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         }}
       />
 
-      <Card className="space-y-2">
+      <Card className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <H2>{title}</H2>
-          <Button type="button" variant="secondary" className="px-2 py-1 text-xs" onClick={() => setHelpOpen(true)}>Info</Button>
+          <Button type="button" variant="secondary" className="shrink-0 px-3 py-1.5 text-xs" onClick={() => setHelpOpen(true)}>
+            <svg viewBox="0 0 16 16" fill="none" className="mr-1 h-3.5 w-3.5"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" /><path d="M6.5 6.5a1.5 1.5 0 1 1 1.5 1.5v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><circle cx="8" cy="11.5" r="0.5" fill="currentColor" /></svg>
+            Info
+          </Button>
         </div>
         <BodyText className="line-clamp-2 text-muted">{description}</BodyText>
       </Card>
@@ -139,22 +142,22 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         onSelect={(value) => saveSignal({ valueKey: value as ScaleKey, notObserved: false })}
       />
       <NotObservedButton onClick={() => saveSignal({ valueKey: null, notObserved: true })} />
-      <BodyText className="text-xs text-muted">Use “Skip for now” if there wasn’t enough evidence in this moment — you can revisit any signal in review.</BodyText>
+      <BodyText className="text-center text-xs text-muted">Use &ldquo;Skip for now&rdquo; if there wasn&rsquo;t enough evidence &mdash; you can revisit any signal in review.</BodyText>
 
       <SignalHelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} description={description} lookFors={currentSignal.lookFors} scaleRows={scaleRows} />
 
       {showSpeedPrompt ? (
-        <div className="fixed inset-0 z-50 bg-[var(--overlay)] p-4" role="presentation" onClick={() => setShowSpeedPrompt(false)}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-[var(--overlay)] p-4 pt-40" role="presentation" onClick={() => setShowSpeedPrompt(false)}>
           <Card
             role="dialog"
             aria-modal="true"
             aria-labelledby="speed-prompt-title"
-            className="mx-auto mt-40 max-w-md"
+            className="w-full max-w-md space-y-3"
             onClick={(event) => event.stopPropagation()}
           >
-            <h3 id="speed-prompt-title" className="text-sm font-semibold text-text">Finish quickly?</h3>
-            <BodyText>You’ve captured the key signals for this lesson phase. Mark the remaining signals as Skipped?</BodyText>
-            <div className="mt-3 flex gap-2">
+            <H3 id="speed-prompt-title">Finish quickly?</H3>
+            <BodyText className="text-muted">You&rsquo;ve captured the key signals for this lesson phase. Mark the remaining signals as Skipped?</BodyText>
+            <div className="flex gap-2">
               <Button
                 ref={speedPromptContinueRef}
                 type="button"

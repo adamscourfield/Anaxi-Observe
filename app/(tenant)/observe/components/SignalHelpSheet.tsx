@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { H3, MetaText } from "@/components/ui/typography";
 
 export function SignalHelpSheet({
   open,
@@ -18,23 +19,27 @@ export function SignalHelpSheet({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 bg-[var(--overlay)] p-4" onClick={onClose}>
-      <Card className="mx-auto mt-24 max-w-xl" onClick={(event) => event.stopPropagation()}>
-        <p className="text-sm text-muted">{description}</p>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-[var(--overlay)] p-4 pt-24" onClick={onClose}>
+      <Card className="w-full max-w-xl space-y-4" onClick={(event) => event.stopPropagation()}>
+        <p className="text-sm leading-relaxed text-muted">{description}</p>
         {lookFors?.length ? (
-          <ul className="mt-2 list-disc pl-4 text-sm text-muted">
-            {lookFors.map((item) => <li key={item}>{item}</li>)}
-          </ul>
+          <div>
+            <H3 className="mb-1.5 text-xs">Look-fors</H3>
+            <ul className="list-disc space-y-0.5 pl-4 text-sm text-muted">
+              {lookFors.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </div>
         ) : null}
-        <div className="mt-3 space-y-2">
+        <div className="space-y-2">
+          <H3 className="text-xs">Scale guidance</H3>
           {scaleRows.map((row) => (
-            <Card key={row.label} className="p-2">
-              <p className="text-sm font-medium text-text">{row.label}</p>
-              <p className="text-xs text-muted">{row.guidance}</p>
-            </Card>
+            <div key={row.label} className="rounded-xl border border-border/50 bg-bg/30 p-3">
+              <p className="text-sm font-semibold text-text">{row.label}</p>
+              <MetaText className="mt-0.5 leading-relaxed">{row.guidance}</MetaText>
+            </div>
           ))}
         </div>
-        <Button type="button" onClick={onClose} className="mt-3">Close</Button>
+        <Button type="button" variant="secondary" onClick={onClose} className="w-full">Close</Button>
       </Card>
     </div>
   );

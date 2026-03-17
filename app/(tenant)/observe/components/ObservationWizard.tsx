@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { H2, H3, MetaText, Label } from "@/components/ui/typography";
 import { SignalCard } from "./SignalCard";
 
 type Teacher = { id: string; fullName: string; email: string };
@@ -174,7 +177,7 @@ export function ObservationWizard({
   return (
     <form
       action={action}
-      className="space-y-4 rounded border bg-surface p-4"
+      className="panel space-y-5 p-5"
       onSubmit={(event) => {
         if (!allDone) {
           event.preventDefault();
@@ -183,84 +186,105 @@ export function ObservationWizard({
       }}
     >
       {step === 1 ? (
-        <section className="grid max-w-3xl grid-cols-2 gap-3">
-          <h2 className="col-span-2 font-medium">Step 1 · Context</h2>
-          <label className="text-sm">Observed teacher</label>
-          <select
-            name="observedTeacherId"
-            className="border p-2"
-            required
-            value={context.observedTeacherId}
-            onChange={(event) => setContext((current) => ({ ...current, observedTeacherId: event.target.value }))}
-          >
-            <option value="">Select teacher</option>
-            {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName} ({teacher.email})</option>)}
-          </select>
+        <section className="max-w-3xl space-y-5">
+          <H2>Step 1 &middot; Context</H2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <Label>Observed teacher</Label>
+              <select
+                name="observedTeacherId"
+                className="field"
+                required
+                value={context.observedTeacherId}
+                onChange={(event) => setContext((current) => ({ ...current, observedTeacherId: event.target.value }))}
+              >
+                <option value="">Select teacher</option>
+                {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName} ({teacher.email})</option>)}
+              </select>
+            </div>
 
-          <label className="text-sm">Year group</label>
-          <input
-            name="yearGroup"
-            className="border p-2"
-            required
-            value={context.yearGroup}
-            onChange={(event) => setContext((current) => ({ ...current, yearGroup: event.target.value }))}
-          />
+            <div>
+              <Label>Year group</Label>
+              <input
+                name="yearGroup"
+                className="field"
+                required
+                value={context.yearGroup}
+                onChange={(event) => setContext((current) => ({ ...current, yearGroup: event.target.value }))}
+              />
+            </div>
 
-          <label className="text-sm">Subject</label>
-          <input
-            name="subject"
-            className="border p-2"
-            required
-            value={context.subject}
-            onChange={(event) => setContext((current) => ({ ...current, subject: event.target.value }))}
-          />
+            <div>
+              <Label>Subject</Label>
+              <input
+                name="subject"
+                className="field"
+                required
+                value={context.subject}
+                onChange={(event) => setContext((current) => ({ ...current, subject: event.target.value }))}
+              />
+            </div>
 
-          <label className="text-sm">Phase</label>
-          <div className="flex flex-wrap gap-2">
-            {PHASE_OPTIONS.map((phase) => (
-              <label key={phase} className="rounded border px-2 py-1 text-xs">
-                <input
-                  type="radio"
-                  name="phase"
-                  value={phase}
-                  checked={context.phase === phase}
-                  onChange={(event) => setContext((current) => ({ ...current, phase: event.target.value as Phase }))}
-                  className="mr-1"
-                />
-                {phase.replace(/_/g, " ")}
-              </label>
-            ))}
+            <div>
+              <Label>Observed at</Label>
+              <input
+                type="datetime-local"
+                name="observedAt"
+                className="field"
+                required
+                value={context.observedAt}
+                onChange={(event) => setContext((current) => ({ ...current, observedAt: event.target.value }))}
+              />
+            </div>
+
+            <div>
+              <Label>Class code <span className="font-normal text-muted">(optional)</span></Label>
+              <input
+                name="classCode"
+                className="field"
+                value={context.classCode}
+                onChange={(event) => setContext((current) => ({ ...current, classCode: event.target.value }))}
+              />
+            </div>
           </div>
 
-          <label className="text-sm">Observed at</label>
-          <input
-            type="datetime-local"
-            name="observedAt"
-            className="border p-2"
-            required
-            value={context.observedAt}
-            onChange={(event) => setContext((current) => ({ ...current, observedAt: event.target.value }))}
-          />
+          <div>
+            <Label>Phase</Label>
+            <div className="flex flex-wrap gap-2">
+              {PHASE_OPTIONS.map((phase) => (
+                <label
+                  key={phase}
+                  className={`calm-transition cursor-pointer rounded-xl border px-3 py-2 text-xs font-medium ${
+                    context.phase === phase
+                      ? "border-accent/30 bg-[var(--accent-tint)] text-text"
+                      : "border-border/60 text-muted hover:border-border hover:text-text"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="phase"
+                    value={phase}
+                    checked={context.phase === phase}
+                    onChange={(event) => setContext((current) => ({ ...current, phase: event.target.value as Phase }))}
+                    className="sr-only"
+                  />
+                  {phase.replace(/_/g, " ")}
+                </label>
+              ))}
+            </div>
+          </div>
 
-          <label className="text-sm">Class code (optional)</label>
-          <input
-            name="classCode"
-            className="border p-2"
-            value={context.classCode}
-            onChange={(event) => setContext((current) => ({ ...current, classCode: event.target.value }))}
-          />
-
-          <button
+          <Button
             type="button"
-            className="col-span-2 rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-3 py-2 text-white disabled:opacity-40"
             disabled={!canContinue}
             onClick={() => setStep(2)}
+            className="w-full sm:w-auto"
           >
-            Continue
-          </button>
+            Continue to signals
+          </Button>
         </section>
       ) : (
-        <section className="space-y-4">
+        <section className="space-y-5">
           <input type="hidden" name="observedTeacherId" value={context.observedTeacherId} />
           <input type="hidden" name="yearGroup" value={context.yearGroup} />
           <input type="hidden" name="subject" value={context.subject} />
@@ -269,41 +293,45 @@ export function ObservationWizard({
           <input type="hidden" name="classCode" value={context.classCode} />
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-medium">Step 2 · Signals</h2>
-            <p className="text-sm">{completed}/{orderedSignals.length} completed</p>
+            <H2>Step 2 &middot; Signals</H2>
+            <MetaText className="font-medium">{completed}/{orderedSignals.length} completed</MetaText>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className="rounded border px-2 py-1 text-xs" onClick={markRemaining}>Mark remaining as Not Observed</button>
-            <button type="button" className="rounded border px-2 py-1 text-xs" onClick={clearAllNotObserved}>Clear all Not Observed</button>
+            <Button type="button" variant="secondary" className="px-3 py-1.5 text-xs" onClick={markRemaining}>Mark remaining as Not Observed</Button>
+            <Button type="button" variant="ghost" className="px-3 py-1.5 text-xs" onClick={clearAllNotObserved}>Clear all Not Observed</Button>
           </div>
-          {toast ? <p className="text-xs text-muted">{toast}</p> : null}
+          {toast ? <MetaText className="text-accent">{toast}</MetaText> : null}
 
-          <section className="space-y-2">
-            <h3 className="text-sm font-medium">Phase focus</h3>
+          <section className="space-y-3">
+            <H3>Phase focus</H3>
             {renderSignalList(phaseFocus)}
           </section>
 
-          <section className="space-y-2">
-            <h3 className="text-sm font-medium">Universal signals</h3>
-            {universal.length ? renderSignalList(universal) : <p className="text-xs text-muted">No additional universal signals.</p>}
+          <section className="space-y-3">
+            <H3>Universal signals</H3>
+            {universal.length ? renderSignalList(universal) : <MetaText>No additional universal signals.</MetaText>}
           </section>
 
-          <details className="space-y-2">
-            <summary className="cursor-pointer text-sm font-medium">Other signals</summary>
-            <div className="pt-2">{other.length ? renderSignalList(other) : <p className="text-xs text-muted">No remaining signals.</p>}</div>
+          <details className="space-y-3">
+            <summary className="cursor-pointer text-sm font-semibold text-text calm-transition hover:text-accent">Other signals</summary>
+            <div className="pt-2">{other.length ? renderSignalList(other) : <MetaText>No remaining signals.</MetaText>}</div>
           </details>
 
-          <div className="sticky bottom-0 rounded border bg-surface p-3">
-            <label className="mb-1 block text-xs">Context note (optional)</label>
+          <div className="sticky bottom-0 rounded-2xl border border-border/70 bg-surface/95 p-4 shadow-md backdrop-blur-sm">
+            <Label>Context note <span className="font-normal text-muted">(optional)</span></Label>
             <input
               name="contextNote"
-              className="mb-2 w-full border p-2"
+              className="field mb-3"
               placeholder="Optional short note"
               value={context.contextNote}
               onChange={(event) => setContext((current) => ({ ...current, contextNote: event.target.value }))}
             />
-            {submitError ? <p className="mb-2 text-xs text-rose-600">{submitError}</p> : null}
-            <button disabled={!allDone} className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-3 py-2 text-white disabled:opacity-40" type="submit">Submit observation</button>
+            {submitError ? (
+              <div className="mb-3 rounded-xl border border-error/20 bg-[var(--pill-error-bg)] px-3 py-2">
+                <MetaText className="text-[var(--pill-error-text)]">{submitError}</MetaText>
+              </div>
+            ) : null}
+            <Button disabled={!allDone} type="submit" className="w-full">Submit observation</Button>
           </div>
         </section>
       )}
