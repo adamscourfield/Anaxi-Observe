@@ -27,7 +27,6 @@ export function SchoolSwitcher({
   }, []);
 
   const initial = currentTenantName.charAt(0).toUpperCase();
-  const hasMultiple = tenants.length > 1;
 
   return (
     <div ref={ref} className="relative">

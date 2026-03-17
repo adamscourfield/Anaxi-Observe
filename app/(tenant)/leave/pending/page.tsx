@@ -29,19 +29,50 @@ export default async function LeavePendingPage() {
   return (
     <div className="space-y-5">
       <PageHeader title="Pending leave approvals" subtitle="Review and action open requests in your approval scope." />
-      <Card>
+      <Card className="overflow-hidden p-0">
         {pending.length === 0 ? (
-          <EmptyState title="No pending requests" description="You're all caught up for now." />
+          <div className="p-4">
+            <EmptyState title="No pending requests" description="You're all caught up for now." />
+          </div>
         ) : (
-          <ul className="space-y-2 text-sm">
-            {(pending as any[]).map((request) => (
-              <li key={request.id}>
-                <Link className="font-medium text-accent hover:text-accentHover" href={`/leave/${request.id}`}>
-                  {request.requester?.fullName} · {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()} · {request.reason?.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-bg/60 text-left text-xs uppercase tracking-[0.05em] text-muted">
+                  <th className="px-4 py-2.5 font-medium">Staff member</th>
+                  <th className="px-4 py-2.5 font-medium">From</th>
+                  <th className="px-4 py-2.5 font-medium">To</th>
+                  <th className="px-4 py-2.5 font-medium">Reason</th>
+                  <th className="px-4 py-2.5 font-medium">Days</th>
+                  <th className="px-4 py-2.5 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {(pending as any[]).map((request) => {
+                  const startDate = new Date(request.startDate);
+                  const endDate = new Date(request.endDate);
+                  const days = Math.round((endDate.getTime() - startDate.getTime()) / 86400000) + 1;
+                  return (
+                    <tr key={request.id} className="border-b border-border/70 last:border-0 hover:bg-bg/40 calm-transition">
+                      <td className="px-4 py-3 font-medium text-text">{request.requester?.fullName}</td>
+                      <td className="px-4 py-3 text-muted">{startDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
+                      <td className="px-4 py-3 text-muted">{endDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
+                      <td className="px-4 py-3 text-muted">{request.reason?.label ?? "—"}</td>
+                      <td className="px-4 py-3 text-muted">{days}</td>
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/leave/${request.id}`}
+                          className="inline-flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text calm-transition hover:border-accent/40 hover:text-accent"
+                        >
+                          Review →
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>

@@ -15,7 +15,7 @@ export type Priority = "critical" | "high" | "medium" | "low";
  * Adjust role names to match your User.role enum.
  */
 function canManageStrategy(role: string): boolean {
-  return ["ADMIN", "SLT", "HEAD_TEACHER"].includes(role);
+  return ["SUPER_ADMIN", "ADMIN", "SLT", "HEAD_TEACHER"].includes(role);
 }
 
 // ─── Areas ────────────────────────────────────────────────────────────────────

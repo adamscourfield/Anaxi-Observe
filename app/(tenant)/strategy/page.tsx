@@ -11,12 +11,11 @@ import { StrategyBoardClient } from "./StrategyBoardClient";
 // ─── Auth guard ───────────────────────────────────────────────────────────────
 
 function canViewStrategy(role: string): boolean {
-  // Adjust to your role enum — anyone in SLT can view
-  return ["ADMIN", "SLT", "HEAD_TEACHER", "DEPUTY_HEAD"].includes(role);
+  return ["SUPER_ADMIN", "ADMIN", "SLT", "HEAD_TEACHER", "DEPUTY_HEAD"].includes(role);
 }
 
 function canManageStrategy(role: string): boolean {
-  return ["ADMIN", "SLT", "HEAD_TEACHER"].includes(role);
+  return ["SUPER_ADMIN", "ADMIN", "SLT", "HEAD_TEACHER"].includes(role);
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────

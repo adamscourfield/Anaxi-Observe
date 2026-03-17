@@ -121,30 +121,6 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
 
   const scaleRows = GLOBAL_SCALE.map((scale) => ({ label: scale.label, guidance: currentSignal.scaleGuidance[scale.key] }));
 
-  const infoPanel = (
-    <div className="space-y-3">
-      <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">Guidance</p>
-      <p className="text-sm text-muted">{description}</p>
-      {currentSignal.lookFors?.length ? (
-        <div>
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-muted mb-1.5">Look for</p>
-          <ul className="list-disc pl-4 space-y-1 text-sm text-muted">
-            {currentSignal.lookFors.map((item) => <li key={item}>{item}</li>)}
-          </ul>
-        </div>
-      ) : null}
-      <div className="space-y-2">
-        <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">Scale guidance</p>
-        {scaleRows.map((row) => (
-          <div key={row.label} className="rounded-lg border border-border bg-surface p-3">
-            <p className="text-sm font-medium text-text">{row.label}</p>
-            <p className="text-xs text-muted mt-0.5">{row.guidance}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-4 bg-bg p-4">
       <ProgressHeader
@@ -171,10 +147,9 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         <BodyText className="line-clamp-2 text-muted">{description}</BodyText>
       </Card>
 
-      <div className="flex items-stretch gap-6">
-        <div className="flex-1 space-y-3">
+      <div className="space-y-3">
           <SignalTileGroup
-            options={GLOBAL_SCALE.map((scale) => ({ key: scale.key, label: scale.label }))}
+            options={GLOBAL_SCALE.map((scale) => ({ key: scale.key, label: currentSignal.scaleGuidance[scale.key] || scale.label }))}
             selected={pendingValue}
             onSelect={(value) => {
               setPendingValue(value as ScaleKey);
@@ -209,16 +184,6 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
             </Button>
           )}
 
-          <div id="signal-info-panel" className="md:hidden">
-            {infoPanel}
-          </div>
-        </div>
-
-        <aside className="hidden md:block w-80 shrink-0">
-          <Card className="h-full space-y-3 overflow-y-auto">
-            {infoPanel}
-          </Card>
-        </aside>
       </div>
 
       <SignalHelpSheet

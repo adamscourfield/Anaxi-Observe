@@ -125,7 +125,7 @@ export function TenantNav({
   const canAccessAdminSettings = hasPermission(role, "admin:settings");
   const canSeeAnalysis = hasAnyPermission(role, ["analysis:view", "analysis:export"]);
   void canSeeAnalysis; // Explorer covers all analytics views; Analytics page removed from nav
-  const canViewStrategy = role === "ADMIN" || role === "SLT";
+  const canViewStrategy = role === "SUPER_ADMIN" || role === "ADMIN" || role === "SLT";
 
   const navItem = (label: string, href: string, badgeCount?: number): NavItem => ({
     label,
