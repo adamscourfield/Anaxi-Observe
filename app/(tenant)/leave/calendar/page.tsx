@@ -50,7 +50,7 @@ export default async function LeaveCalendarPage() {
               {entries.length === 0 ? <p className="text-muted">No leave</p> : null}
               <ul className="space-y-1">
                 {entries.map((request) => (
-                  <li key={request.id} className={request.status === "APPROVED" ? "text-emerald-700" : "text-amber-700"}>
+                  <li key={request.id} className={request.status === "APPROVED" ? "text-success" : "text-warning"}>
                     {request.requester?.fullName} · {request.status}
                   </li>
                 ))}

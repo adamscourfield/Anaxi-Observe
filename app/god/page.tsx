@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { requireSuperAdminUser } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { Button } from "@/components/ui/button";
+import { Card, InteractiveCard } from "@/components/ui/card";
+import { H1, MetaText } from "@/components/ui/typography";
 
 export default async function GodDashboardPage() {
   await requireSuperAdminUser();
@@ -17,48 +20,48 @@ export default async function GodDashboardPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">God Mode</h1>
-          <p className="text-sm text-muted">Platform-level school provisioning and module control.</p>
+          <H1>God Mode</H1>
+          <MetaText>Platform-level school provisioning and module control.</MetaText>
         </div>
         <div className="flex gap-2">
-          <Link href="/god/audit" className="rounded border border-border bg-surface px-4 py-2 text-sm hover:bg-divider">Audit log</Link>
-          <Link href="/god/schools/new" className="rounded bg-primaryBtn px-4 py-2 text-sm text-white hover:bg-primaryBtnHover">
-            + Create school
-          </Link>
+          <Link href="/god/audit"><Button variant="secondary">Audit log</Button></Link>
+          <Link href="/god/schools/new"><Button>+ Create school</Button></Link>
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-border bg-surface p-4">
+        <Card>
           <div className="text-xs text-muted">Schools</div>
           <div className="text-2xl font-semibold">{schools.length}</div>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
+        </Card>
+        <Card>
           <div className="text-xs text-muted">Super admins</div>
           <div className="text-2xl font-semibold">{admins}</div>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
+        </Card>
+        <Card>
           <div className="text-xs text-muted">Active schools</div>
           <div className="text-2xl font-semibold">{schools.filter((s) => s.status === "ACTIVE").length}</div>
-        </div>
+        </Card>
       </div>
 
       <div className="space-y-3">
         {schools.map((school) => (
-          <Link key={school.id} href={`/god/schools/${school.id}`} className="block rounded-lg border border-border bg-surface p-4 hover:bg-divider">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">{school.name}</div>
-                <div className="text-xs text-muted">{school.slug ?? "no-slug"} · {school.status}</div>
+          <Link key={school.id} href={`/god/schools/${school.id}`}>
+            <InteractiveCard className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium">{school.name}</div>
+                  <MetaText>{school.slug ?? "no-slug"} · {school.status}</MetaText>
+                </div>
+                <div className="text-right text-xs text-muted">
+                  <div>{school.users.length} admin(s)</div>
+                  <div>{school.features.length} module(s) enabled</div>
+                </div>
               </div>
-              <div className="text-right text-xs text-muted">
-                <div>{school.users.length} admin(s)</div>
-                <div>{school.features.length} module(s) enabled</div>
-              </div>
-            </div>
+            </InteractiveCard>
           </Link>
         ))}
       </div>

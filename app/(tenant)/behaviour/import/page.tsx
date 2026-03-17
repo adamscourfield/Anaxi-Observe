@@ -4,7 +4,7 @@ import { hasPermission } from "@/lib/rbac";
 import { redirect } from "next/navigation";
 import { ImportJobHistory } from "@/components/import/ImportJobHistory";
 import { CsvImportMapper } from "@/components/import/CsvImportMapper";
-import { H1 } from "@/components/ui/typography";
+import { H1, H2 } from "@/components/ui/typography";
 import Link from "next/link";
 
 export default async function BehaviourImportPage({
@@ -43,7 +43,7 @@ export default async function BehaviourImportPage({
 
       {tab === "history" && (
         <div className="space-y-3">
-          <h2 className="font-medium text-text">Import History</h2>
+          <H2 className="text-base">Import History</H2>
           <ImportJobHistory />
         </div>
       )}

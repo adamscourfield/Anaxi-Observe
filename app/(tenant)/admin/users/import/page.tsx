@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { H1, H2, MetaText } from "@/components/ui/typography";
+import { StatusPill } from "@/components/ui/status-pill";
 
 interface PreviewRow {
   email: string;
@@ -106,11 +108,11 @@ export default function StaffImportPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-text">Import Staff</h1>
+      <H1>Import Staff</H1>
 
       {/* Upload card */}
       <Card className="space-y-4">
-        <h2 className="text-base font-medium text-text">Upload CSV</h2>
+        <H2 className="text-base">Upload CSV</H2>
         <div className="flex flex-wrap items-center gap-3">
           <input
             ref={fileInputRef}
@@ -134,25 +136,25 @@ export default function StaffImportPage() {
           </a>
         </div>
         {error && (
-          <p className="text-sm text-red-600">{error}</p>
+          <p className="text-sm text-error">{error}</p>
         )}
       </Card>
 
       {/* Parse errors */}
       {parseErrors.length > 0 && (
         <Card className="space-y-3">
-          <h2 className="text-base font-medium text-text">
+          <H2 className="text-base">
             Validation issues ({parseErrors.length})
-          </h2>
+          </H2>
           <ul className="space-y-1 text-sm">
             {parseErrors.slice(0, 20).map((e, i) => (
-              <li key={i} className={e.errorCode === "MISSING_FULL_NAME" ? "text-amber-600" : "text-red-600"}>
+              <li key={i} className={e.errorCode === "MISSING_FULL_NAME" ? "text-warning" : "text-error"}>
                 Row {e.rowNumber} — {e.field}: {e.message}
               </li>
             ))}
           </ul>
           {blockingErrors.length > 0 && (
-            <p className="text-sm font-medium text-red-600">
+            <p className="text-sm font-medium text-error">
               {blockingErrors.length} blocking error(s) must be resolved before importing.
             </p>
           )}
@@ -162,9 +164,9 @@ export default function StaffImportPage() {
       {/* Preview card */}
       {preview.length > 0 && (
         <Card className="space-y-3">
-          <h2 className="text-base font-medium text-text">
+          <H2 className="text-base">
             Preview (first {preview.length} of {rowCount} rows)
-          </h2>
+          </H2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -205,7 +207,7 @@ export default function StaffImportPage() {
             {importing ? "Importing…" : "Validate & Import"}
           </Button>
           {!canImport && blockingErrors.length > 0 && (
-            <span className="text-sm text-red-600">Fix validation errors before importing</span>
+            <span className="text-sm text-error">Fix validation errors before importing</span>
           )}
         </div>
       )}
@@ -213,7 +215,7 @@ export default function StaffImportPage() {
       {/* Import result */}
       {importResult && (
         <Card className="space-y-2">
-          <h2 className="text-base font-medium text-text">Import complete</h2>
+          <H2 className="text-base">Import complete</H2>
           <p className="text-sm text-text">
             Rows processed: <strong>{importResult.rowsProcessed}</strong> &nbsp;|&nbsp; Rows failed:{" "}
             <strong>{importResult.rowsFailed}</strong>
@@ -222,7 +224,7 @@ export default function StaffImportPage() {
             <a
               href={`/api/admin/users/import/jobs/${importResult.jobId}/errors.csv`}
               download
-              className="text-sm text-primaryBtn hover:underline"
+              className="text-sm text-accent hover:underline"
             >
               Download error report CSV
             </a>
@@ -233,7 +235,7 @@ export default function StaffImportPage() {
       {/* Import history */}
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-medium text-text">Import history</h2>
+          <H2 className="text-base">Import history</H2>
           <Button variant="ghost" onClick={loadJobs}>
             {jobsLoaded ? "Refresh" : "Load history"}
           </Button>
@@ -267,7 +269,7 @@ export default function StaffImportPage() {
                         <a
                           href={`/api/admin/users/import/jobs/${job.id}/errors.csv`}
                           download
-                          className="text-sm text-primaryBtn hover:underline"
+                          className="text-sm text-accent hover:underline"
                         >
                           Download CSV
                         </a>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { H1, MetaText } from "@/components/ui/typography";
 
 const STEPS = [
   "School settings",
@@ -22,19 +23,22 @@ export default function OnboardingWizardClient({
 }) {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-xl font-semibold">School Onboarding</h1>
+      <div>
+        <H1>School Onboarding</H1>
+        <MetaText>Step {stepIndex + 1} of {STEPS.length}</MetaText>
+      </div>
 
       {/* Step indicator */}
-      <ol className="flex gap-2 overflow-x-auto text-xs">
+      <ol className="flex gap-1.5 overflow-x-auto text-xs">
         {STEPS.map((label, i) => (
           <li
             key={label}
-            className={`flex-1 rounded px-2 py-1 text-center ${
+            className={`calm-transition flex-1 rounded-lg px-2 py-1.5 text-center font-medium ${
               i === stepIndex
-                ? "bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive text-white"
+                ? "border border-accent/20 bg-[var(--accent-tint)] text-text shadow-sm"
                 : i < stepIndex
-                ? "bg-divider text-muted"
-                : "bg-divider text-muted"
+                ? "bg-accent/10 text-accent"
+                : "bg-surface/60 text-muted"
             }`}
           >
             {i + 1}. {label}

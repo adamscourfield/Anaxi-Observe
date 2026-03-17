@@ -5,6 +5,10 @@ import { requireFeature } from "@/lib/guards";
 import { hasPermission } from "@/lib/rbac";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { H1, H2, MetaText } from "@/components/ui/typography";
+import { StatusPill } from "@/components/ui/status-pill";
 
 export default async function ImportJobPage({
   params,
@@ -24,83 +28,83 @@ export default async function ImportJobPage({
   const isRunning = ["PENDING", "PROCESSING", "RUNNING"].includes(job.status);
   const isFinished = ["COMPLETED", "SUCCESS", "FAILED"].includes(job.status);
 
+  const statusVariant = (job.status === "COMPLETED" || job.status === "SUCCESS")
+    ? "success" as const
+    : job.status === "FAILED"
+    ? "error" as const
+    : "neutral" as const;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Link href="/tenant/behaviour/import?tab=history" className="text-sm underline">
+        <Link href="/tenant/behaviour/import?tab=history" className="text-sm text-accent hover:underline">
           ← Back to Import History
         </Link>
       </div>
 
-      <h1 className="text-xl font-semibold">Import Job Report</h1>
+      <H1>Import Job Report</H1>
 
-      <div className="rounded border bg-surface p-4 space-y-2">
+      <Card className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-text-muted">Status</span>
-          <span
-            className={
-              job.status === "COMPLETED" || job.status === "SUCCESS"
-                ? "text-green-700 font-medium"
-                : job.status === "FAILED"
-                ? "text-red-700 font-medium"
-                : "text-text-muted"
-            }
-          >
-            {job.status}
-          </span>
+          <MetaText>Status</MetaText>
+          <StatusPill variant={statusVariant}>{job.status}</StatusPill>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-text-muted">Type</span>
+          <MetaText>Type</MetaText>
           <span>{job.type}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-text-muted">File</span>
+          <MetaText>File</MetaText>
           <span>{job.fileName || "–"}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-text-muted">Rows Processed</span>
+          <MetaText>Rows Processed</MetaText>
           <span>{job.rowCount}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-text-muted">Created</span>
+          <MetaText>Created</MetaText>
           <span>{new Date(job.createdAt).toLocaleString()}</span>
         </div>
-      </div>
+      </Card>
 
       {isRunning && (
-        <div className="rounded border bg-surface p-4">
-          <p className="text-sm text-text-muted">Import in progress…</p>
-        </div>
+        <Card>
+          <MetaText>Import in progress…</MetaText>
+        </Card>
       )}
 
       {isFinished && job.errors?.length > 0 && (
-        <div className="space-y-2">
-          <h2 className="font-medium">Errors ({job.errors.length})</h2>
-          <table className="w-full border bg-surface text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2 text-left">Row</th>
-                <th className="p-2 text-left">Field</th>
-                <th className="p-2 text-left">Error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(job.errors as any[]).map((err: any) => (
-                <tr key={err.id} className="border-b">
-                  <td className="p-2">{err.rowNumber}</td>
-                  <td className="p-2">{err.field}</td>
-                  <td className="p-2">{err.message}</td>
+        <Card className="space-y-2 overflow-hidden p-0">
+          <div className="p-4 pb-0">
+            <H2 className="text-base">Errors ({job.errors.length})</H2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-bg/60 text-left text-xs uppercase tracking-[0.05em] text-muted">
+                  <th className="p-2">Row</th>
+                  <th className="p-2">Field</th>
+                  <th className="p-2">Error</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {(job.errors as any[]).map((err: any) => (
+                  <tr key={err.id} className="border-b border-border/70 last:border-0">
+                    <td className="p-2">{err.rowNumber}</td>
+                    <td className="p-2">{err.field}</td>
+                    <td className="p-2">{err.message}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
 
       {isFinished && (!job.errors || job.errors.length === 0) && (
-        <div className="rounded border border-green-200 bg-green-50 p-3">
-          <p className="text-sm text-green-700">Import completed with no errors.</p>
-        </div>
+        <Card className="border-success/30 bg-[var(--pill-success-bg)]">
+          <p className="text-sm text-success">Import completed with no errors.</p>
+        </Card>
       )}
     </div>
   );

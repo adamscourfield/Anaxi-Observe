@@ -150,7 +150,7 @@ export function TimetableImportMapper() {
           </MetaText>
         )}
         {appliedMappingName && (
-          <p className="mt-2 text-sm font-medium text-green-700">
+          <p className="mt-2 text-sm font-medium text-success">
             ✓ Applied saved mapping: {appliedMappingName}
           </p>
         )}
@@ -162,7 +162,7 @@ export function TimetableImportMapper() {
           <H2 className="mb-3">Column Mapping</H2>
           <BodyText className="mb-4 text-muted">
             Map each Anaxi field to a column in your CSV. Required fields are marked{" "}
-            <span className="text-red-500">*</span>.
+            <span className="text-error">*</span>.
           </BodyText>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -172,7 +172,7 @@ export function TimetableImportMapper() {
                 <div key={field} className="flex items-center gap-2">
                   <label className="w-36 shrink-0 text-sm font-medium text-text">
                     {field}
-                    {isRequired && <span className="ml-1 text-red-500">*</span>}
+                    {isRequired && <span className="ml-1 text-error">*</span>}
                   </label>
                   <select
                     value={fieldMap[field] ?? ""}
@@ -192,7 +192,7 @@ export function TimetableImportMapper() {
                     ))}
                   </select>
                   {isRequired && !fieldMap[field] && (
-                    <span className="text-xs text-red-500">Required</span>
+                    <span className="text-xs text-error">Required</span>
                   )}
                 </div>
               );
@@ -267,13 +267,13 @@ export function TimetableImportMapper() {
           )}
 
           {unmappedRequired.length > 0 && (
-            <p className="mb-3 text-sm text-red-600">
+            <p className="mb-3 text-sm text-error">
               Missing required mappings: {unmappedRequired.join(", ")}
             </p>
           )}
 
           {importError && (
-            <p className="mb-3 text-sm text-red-600">Error: {importError}</p>
+            <p className="mb-3 text-sm text-error">Error: {importError}</p>
           )}
 
           {result && (
@@ -281,7 +281,7 @@ export function TimetableImportMapper() {
               <p className="text-sm font-medium text-text">
                 ✓ Imported {result.rowsProcessed} rows
                 {result.rowsFailed > 0 && (
-                  <span className="ml-2 text-red-600">
+                  <span className="ml-2 text-error">
                     — {result.rowsFailed} rows had errors{" "}
                     <a
                       href={`/api/admin/timetable/import/jobs/${result.importJobId}/errors.csv`}
@@ -294,7 +294,7 @@ export function TimetableImportMapper() {
                 )}
               </p>
               {result.conflictCount > 0 && (
-                <p className="mt-1 text-sm text-amber-700">
+                <p className="mt-1 text-sm text-warning">
                   {result.conflictCount} conflict(s) (e.g. unknown teacher emails){" "}
                   <a
                     href={`/api/admin/timetable/import/jobs/${result.importJobId}/conflicts.csv`}

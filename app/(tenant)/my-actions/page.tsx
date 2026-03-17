@@ -56,7 +56,7 @@ export default async function MyActionsPage() {
       </div>
 
       {overdueCount > 0 && (
-        <div className="rounded-2xl border border-error/35 bg-error/10 px-4 py-3 text-sm text-red-200">
+        <div className="rounded-2xl border border-error/35 bg-[var(--pill-error-bg)] px-4 py-3 text-sm text-[var(--pill-error-text)]">
           You have <strong>{overdueCount}</strong> overdue action{overdueCount !== 1 ? "s" : ""}.
         </div>
       )}

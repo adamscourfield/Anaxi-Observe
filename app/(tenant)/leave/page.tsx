@@ -38,7 +38,7 @@ export default async function LeavePage({ searchParams }: { searchParams?: Recor
       />
 
       {created ? (
-        <Card className="border-emerald-200 bg-emerald-50/60 text-sm text-emerald-800">
+        <Card className="border-success/30 bg-[var(--pill-success-bg)] text-sm text-success">
           Leave request submitted. You can track approval status below.
         </Card>
       ) : null}

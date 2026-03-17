@@ -51,7 +51,7 @@ export default async function AdminTimetablePage() {
           <div className="mt-1 text-sm text-muted">Total entries</div>
         </Card>
         <Card>
-          <div className="text-3xl font-bold text-amber-600">{unknownTeacherCount}</div>
+          <div className="text-3xl font-bold text-warning">{unknownTeacherCount}</div>
           <div className="mt-1 text-sm text-muted">Unknown teacher emails</div>
         </Card>
         <Card>
@@ -108,7 +108,7 @@ export default async function AdminTimetablePage() {
                     <td className="p-2">{entry.yearGroup}</td>
                     <td className="p-2">
                       {entry.teacherEmailRaw ?? "—"}
-                      {!entry.teacherUserId && entry.teacherEmailRaw && <span className="ml-1 text-xs text-amber-600">(unmatched)</span>}
+                      {!entry.teacherUserId && entry.teacherEmailRaw && <span className="ml-1 text-xs text-warning">(unmatched)</span>}
                     </td>
                     <td className="p-2">{entry.dayOfWeek ?? "—"}</td>
                     <td className="p-2">{entry.period ?? "—"}</td>

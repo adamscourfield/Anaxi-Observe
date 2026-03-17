@@ -20,13 +20,13 @@ export default async function LeaveRequestPage() {
       <Card>
         <form action={createLoaRequest} className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
           <label htmlFor="loa-start-at" className="text-sm text-muted">Start</label>
-          <input id="loa-start-at" required type="datetime-local" name="startAt" className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text" />
+          <input id="loa-start-at" required type="datetime-local" name="startAt" className="field" />
 
           <label htmlFor="loa-end-at" className="text-sm text-muted">End</label>
-          <input id="loa-end-at" required type="datetime-local" name="endAt" className="rounded-md border border-border bg-bg/60 p-2 text-sm text-text" />
+          <input id="loa-end-at" required type="datetime-local" name="endAt" className="field" />
 
           <label htmlFor="loa-reason" className="sm:col-span-2 text-sm text-muted">Reason</label>
-          <select id="loa-reason" required name="reasonId" className="sm:col-span-2 rounded-md border border-border bg-bg/60 p-2 text-sm text-text">
+          <select id="loa-reason" required name="reasonId" className="sm:col-span-2 field">
             <option value="">Select reason</option>
             {(reasons as any[]).map((reason: any) => (
               <option key={reason.id} value={reason.id}>{reason.label}</option>
@@ -34,7 +34,7 @@ export default async function LeaveRequestPage() {
           </select>
 
           <label htmlFor="loa-cover-notes" className="sm:col-span-2 text-sm text-muted">Cover notes (optional)</label>
-          <textarea id="loa-cover-notes" name="coverNotes" className="sm:col-span-2 rounded-md border border-border bg-bg/60 p-2 text-sm text-text" rows={4} />
+          <textarea id="loa-cover-notes" name="coverNotes" className="sm:col-span-2 field" rows={4} />
 
           <Button className="sm:col-span-2" type="submit">Submit request</Button>
         </form>
