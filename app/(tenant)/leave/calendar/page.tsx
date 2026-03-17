@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { canManageLoa } from "@/lib/loa";
@@ -46,7 +47,30 @@ export default async function LeaveCalendarPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title={`Leave calendar (${start.toLocaleString("default", { month: "long", year: "numeric" })})`} subtitle="Month view of pending and approved leave requests." />
+      <PageHeader
+        title={`Leave calendar (${start.toLocaleString("default", { month: "long", year: "numeric" })})`}
+        subtitle="Month view of pending and approved leave requests. Click any day to submit a new request."
+        actions={
+          <Link
+            href="/leave/request"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white hover:bg-accentHover calm-transition"
+          >
+            + New request
+          </Link>
+        }
+      />
+
+      {/* Legend */}
+      <div className="flex items-center gap-4 text-xs text-muted">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-3 w-3 rounded-sm bg-amber-100 ring-1 ring-inset ring-amber-300" />
+          Pending approval
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-3 w-3 rounded-sm bg-emerald-100 ring-1 ring-inset ring-emerald-300" />
+          Approved
+        </span>
+      </div>
 
       <Card className="overflow-hidden p-0">
         {/* Weekday header */}
@@ -74,9 +98,10 @@ export default async function LeaveCalendarPage() {
             );
 
             return (
-              <div
+              <Link
                 key={key}
-                className={`min-h-[100px] border-b border-r border-border/50 p-2 calm-transition ${
+                href={`/leave/request?date=${key}`}
+                className={`block min-h-[100px] border-b border-r border-border/50 p-2 calm-transition hover:bg-accent/5 ${
                   isToday
                     ? "bg-[var(--accent-tint)]"
                     : isWeekend
@@ -91,17 +116,23 @@ export default async function LeaveCalendarPage() {
                   {entries.map((request) => (
                     <div
                       key={request.id}
-                      className={`truncate rounded-md px-1.5 py-0.5 text-[11px] font-medium leading-tight ${
-                        request.status === "APPROVED"
-                          ? "bg-[var(--pill-success-bg)] text-success"
-                          : "bg-[var(--pill-warning-bg)] text-warning"
-                      }`}
+                      onClick={(e) => e.preventDefault()}
                     >
-                      {request.requester?.fullName}
+                      <Link
+                        href={`/leave/${request.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`block truncate rounded-md px-1.5 py-0.5 text-[11px] font-medium leading-tight calm-transition ${
+                          request.status === "APPROVED"
+                            ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                            : "bg-amber-100 text-amber-800 hover:bg-amber-200"
+                        }`}
+                      >
+                        {request.requester?.fullName}
+                      </Link>
                     </div>
                   ))}
                 </div>
-              </div>
+              </Link>
             );
           })}
 
