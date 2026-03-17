@@ -49,68 +49,25 @@ export default async function LeaveCalendarPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title={`Leave calendar — ${start.toLocaleString("default", { month: "long", year: "numeric" })}`} subtitle="Calendar view of pending and approved leave requests." />
-      <Card className="p-4">
-        {/* Weekday headers */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
-          {WEEKDAY_LABELS.map((label) => (
-            <div key={label} className="py-2 text-center text-xs font-semibold text-muted">
-              {label}
-            </div>
-          ))}
-        </div>
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1">
-          {/* Leading blanks */}
-          {leadingBlanks.map((i) => (
-            <div key={`blank-${i}`} className="min-h-[80px] rounded-lg bg-bg/30" />
-          ))}
-          {/* Day cells */}
-          {days.map((day) => {
-            const entries = (requests as any[]).filter(
-              (request) => day >= new Date(request.startDate) && day <= new Date(request.endDate)
-            );
-            const isToday = dayKey(day) === dayKey(today);
-            const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-            return (
-              <div
-                key={dayKey(day)}
-                className={`min-h-[80px] rounded-lg border p-1.5 text-xs ${
-                  isToday
-                    ? "border-accent bg-[var(--accent-tint)]"
-                    : isWeekend
-                    ? "border-border/40 bg-bg/40"
-                    : "border-border/60 bg-white"
-                }`}
-              >
-                <p className={`mb-1 text-[11px] font-semibold ${isToday ? "text-accent" : "text-text"}`}>
-                  {day.getDate()}
-                </p>
-                {entries.length > 0 && (
-                  <div className="space-y-0.5">
-                    {entries.slice(0, 3).map((request: any) => (
-                      <div
-                        key={request.id}
-                        className={`truncate rounded px-1 py-0.5 text-[10px] font-medium ${
-                          request.status === "APPROVED"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                        title={`${request.requester?.fullName} · ${request.status}`}
-                      >
-                        {request.requester?.fullName ?? "—"}
-                      </div>
-                    ))}
-                    {entries.length > 3 && (
-                      <p className="text-[10px] text-muted">+{entries.length - 3} more</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </Card>
+      <PageHeader title={`Leave calendar (${start.toLocaleString("default", { month: "long" })})`} subtitle="Month view of pending and approved leave requests." />
+      <div className="grid grid-cols-1 gap-2">
+        {days.map((day) => {
+          const entries = (requests as any[]).filter((request) => day >= new Date(request.startDate) && day <= new Date(request.endDate));
+          return (
+            <Card key={dayKey(day)} className="space-y-1 p-3 text-sm">
+              <p className="font-medium text-text">{day.toLocaleDateString()}</p>
+              {entries.length === 0 ? <p className="text-muted">No leave</p> : null}
+              <ul className="space-y-1">
+                {entries.map((request) => (
+                  <li key={request.id} className={request.status === "APPROVED" ? "text-success" : "text-warning"}>
+                    {request.requester?.fullName} · {request.status}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }

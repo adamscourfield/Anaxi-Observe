@@ -2,6 +2,7 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { getMyActions, getOverdueActions } from "@/modules/actions/service";
 import { MyActionsGrouped } from "@/components/actions/MyActionsGrouped";
+import { H1 } from "@/components/ui/typography";
 
 export default async function MyActionsPage() {
   const user = await getSessionUserOrThrow();
@@ -17,11 +18,11 @@ export default async function MyActionsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">My Actions</h1>
+        <H1>My Actions</H1>
       </div>
       {overdueCount > 0 && (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">
-          ⚠️ You have <strong>{overdueCount}</strong> overdue action{overdueCount !== 1 ? "s" : ""}
+        <div className="rounded-xl border border-error/30 bg-[var(--pill-error-bg)] px-4 py-3 text-sm text-[var(--pill-error-text)]">
+          You have <strong>{overdueCount}</strong> overdue action{overdueCount !== 1 ? "s" : ""}
         </div>
       )}
       <MyActionsGrouped grouped={grouped as any} currentUserId={user.id} />

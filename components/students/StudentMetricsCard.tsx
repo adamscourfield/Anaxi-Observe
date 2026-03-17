@@ -1,5 +1,7 @@
 import { StudentSnapshotRecord } from "@/modules/students/types";
 import { TrendIndicator } from "./TrendIndicator";
+import { Card } from "@/components/ui/card";
+import { H3, MetaText } from "@/components/ui/typography";
 
 interface StudentMetricsCardProps {
   snapshot: StudentSnapshotRecord;
@@ -18,10 +20,10 @@ function MetricRow({
   metricType?: "behaviour" | "attendance";
 }) {
   return (
-    <div className="flex items-center justify-between border-b py-1 last:border-0">
-      <span className="text-sm text-text-muted">{label}</span>
+    <div className="flex items-center justify-between border-b border-border/40 py-2 last:border-0">
+      <span className="text-sm text-muted">{label}</span>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">{value}</span>
+        <span className="text-sm font-medium text-text">{value}</span>
         {delta !== undefined && (
           <TrendIndicator delta={delta} metricType={metricType} label={label} />
         )}
@@ -35,10 +37,10 @@ export function StudentMetricsCard({ snapshot, previousSnapshot }: StudentMetric
     prev !== undefined ? cur - prev : null;
 
   return (
-    <div className="rounded border bg-surface p-4 space-y-1">
-      <h3 className="text-sm font-semibold mb-2">
+    <Card>
+      <H3 className="mb-3">
         Snapshot: {new Date(snapshot.snapshotDate).toISOString().slice(0, 10)}
-      </h3>
+      </H3>
       <MetricRow
         label="Attendance"
         value={`${snapshot.attendancePct}%`}
@@ -81,6 +83,6 @@ export function StudentMetricsCard({ snapshot, previousSnapshot }: StudentMetric
         delta={delta(snapshot.onCallsCount, previousSnapshot?.onCallsCount)}
         metricType="behaviour"
       />
-    </div>
+    </Card>
   );
 }

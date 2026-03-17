@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { StatusPill } from "@/components/ui/status-pill";
+import { MetaText } from "@/components/ui/typography";
 
 interface ImportJob {
   id: string;
@@ -29,67 +31,72 @@ export function ImportJobHistory() {
       .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="text-sm text-muted">Loading…</p>;
+  if (loading) return <MetaText>Loading...</MetaText>;
 
   if (jobs.length === 0) {
-    return <p className="text-sm text-muted">No import jobs yet.</p>;
+    return <MetaText>No import jobs yet.</MetaText>;
   }
 
   return (
-    <table className="w-full border border-border bg-surface text-sm">
-      <thead>
-        <tr className="border-b border-border">
-          <th className="p-2 text-left text-text">Date</th>
-          <th className="p-2 text-left text-text">Type</th>
-          <th className="p-2 text-center text-text">Status</th>
-          <th className="p-2 text-center text-text">Processed</th>
-          <th className="p-2 text-center text-text">Failed</th>
-          <th className="p-2 text-left text-text">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {jobs.map((job) => (
-          <tr key={job.id} className="border-b border-border">
-            <td className="p-2 text-text">{new Date(job.createdAt).toLocaleDateString()}</td>
-            <td className="p-2 text-text">{job.type}</td>
-            <td className="p-2 text-center">
-              <span
-                className={
-                  job.status === "COMPLETED" || job.status === "SUCCESS"
-                    ? "font-medium text-green-700"
-                    : job.status === "FAILED"
-                    ? "font-medium text-red-700"
-                    : "text-muted"
-                }
-              >
-                {job.status}
-              </span>
-            </td>
-            <td className="p-2 text-center text-text">{job.rowsProcessed ?? job.rowCount}</td>
-            <td className="p-2 text-center text-text">
-              {job.rowsFailed > 0 ? (
-                <span className="text-red-600">{job.rowsFailed}</span>
-              ) : (
-                "0"
-              )}
-            </td>
-            <td className="p-2 flex gap-2">
-              <Link href={`/behaviour/import/job/${job.id}`} className="text-xs underline text-text">
-                View report
-              </Link>
-              {job.rowsFailed > 0 && (
-                <a
-                  href={`/api/import/jobs/${job.id}/errors.csv`}
-                  download
-                  className="text-xs underline text-red-600"
-                >
-                  Download errors
-                </a>
-              )}
-            </td>
+    <div className="table-shell">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="table-head-row">
+            <th className="p-3 text-left">Date</th>
+            <th className="p-3 text-left">Type</th>
+            <th className="p-3 text-center">Status</th>
+            <th className="p-3 text-center">Processed</th>
+            <th className="p-3 text-center">Failed</th>
+            <th className="p-3 text-left">Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {jobs.map((job) => (
+            <tr key={job.id} className="table-row">
+              <td className="p-3 text-text">{new Date(job.createdAt).toLocaleDateString()}</td>
+              <td className="p-3 text-text">{job.type}</td>
+              <td className="p-3 text-center">
+                <StatusPill
+                  variant={
+                    job.status === "COMPLETED" || job.status === "SUCCESS"
+                      ? "success"
+                      : job.status === "FAILED"
+                      ? "error"
+                      : "neutral"
+                  }
+                  size="sm"
+                >
+                  {job.status}
+                </StatusPill>
+              </td>
+              <td className="p-3 text-center text-text">{job.rowsProcessed ?? job.rowCount}</td>
+              <td className="p-3 text-center">
+                {job.rowsFailed > 0 ? (
+                  <span className="font-medium text-error">{job.rowsFailed}</span>
+                ) : (
+                  <span className="text-muted">0</span>
+                )}
+              </td>
+              <td className="p-3">
+                <div className="flex gap-3">
+                  <Link href={`/tenant/behaviour/import/job/${job.id}`} className="text-xs font-medium text-accent hover:text-accentHover calm-transition">
+                    View report
+                  </Link>
+                  {job.rowsFailed > 0 && (
+                    <a
+                      href={`/api/import/jobs/${job.id}/errors.csv`}
+                      download
+                      className="text-xs font-medium text-error hover:text-error/80 calm-transition"
+                    >
+                      Download errors
+                    </a>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

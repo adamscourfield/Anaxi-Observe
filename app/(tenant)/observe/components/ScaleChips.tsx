@@ -12,7 +12,11 @@ export function ScaleChips({ options, value, disabled, onChange }: { options: Sc
           disabled={disabled}
           onClick={() => onChange(option.key)}
           title={option.description}
-          className={`rounded border px-2 py-1 text-xs ${value === option.key ? "border-primaryBtn bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive text-white" : "bg-surface"}`}
+          className={`calm-transition rounded-xl border px-3 py-1.5 text-xs font-medium disabled:opacity-40 ${
+            value === option.key
+              ? "border-accent/30 bg-primaryBtn text-white shadow-sm hover:bg-primaryBtnHover active:bg-primaryBtnActive"
+              : "border-border/60 bg-surface/80 text-text hover:border-border hover:bg-divider/50"
+          }`}
         >
           {option.label}
         </button>

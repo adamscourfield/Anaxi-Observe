@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { H1, MetaText } from "@/components/ui/typography";
+import { H1, MetaText, Label } from "@/components/ui/typography";
 import { TileOption } from "@/components/ui/tile-option";
 import { GLOBAL_SCALE } from "@/modules/observations/signalDefinitions";
 import { loadDraft, persistDraft } from "./observationDraft";
@@ -36,10 +36,10 @@ export function ReviewList({
 
   return (
     <Card className="mx-auto max-w-2xl">
-      <form action={action} className="space-y-4">
+      <form action={action} className="space-y-5">
         <div className="flex items-center justify-between">
           <H1 className="text-[20px]">Review observation</H1>
-          <MetaText>{completed}/{orderedSignals.length} complete</MetaText>
+          <MetaText className="font-medium">{completed}/{orderedSignals.length} complete</MetaText>
         </div>
         <MetaText>Tap any signal row to revise your judgement before submitting.</MetaText>
 
@@ -61,11 +61,11 @@ export function ReviewList({
               <TileOption
                 key={signal.key}
                 type="button"
-                className="flex w-full items-center justify-between p-2 text-sm"
-                onClick={() => router.push(`/observe/new/signals?index=${index}`)}
+                className="flex w-full items-center justify-between p-3 text-sm"
+                onClick={() => router.push(`/tenant/observe/new/signals?index=${index}`)}
               >
-                <span>{displayName}</span>
-                <span className="text-xs text-muted">{selectedLabel}</span>
+                <span className="font-medium">{displayName}</span>
+                <span className={`text-xs ${state?.valueKey ? "text-accent" : state?.notObserved ? "text-muted" : "text-warning"}`}>{selectedLabel}</span>
                 <input type="hidden" name={`signal_${signal.key}_value`} value={state?.valueKey || ""} />
                 <input type="hidden" name={`signal_${signal.key}_not`} value={state?.notObserved ? "1" : ""} />
               </TileOption>
@@ -74,10 +74,10 @@ export function ReviewList({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm">Context note (optional)</label>
+          <Label>Context note <span className="font-normal text-muted">(optional)</span></Label>
           <textarea
             name="contextNote"
-            className="w-full rounded-md border border-border bg-surface p-2 text-sm"
+            className="field"
             rows={3}
             value={draft.context.contextNote}
             onChange={(event) => {

@@ -176,7 +176,7 @@ export function CsvImportMapper() {
         />
         {fileName && <MetaText className="mt-1">File: {fileName} — {headers.length} columns detected</MetaText>}
         {appliedMappingName && (
-          <p className="mt-2 text-sm text-green-700 font-medium">✓ Applied saved mapping: {appliedMappingName}</p>
+          <p className="mt-2 text-sm text-success font-medium">✓ Applied saved mapping: {appliedMappingName}</p>
         )}
       </Card>
 
@@ -193,7 +193,7 @@ export function CsvImportMapper() {
               <div key={field} className="flex items-center gap-2">
                 <label className="w-44 shrink-0 text-sm font-medium text-text">
                   {field}
-                  <span className="ml-1 text-red-500">*</span>
+                  <span className="ml-1 text-error">*</span>
                 </label>
                 <select
                   value={fieldMap[field] ?? ""}
@@ -208,7 +208,7 @@ export function CsvImportMapper() {
                   ))}
                 </select>
                 {!fieldMap[field] && (
-                  <span className="text-xs text-red-500">Required</span>
+                  <span className="text-xs text-error">Required</span>
                 )}
               </div>
             ))}
@@ -216,7 +216,7 @@ export function CsvImportMapper() {
             {/* CountScope */}
             <div className="flex items-center gap-2 sm:col-span-2">
               <label className="w-44 shrink-0 text-sm font-medium text-text">
-                CountScope <span className="text-red-500">*</span>
+                CountScope <span className="text-error">*</span>
               </label>
               <select
                 value={countScopeMode}
@@ -341,13 +341,13 @@ export function CsvImportMapper() {
           )}
 
           {unmappedRequired.length > 0 && (
-            <p className="mb-3 text-sm text-red-600">
+            <p className="mb-3 text-sm text-error">
               Missing required mappings: {unmappedRequired.join(", ")}
             </p>
           )}
 
           {importError && (
-            <p className="mb-3 text-sm text-red-600">Error: {importError}</p>
+            <p className="mb-3 text-sm text-error">Error: {importError}</p>
           )}
 
           {result && (
@@ -355,7 +355,7 @@ export function CsvImportMapper() {
               <p className="text-sm text-text font-medium">
                 ✓ Imported {result.rowsProcessed} rows
                 {result.rowsFailed > 0 && (
-                  <span className="ml-2 text-red-600">
+                  <span className="ml-2 text-error">
                     — {result.rowsFailed} rows had issues
                     {" "}
                     <a

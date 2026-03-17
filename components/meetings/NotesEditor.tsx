@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { MetaText } from "@/components/ui/typography";
 
 interface NotesEditorProps {
   meetingId: string;
@@ -44,15 +45,15 @@ export function NotesEditor({ meetingId, initialNotes, canEdit, onSave }: NotesE
 
   if (!editing) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
         {notes ? (
-          <pre className="whitespace-pre-wrap font-sans text-sm text-text">{notes}</pre>
+          <pre className="whitespace-pre-wrap rounded-xl border border-border/50 bg-bg/30 p-4 font-sans text-sm leading-relaxed text-text">{notes}</pre>
         ) : (
-          <p className="text-sm opacity-60">No notes yet.</p>
+          <MetaText>No notes yet.</MetaText>
         )}
         {canEdit && (
           <Button variant="secondary" onClick={() => { setDraft(notes); setEditing(true); }}>
-            Edit Notes
+            Edit notes
           </Button>
         )}
       </div>
@@ -60,18 +61,22 @@ export function NotesEditor({ meetingId, initialNotes, canEdit, onSave }: NotesE
   }
 
   return (
-    <div className="space-y-2">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+    <div className="space-y-3">
+      {error && (
+        <div className="rounded-xl border border-error/20 bg-[var(--pill-error-bg)] px-3 py-2.5">
+          <MetaText className="text-[var(--pill-error-text)]">{error}</MetaText>
+        </div>
+      )}
       <textarea
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         rows={8}
-        className="w-full rounded border border-border bg-bg p-2 text-sm"
+        className="field"
         placeholder="Add meeting notes (Markdown supported)"
       />
       <div className="flex gap-2">
-        <Button onClick={handleSave} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
-        <Button variant="secondary" onClick={() => setEditing(false)}>Cancel</Button>
+        <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
+        <Button variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
       </div>
     </div>
   );

@@ -4,6 +4,9 @@ import { revalidatePath } from "next/cache";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import { upsertTenantSignalLabel } from "@/modules/observations/tenantSignalLabels";
 import { redirect as nextRedirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { H2, MetaText } from "@/components/ui/typography";
 import WizardClient from "./wizard-client";
 
 const ALL_MODULES = [
@@ -117,163 +120,168 @@ export default async function OnboardingPage({
   return (
     <WizardClient stepIndex={step - 1}>
       {step === 1 && (
-        <form action={saveSchoolSettings} className="space-y-4">
-          <h2 className="font-semibold">Step 1: School settings</h2>
-          <div>
-            <label className="mb-1 block text-sm">School name</label>
-            <input
-              name="schoolName"
-              defaultValue={settings?.schoolName ?? tenant?.name ?? ""}
-              placeholder="My School"
-              className="w-full max-w-sm rounded border p-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm">Timezone</label>
-            <select name="timezone" defaultValue={settings?.timezone ?? "Europe/London"} className="rounded border p-2 text-sm">
-              <option value="Europe/London">Europe/London</option>
-              <option value="Europe/Dublin">Europe/Dublin</option>
-              <option value="America/New_York">America/New_York</option>
-              <option value="America/Chicago">America/Chicago</option>
-              <option value="America/Los_Angeles">America/Los_Angeles</option>
-              <option value="Australia/Sydney">Australia/Sydney</option>
-            </select>
-          </div>
-          <button type="submit" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">
-            Next →
-          </button>
-        </form>
+        <Card>
+          <form action={saveSchoolSettings} className="space-y-4">
+            <H2>Step 1: School settings</H2>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">School name</label>
+              <input
+                name="schoolName"
+                defaultValue={settings?.schoolName ?? tenant?.name ?? ""}
+                placeholder="My School"
+                className="field w-full max-w-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">Timezone</label>
+              <select name="timezone" defaultValue={settings?.timezone ?? "Europe/London"} className="field">
+                <option value="Europe/London">Europe/London</option>
+                <option value="Europe/Dublin">Europe/Dublin</option>
+                <option value="America/New_York">America/New_York</option>
+                <option value="America/Chicago">America/Chicago</option>
+                <option value="America/Los_Angeles">America/Los_Angeles</option>
+                <option value="Australia/Sydney">Australia/Sydney</option>
+              </select>
+            </div>
+            <Button type="submit">Next</Button>
+          </form>
+        </Card>
       )}
 
       {step === 2 && (
-        <form action={saveModules} className="space-y-4">
-          <h2 className="font-semibold">Step 2: Enable modules</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {ALL_MODULES.map((mod) => (
-              <label key={mod.key} className="flex items-center gap-2 rounded border bg-surface p-3 text-sm">
-                <input
-                  type="checkbox"
-                  name={mod.key}
-                  defaultChecked={enabledKeys.has(mod.key)}
-                />
-                {mod.label}
-              </label>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <a href="/onboarding?step=1" className="rounded border px-4 py-2 text-sm">← Back</a>
-            <button type="submit" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Next →</button>
-          </div>
-        </form>
+        <Card>
+          <form action={saveModules} className="space-y-4">
+            <H2>Step 2: Enable modules</H2>
+            <div className="grid grid-cols-2 gap-2">
+              {ALL_MODULES.map((mod) => (
+                <label key={mod.key} className="flex items-center gap-2.5 rounded-xl border border-border/70 bg-surface/60 p-3 text-sm calm-transition hover:border-accent/30 hover:bg-[var(--accent-tint)]">
+                  <input
+                    type="checkbox"
+                    name={mod.key}
+                    defaultChecked={enabledKeys.has(mod.key)}
+                    className="accent-accent"
+                  />
+                  {mod.label}
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <a href="/tenant/onboarding?step=1"><Button type="button" variant="secondary">Back</Button></a>
+              <Button type="submit">Next</Button>
+            </div>
+          </form>
+        </Card>
       )}
 
       {step === 3 && (
-        <div className="space-y-4">
-          <h2 className="font-semibold">Step 3: Upload staff</h2>
-          <p className="text-sm text-muted">
+        <Card className="space-y-4">
+          <H2>Step 3: Upload staff</H2>
+          <MetaText>
             Use the Users admin page to bulk-import or add staff manually. Come back here when done.
-          </p>
-          <div className="flex gap-2">
-            <a href="/onboarding?step=2" className="rounded border px-4 py-2 text-sm">← Back</a>
-            <a href="/admin/users" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Go to Users</a>
-            <a href="/onboarding?step=4" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Next →</a>
+          </MetaText>
+          <div className="flex flex-wrap gap-2">
+            <a href="/tenant/onboarding?step=2"><Button type="button" variant="secondary">Back</Button></a>
+            <a href="/tenant/admin/users"><Button type="button" variant="secondary">Go to Users</Button></a>
+            <a href="/tenant/onboarding?step=4"><Button type="button">Next</Button></a>
           </div>
-        </div>
+        </Card>
       )}
 
       {step === 4 && (
-        <form action={saveBehaviourLabels} className="space-y-4">
-          <h2 className="font-semibold">Step 4: Behaviour labels</h2>
-          <div className="grid max-w-lg gap-3">
-            {BEHAVIOUR_FIELDS.map((field) => (
-              <div key={field.key} className="flex items-center gap-3">
-                <label className="w-52 text-sm text-muted">{field.label}</label>
-                <input
-                  name={field.key}
-                  defaultValue={settings?.[field.key] ?? field.default}
-                  placeholder={field.default}
-                  className="flex-1 rounded border p-2 text-sm"
-                />
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <a href="/onboarding?step=3" className="rounded border px-4 py-2 text-sm">← Back</a>
-            <button type="submit" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Next →</button>
-          </div>
-        </form>
+        <Card>
+          <form action={saveBehaviourLabels} className="space-y-4">
+            <H2>Step 4: Behaviour labels</H2>
+            <div className="grid max-w-lg gap-3">
+              {BEHAVIOUR_FIELDS.map((field) => (
+                <div key={field.key} className="flex items-center gap-3">
+                  <label className="w-52 text-sm text-muted">{field.label}</label>
+                  <input
+                    name={field.key}
+                    defaultValue={settings?.[field.key] ?? field.default}
+                    placeholder={field.default}
+                    className="field flex-1"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <a href="/tenant/onboarding?step=3"><Button type="button" variant="secondary">Back</Button></a>
+              <Button type="submit">Next</Button>
+            </div>
+          </form>
+        </Card>
       )}
 
       {step === 5 && (
-        <form action={saveSignalLabels} className="space-y-4">
-          <h2 className="font-semibold">Step 5: Signal labels</h2>
-          <p className="text-sm text-muted">Customise observation signal display names for your school's language.</p>
-          <div className="overflow-x-auto">
-            <table className="w-full border bg-surface text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="p-2 text-left">Signal</th>
-                  <th className="p-2 text-left">Display name</th>
-                  <th className="p-2 text-left">Description (optional)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {SIGNAL_DEFINITIONS.map((signal) => (
-                  <tr className="border-b align-top" key={signal.key}>
-                    <td className="p-2 font-mono text-xs">{signal.key}</td>
-                    <td className="p-2">
-                      <input
-                        name={`display_${signal.key}`}
-                        defaultValue={signal.displayNameDefault}
-                        className="w-full rounded border p-1"
-                        required
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        name={`description_${signal.key}`}
-                        defaultValue={signal.descriptionDefault}
-                        className="w-full rounded border p-1"
-                      />
-                    </td>
+        <Card>
+          <form action={saveSignalLabels} className="space-y-4">
+            <H2>Step 5: Signal labels</H2>
+            <MetaText>Customise observation signal display names for your school&apos;s language.</MetaText>
+            <div className="overflow-x-auto">
+              <table className="table-shell w-full">
+                <thead>
+                  <tr className="table-head-row">
+                    <th className="p-2 text-left">Signal</th>
+                    <th className="p-2 text-left">Display name</th>
+                    <th className="p-2 text-left">Description (optional)</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex gap-2">
-            <a href="/onboarding?step=4" className="rounded border px-4 py-2 text-sm">← Back</a>
-            <button type="submit" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Next →</button>
-          </div>
-        </form>
+                </thead>
+                <tbody>
+                  {SIGNAL_DEFINITIONS.map((signal) => (
+                    <tr className="table-row align-top" key={signal.key}>
+                      <td className="p-2 font-mono text-xs">{signal.key}</td>
+                      <td className="p-2">
+                        <input
+                          name={`display_${signal.key}`}
+                          defaultValue={signal.displayNameDefault}
+                          className="field w-full"
+                          required
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          name={`description_${signal.key}`}
+                          defaultValue={signal.descriptionDefault}
+                          className="field w-full"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex gap-2">
+              <a href="/tenant/onboarding?step=4"><Button type="button" variant="secondary">Back</Button></a>
+              <Button type="submit">Next</Button>
+            </div>
+          </form>
+        </Card>
       )}
 
       {step === 6 && (
-        <div className="space-y-4">
-          <h2 className="font-semibold">Step 6: Timetable upload (optional)</h2>
-          <p className="text-sm text-muted">
+        <Card className="space-y-4">
+          <H2>Step 6: Timetable upload (optional)</H2>
+          <MetaText>
             Optionally upload a timetable CSV. This can be done later from the Admin panel.
-          </p>
-          <div className="flex gap-2">
-            <a href="/onboarding?step=5" className="rounded border px-4 py-2 text-sm">← Back</a>
-            <a href="/admin/timetable" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Upload timetable</a>
-            <a href="/onboarding?step=7" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-4 py-2 text-sm text-white">Skip →</a>
+          </MetaText>
+          <div className="flex flex-wrap gap-2">
+            <a href="/tenant/onboarding?step=5"><Button type="button" variant="secondary">Back</Button></a>
+            <a href="/tenant/admin/timetable"><Button type="button" variant="secondary">Upload timetable</Button></a>
+            <a href="/tenant/onboarding?step=7"><Button type="button">Skip</Button></a>
           </div>
-        </div>
+        </Card>
       )}
 
       {step === 7 && (
-        <div className="space-y-4">
-          <h2 className="font-semibold">Step 7: All done! 🎉</h2>
-          <p className="text-sm text-muted">
+        <Card className="space-y-4">
+          <H2>Step 7: All done!</H2>
+          <MetaText>
             Your school is set up. You can always revisit any settings from the Admin panel.
-          </p>
+          </MetaText>
           <form action={finishOnboarding}>
-            <button type="submit" className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-6 py-2 text-sm text-white">
-              Go to dashboard →
-            </button>
+            <Button type="submit">Go to dashboard</Button>
           </form>
-        </div>
+        </Card>
       )}
     </WizardClient>
   );

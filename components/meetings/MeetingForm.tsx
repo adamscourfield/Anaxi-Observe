@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Label, MetaText } from "@/components/ui/typography";
 import { MEETING_TYPE_LABELS } from "@/modules/meetings/types";
 
 const MEETING_TYPES = Object.keys(MEETING_TYPE_LABELS) as Array<keyof typeof MEETING_TYPE_LABELS>;
@@ -83,70 +84,90 @@ export function MeetingForm({ users, currentUserId }: MeetingFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-border bg-surface p-6">
-      {error && <p className="rounded bg-red-50 p-2 text-sm text-red-700">{error}</p>}
+    <form onSubmit={handleSubmit} className="panel space-y-5 p-6">
+      {error && (
+        <div className="rounded-xl border border-error/20 bg-[var(--pill-error-bg)] px-3 py-2.5">
+          <MetaText className="text-[var(--pill-error-text)]">{error}</MetaText>
+        </div>
+      )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <label className="text-sm font-medium text-text">Title</label>
-        <input required name="title" className="rounded border border-border bg-bg p-2 text-sm" />
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="meeting-title">Title</Label>
+            <input id="meeting-title" required name="title" className="field" placeholder="Meeting title" />
+          </div>
+          <div>
+            <Label htmlFor="meeting-type">Type</Label>
+            <select id="meeting-type" name="type" defaultValue="OTHER" className="field">
+              {MEETING_TYPES.map((t) => (
+                <option key={t} value={t}>{MEETING_TYPE_LABELS[t]}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-        <label className="text-sm font-medium text-text">Type</label>
-        <select name="type" defaultValue="OTHER" className="rounded border border-border bg-bg p-2 text-sm">
-          {MEETING_TYPES.map((t) => (
-            <option key={t} value={t}>{MEETING_TYPE_LABELS[t]}</option>
-          ))}
-        </select>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="meeting-start">Start</Label>
+            <input id="meeting-start" required type="datetime-local" name="startDateTime" className="field" />
+          </div>
+          <div>
+            <Label htmlFor="meeting-end">End</Label>
+            <input id="meeting-end" required type="datetime-local" name="endDateTime" className="field" />
+          </div>
+        </div>
 
-        <label className="text-sm font-medium text-text">Start</label>
-        <input required type="datetime-local" name="startDateTime" className="rounded border border-border bg-bg p-2 text-sm" />
+        <div>
+          <Label htmlFor="meeting-location">Location</Label>
+          <input id="meeting-location" name="location" className="field" placeholder="Optional" />
+        </div>
 
-        <label className="text-sm font-medium text-text">End</label>
-        <input required type="datetime-local" name="endDateTime" className="rounded border border-border bg-bg p-2 text-sm" />
-
-        <label className="text-sm font-medium text-text">Location</label>
-        <input name="location" className="rounded border border-border bg-bg p-2 text-sm" placeholder="Optional" />
-
-        <label className="col-span-2 text-sm font-medium text-text">Notes</label>
-        <textarea name="notes" rows={4} className="col-span-2 rounded border border-border bg-bg p-2 text-sm" placeholder="Markdown supported" />
+        <div>
+          <Label htmlFor="meeting-notes">Notes</Label>
+          <textarea id="meeting-notes" name="notes" rows={4} className="field" placeholder="Markdown supported" />
+        </div>
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-text">Attendees</label>
+        <Label>Attendees</Label>
+        <div className="mb-3 flex flex-wrap gap-2">
+          {selectedAttendees.map((a) => (
+            <span key={a.id} className="flex items-center gap-1.5 rounded-full border border-border/60 bg-divider/60 px-3 py-1 text-xs font-medium text-text">
+              {a.fullName}
+              {a.id !== currentUserId && (
+                <button type="button" onClick={() => toggleAttendee(a)} className="calm-transition text-muted hover:text-error" aria-label={`Remove ${a.fullName}`}>
+                  <svg viewBox="0 0 12 12" fill="none" className="h-3 w-3"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                </button>
+              )}
+            </span>
+          ))}
+        </div>
         <input
           type="text"
           placeholder="Search people..."
           value={attendeeSearch}
           onChange={(e) => setAttendeeSearch(e.target.value)}
-          className="mb-2 w-full rounded border border-border bg-bg p-2 text-sm"
+          className="field mb-2"
         />
-        <div className="mb-2 flex flex-wrap gap-2">
-          {selectedAttendees.map((a) => (
-            <span key={a.id} className="flex items-center gap-1 rounded-full bg-divider px-3 py-1 text-xs text-text">
-              {a.fullName}
-              {a.id !== currentUserId && (
-                <button type="button" onClick={() => toggleAttendee(a)} className="text-text hover:text-red-600">×</button>
-              )}
-            </span>
-          ))}
-        </div>
-        <div className="max-h-40 overflow-auto rounded border border-border bg-bg">
+        <div className="max-h-40 overflow-auto rounded-xl border border-border/60 bg-bg/40">
           {filteredUsers.map((u) => (
             <button
               key={u.id}
               type="button"
               onClick={() => toggleAttendee(u)}
-              className="w-full px-3 py-2 text-left text-sm text-text hover:bg-divider"
+              className="calm-transition w-full px-3 py-2.5 text-left text-sm text-text hover:bg-divider/50"
             >
-              {u.fullName} <span className="text-xs opacity-60">{u.email}</span>
+              {u.fullName} <span className="text-xs text-muted">{u.email}</span>
             </button>
           ))}
-          {filteredUsers.length === 0 && <p className="p-2 text-xs opacity-60">No more people to add</p>}
+          {filteredUsers.length === 0 && <p className="p-3 text-xs text-muted">No more people to add</p>}
         </div>
       </div>
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={submitting}>{submitting ? "Creating…" : "Create Meeting"}</Button>
-        <Button type="button" variant="secondary" onClick={() => router.back()}>Cancel</Button>
+      <div className="flex gap-2 border-t border-border/50 pt-4">
+        <Button type="submit" disabled={submitting}>{submitting ? "Creating..." : "Create meeting"}</Button>
+        <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
       </div>
     </form>
   );

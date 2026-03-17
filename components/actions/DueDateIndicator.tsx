@@ -12,12 +12,12 @@ export function DueDateIndicator({ dueDate, status }: DueDateIndicatorProps) {
   const formatted = new Date(dueDate).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 
   if (isDone) {
-    return <span className="text-xs text-text opacity-60">Due {formatted}</span>;
+    return <span className="text-xs text-muted">Due {formatted}</span>;
   }
 
   if (days < 0) {
     return (
-      <span title={`${Math.abs(days)} day${Math.abs(days) !== 1 ? "s" : ""} overdue`} className="text-xs font-bold text-red-600">
+      <span title={`${Math.abs(days)} day${Math.abs(days) !== 1 ? "s" : ""} overdue`} className="text-xs font-semibold text-error">
         Overdue ({Math.abs(days)}d)
       </span>
     );
@@ -25,14 +25,14 @@ export function DueDateIndicator({ dueDate, status }: DueDateIndicatorProps) {
 
   if (days <= 3) {
     return (
-      <span title={`${days} day${days !== 1 ? "s" : ""} remaining`} className="text-xs font-bold text-yellow-600">
+      <span title={`${days} day${days !== 1 ? "s" : ""} remaining`} className="text-xs font-semibold text-warning">
         Due {formatted} ({days}d)
       </span>
     );
   }
 
   return (
-    <span title={`${days} days remaining`} className="text-xs text-text opacity-70">
+    <span title={`${days} days remaining`} className="text-xs text-muted">
       Due {formatted}
     </span>
   );

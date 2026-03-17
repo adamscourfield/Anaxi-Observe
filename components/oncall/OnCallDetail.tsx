@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { OnCallStatusBadge } from "./OnCallStatusBadge";
+import { H3, MetaText } from "@/components/ui/typography";
 import { REQUEST_TYPE_LABELS } from "@/modules/oncall/types";
+import { StatusPill } from "@/components/ui/status-pill";
 
 type OnCallStatus = "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "CANCELLED";
 type RequestType = "BEHAVIOUR" | "FIRST_AID";
@@ -72,84 +74,97 @@ export function OnCallDetail({ request, canAcknowledge, canResolve, canCancel }:
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
         <OnCallStatusBadge status={request.status} />
-        <span className="text-sm font-medium text-text">{REQUEST_TYPE_LABELS[request.requestType]}</span>
+        <StatusPill variant="neutral" size="sm">{REQUEST_TYPE_LABELS[request.requestType]}</StatusPill>
       </div>
 
-      <Card className="space-y-0">
-        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
-          <DetailRow label="Student" value={`${request.student.fullName} (${request.student.upn})`} />
-          <DetailRow label="Year group" value={request.student.yearGroup ?? "—"} />
-          <DetailRow label="Type" value={REQUEST_TYPE_LABELS[request.requestType]} />
-          <DetailRow label="Location" value={request.location} />
-          <DetailRow label="Reason" value={request.behaviourReasonCategory} />
-          <DetailRow label="Notes" value={request.notes} />
-          <DetailRow label="Raised by" value={request.requester.fullName} />
-          {request.responder && <DetailRow label="Responder" value={request.responder.fullName} />}
-        </dl>
+      <Card className="space-y-4">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+          <div>
+            <MetaText className="mb-0.5 font-medium">Student</MetaText>
+            <p className="text-text">{request.student.fullName} ({request.student.upn})</p>
+          </div>
+          <div>
+            <MetaText className="mb-0.5 font-medium">Year Group</MetaText>
+            <p className="text-text">{request.student.yearGroup ?? "\u2014"}</p>
+          </div>
+          <div>
+            <MetaText className="mb-0.5 font-medium">Location</MetaText>
+            <p className="text-text">{request.location}</p>
+          </div>
+          {request.behaviourReasonCategory && (
+            <div>
+              <MetaText className="mb-0.5 font-medium">Reason</MetaText>
+              <p className="text-text">{request.behaviourReasonCategory}</p>
+            </div>
+          )}
+          {request.notes && (
+            <div className="sm:col-span-2">
+              <MetaText className="mb-0.5 font-medium">Notes</MetaText>
+              <p className="text-text">{request.notes}</p>
+            </div>
+          )}
+          <div>
+            <MetaText className="mb-0.5 font-medium">Raised by</MetaText>
+            <p className="text-text">{request.requester.fullName}</p>
+          </div>
+          {request.responder && (
+            <div>
+              <MetaText className="mb-0.5 font-medium">Responder</MetaText>
+              <p className="text-text">{request.responder.fullName}</p>
+            </div>
+          )}
+        </div>
       </Card>
 
-      <Card tone="subtle" className="space-y-0">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Timeline</h2>
-        <ol className="space-y-3 border-l-2 border-divider pl-4">
+      <div className="space-y-3">
+        <H3>Timeline</H3>
+        <ol className="space-y-3 border-l-2 border-accent/20 pl-4">
           <li className="space-y-0.5">
-            <p className="text-sm font-medium text-text">Created</p>
-            <p className="text-xs text-muted">{fmt(request.createdAt)}</p>
+            <p className="text-xs font-semibold text-text">Created</p>
+            <MetaText>{fmt(request.createdAt)}</MetaText>
           </li>
           {request.acknowledgedAt && (
             <li className="space-y-0.5">
-              <p className="text-sm font-medium text-text">Acknowledged</p>
-              <p className="text-xs text-muted">
+              <p className="text-xs font-semibold text-text">Acknowledged</p>
+              <MetaText>
                 {fmt(request.acknowledgedAt)}
                 {request.responder ? ` by ${request.responder.fullName}` : ""}
-              </p>
+              </MetaText>
             </li>
           )}
           {request.resolvedAt && (
             <li className="space-y-0.5">
-              <p className="text-sm font-medium text-text">Resolved</p>
-              <p className="text-xs text-muted">
+              <p className="text-xs font-semibold text-text">Resolved</p>
+              <MetaText>
                 {fmt(request.resolvedAt)}
                 {request.responder ? ` by ${request.responder.fullName}` : ""}
-              </p>
+              </MetaText>
             </li>
           )}
         </ol>
-      </Card>
+      </div>
 
-      {showActions && (
-        <div className="flex flex-wrap gap-3">
-          {canAcknowledge && request.status === "OPEN" && (
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={actionPending === "acknowledge"}
-              onClick={() => handleAction("acknowledge")}
-            >
-              {actionPending === "acknowledge" ? "Acknowledging…" : "Acknowledge"}
-            </Button>
-          )}
-          {canResolve && (request.status === "OPEN" || request.status === "ACKNOWLEDGED") && (
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={actionPending === "resolve"}
-              onClick={() => handleAction("resolve")}
-            >
-              {actionPending === "resolve" ? "Resolving…" : "Resolve"}
-            </Button>
-          )}
-          {canCancel && request.status === "OPEN" && (
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={actionPending === "cancel"}
-              onClick={() => handleAction("cancel")}
-            >
-              {actionPending === "cancel" ? "Cancelling…" : "Cancel request"}
-            </Button>
-          )}
-        </div>
-      )}
+      <div className="flex flex-wrap gap-3">
+        {canAcknowledge && request.status === "OPEN" && (
+          <form method="POST" action={`/api/oncall/${request.id}/acknowledge`}>
+            <Button type="submit">Acknowledge</Button>
+          </form>
+        )}
+        {canResolve && (request.status === "OPEN" || request.status === "ACKNOWLEDGED") && (
+          <form method="POST" action={`/api/oncall/${request.id}/resolve`}>
+            <Button type="submit" variant="secondary">Resolve</Button>
+          </form>
+        )}
+        {canCancel && request.status === "OPEN" && (
+          <form method="POST" action={`/api/oncall/${request.id}/cancel`}>
+            <Button type="submit" variant="ghost">Cancel request</Button>
+          </form>
+        )}
+      </div>
+
+      <Link href="/tenant/on-call" className="calm-transition inline-flex items-center gap-1.5 text-sm text-muted hover:text-accent">
+        &larr; Back to on call inbox
+      </Link>
     </div>
   );
 }

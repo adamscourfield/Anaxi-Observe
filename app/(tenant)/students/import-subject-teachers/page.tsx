@@ -1,12 +1,18 @@
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { H1, MetaText } from "@/components/ui/typography";
+
 export default function SubjectTeacherImportPage() {
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Import student subject teachers</h1>
-      <form action="/api/students/import-subject-teachers" method="post" encType="multipart/form-data" className="space-y-3 rounded border bg-surface p-4">
-        <input type="file" name="file" accept=".csv" required />
-        <button className="rounded bg-primaryBtn hover:bg-primaryBtnHover active:bg-primaryBtnActive px-3 py-2 text-white" type="submit">Upload and process</button>
-      </form>
-      <p className="text-sm">Required columns: UPN, Subject, TeacherEmail, EffectiveFrom, EffectiveTo(optional).</p>
+      <H1>Import student subject teachers</H1>
+      <Card>
+        <form action="/api/students/import-subject-teachers" method="post" encType="multipart/form-data" className="space-y-3">
+          <input type="file" name="file" accept=".csv" required className="block text-sm text-text file:mr-3 file:rounded-lg file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm" />
+          <Button type="submit">Upload and process</Button>
+        </form>
+      </Card>
+      <MetaText>Required columns: UPN, Subject, TeacherEmail, EffectiveFrom, EffectiveTo(optional).</MetaText>
     </div>
   );
 }

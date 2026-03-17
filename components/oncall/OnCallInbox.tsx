@@ -4,10 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { OnCallStatusBadge } from "./OnCallStatusBadge";
 import { REQUEST_TYPE_LABELS, STATUS_LABELS } from "@/modules/oncall/types";
-import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { SegmentedTabs } from "@/components/ui/segmented-tabs";
+import { StatusPill } from "@/components/ui/status-pill";
 
 type Status = "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "CANCELLED";
 
@@ -65,25 +63,11 @@ function InboxRow({ r, canAcknowledge, canResolve }: { r: InboxRequest; canAckno
   }
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => router.push(`/on-call/${r.id}`)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(`/on-call/${r.id}`); } }}
-      className="group flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm calm-transition hover:border-accent/30 hover:shadow-md cursor-pointer sm:flex-row sm:items-center sm:gap-4"
-    >
-      <div className="hidden sm:block">
-        <Avatar name={r.student.fullName} size="md" />
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold text-text">{r.student.fullName}</span>
-          {r.student.yearGroup && (
-            <span className="text-xs text-muted">{r.student.yearGroup}</span>
-          )}
-          <OnCallStatusBadge status={r.status} />
-          <span className="text-xs text-muted sm:hidden">{timeAgo(r.createdAt)}</span>
+    <div className="space-y-4">
+      {openCount > 0 && (
+        <div className="flex items-center gap-3 rounded-2xl border border-error/25 bg-[var(--pill-error-bg)] px-4 py-3">
+          <StatusPill variant="error" size="sm">{openCount}</StatusPill>
+          <span className="text-sm font-medium text-[var(--pill-error-text)]">open request{openCount !== 1 ? "s" : ""} requiring attention</span>
         </div>
         <p className="mt-0.5 text-xs text-muted">
           {REQUEST_TYPE_LABELS[r.requestType]} · {r.location} · raised by {r.requester.fullName}
@@ -93,57 +77,30 @@ function InboxRow({ r, canAcknowledge, canResolve }: { r: InboxRequest; canAckno
         )}
       </div>
 
-      <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-2">
-        <span className="hidden text-xs font-medium text-muted sm:block">{timeAgo(r.createdAt)}</span>
-        {(showAck || showResolve) && (
-          <div className="flex items-center gap-2">
-            {showAck && (
-              <Button
-                type="button"
-                variant="secondary"
-                className="min-h-[36px] px-3 text-xs"
-                disabled={actionPending === "acknowledge"}
-                onClick={(e) => handleAction("acknowledge", e)}
-              >
-                {actionPending === "acknowledge" ? "…" : "Acknowledge"}
-              </Button>
-            )}
-            {showResolve && (
-              <Button
-                type="button"
-                variant="secondary"
-                className="min-h-[36px] px-3 text-xs"
-                disabled={actionPending === "resolve"}
-                onClick={(e) => handleAction("resolve", e)}
-              >
-                {actionPending === "resolve" ? "…" : "Resolve"}
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+      <div className="flex flex-wrap gap-2 rounded-xl border border-border/60 bg-surface/60 p-2">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as Status | "")}
+          className="field py-1.5"
+          aria-label="Filter by status"
+        >
+          <option value="">All statuses</option>
+          {(Object.keys(STATUS_LABELS) as Status[]).map((s) => (
+            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+          ))}
+        </select>
 
-export function OnCallInbox({ requests, canAcknowledge, canResolve }: OnCallInboxProps) {
-  const [statusFilter, setStatusFilter] = useState<string>("");
-
-  const counts: Record<string, number> = { "": requests.length };
-  for (const r of requests) {
-    counts[r.status] = (counts[r.status] || 0) + 1;
-  }
-
-  const filtered = statusFilter
-    ? requests.filter((r) => r.status === statusFilter)
-    : requests;
-
-  const tabs = STATUS_TABS.map((t) => ({ ...t, count: counts[t.key] ?? 0 }));
-
-  return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto">
-        <SegmentedTabs tabs={tabs} activeKey={statusFilter} onChange={setStatusFilter} />
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value as RequestType | "")}
+          className="field py-1.5"
+          aria-label="Filter by type"
+        >
+          <option value="">All types</option>
+          {(Object.keys(REQUEST_TYPE_LABELS) as RequestType[]).map((t) => (
+            <option key={t} value={t}>{REQUEST_TYPE_LABELS[t]}</option>
+          ))}
+        </select>
       </div>
 
       {filtered.length === 0 ? (

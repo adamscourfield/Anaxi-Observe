@@ -12,10 +12,22 @@ export function H3({ children, className = "" }: { children: ReactNode; classNam
   return <h3 className={`text-[16px] font-semibold leading-snug tracking-[-0.01em] text-text ${className}`}>{children}</h3>;
 }
 
+export function H3({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <h3 className={`text-[15px] font-semibold leading-snug text-text ${className}`}>{children}</h3>;
+}
+
 export function BodyText({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <p className={`text-[14px] leading-relaxed text-text ${className}`}>{children}</p>;
 }
 
 export function MetaText({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <p className={`text-[12px] leading-snug text-muted ${className}`}>{children}</p>;
+}
+
+export function Label({ children, htmlFor, className = "" }: { children: ReactNode; htmlFor?: string; className?: string }) {
+  return (
+    <label htmlFor={htmlFor} className={`mb-1.5 block text-sm font-medium text-text ${className}`}>
+      {children}
+    </label>
+  );
 }

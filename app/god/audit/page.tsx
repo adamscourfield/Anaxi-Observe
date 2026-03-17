@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { requireSuperAdminUser } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { H1, MetaText } from "@/components/ui/typography";
 
 const PAGE_SIZE = 30;
 
@@ -38,64 +41,68 @@ export default async function GodAuditPage({
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">God audit log</h1>
+    <div className="mx-auto max-w-6xl space-y-4 p-6">
+      <H1>God audit log</H1>
 
-      <form className="grid gap-2 rounded-lg border border-border bg-surface p-3 sm:grid-cols-4" method="get">
-        <input
-          name="action"
-          defaultValue={action}
-          placeholder="Filter action"
-          className="rounded border border-border bg-bg px-2 py-1 text-sm"
-        />
-        <select name="tenantId" defaultValue={tenantId} className="rounded border border-border bg-bg px-2 py-1 text-sm">
-          <option value="">All schools</option>
-          {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-        </select>
-        <input type="hidden" name="page" value="1" />
-        <button className="rounded bg-primaryBtn px-3 py-1 text-sm text-white">Apply</button>
-      </form>
+      <Card>
+        <form className="grid gap-2 sm:grid-cols-4" method="get">
+          <input
+            name="action"
+            defaultValue={action}
+            placeholder="Filter action"
+            className="field"
+          />
+          <select name="tenantId" defaultValue={tenantId} className="field">
+            <option value="">All schools</option>
+            {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
+          <input type="hidden" name="page" value="1" />
+          <Button type="submit">Apply</Button>
+        </form>
+      </Card>
 
-      <div className="overflow-auto rounded-lg border border-border bg-surface">
-        <table className="min-w-full text-sm">
-          <thead className="bg-bg text-left text-xs text-muted">
-            <tr>
-              <th className="px-3 py-2">When</th>
-              <th className="px-3 py-2">Actor</th>
-              <th className="px-3 py-2">Action</th>
-              <th className="px-3 py-2">School</th>
-              <th className="px-3 py-2">Target</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r: any) => (
-              <tr key={r.id} className="border-t border-border">
-                <td className="px-3 py-2">{new Date(r.createdAt).toLocaleString("en-GB")}</td>
-                <td className="px-3 py-2">{r.actor?.fullName ?? r.actor?.email ?? "—"}</td>
-                <td className="px-3 py-2">{r.action}</td>
-                <td className="px-3 py-2">{r.tenant?.name ?? "platform"}</td>
-                <td className="px-3 py-2">{r.targetType}{r.targetId ? `:${r.targetId}` : ""}</td>
+      <Card className="overflow-hidden p-0">
+        <div className="overflow-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-bg/60 text-left text-xs uppercase tracking-[0.05em] text-muted">
+                <th className="px-3 py-2">When</th>
+                <th className="px-3 py-2">Actor</th>
+                <th className="px-3 py-2">Action</th>
+                <th className="px-3 py-2">School</th>
+                <th className="px-3 py-2">Target</th>
               </tr>
-            ))}
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-3 py-6 text-center text-sm text-muted">No audit rows.</td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((r: any) => (
+                <tr key={r.id} className="border-t border-border/70">
+                  <td className="px-3 py-2">{new Date(r.createdAt).toLocaleString("en-GB")}</td>
+                  <td className="px-3 py-2">{r.actor?.fullName ?? r.actor?.email ?? "—"}</td>
+                  <td className="px-3 py-2">{r.action}</td>
+                  <td className="px-3 py-2">{r.tenant?.name ?? "platform"}</td>
+                  <td className="px-3 py-2">{r.targetType}{r.targetId ? `:${r.targetId}` : ""}</td>
+                </tr>
+              ))}
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-3 py-6 text-center text-sm text-muted">No audit rows.</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       <div className="flex items-center justify-between text-sm">
-        <div className="text-muted">Page {page} of {totalPages}</div>
+        <MetaText>Page {page} of {totalPages}</MetaText>
         <div className="flex gap-2">
           <Link
             href={`/god/audit?action=${encodeURIComponent(action)}&tenantId=${encodeURIComponent(tenantId)}&page=${Math.max(1, page - 1)}`}
-            className={`rounded border border-border px-2 py-1 ${page <= 1 ? "pointer-events-none opacity-50" : "hover:bg-divider"}`}
+            className={`calm-transition rounded-lg border border-border px-3 py-1.5 text-sm ${page <= 1 ? "pointer-events-none opacity-50" : "hover:border-accent/30 hover:bg-[var(--accent-tint)]"}`}
           >Prev</Link>
           <Link
             href={`/god/audit?action=${encodeURIComponent(action)}&tenantId=${encodeURIComponent(tenantId)}&page=${Math.min(totalPages, page + 1)}`}
-            className={`rounded border border-border px-2 py-1 ${page >= totalPages ? "pointer-events-none opacity-50" : "hover:bg-divider"}`}
+            className={`calm-transition rounded-lg border border-border px-3 py-1.5 text-sm ${page >= totalPages ? "pointer-events-none opacity-50" : "hover:border-accent/30 hover:bg-[var(--accent-tint)]"}`}
           >Next</Link>
         </div>
       </div>
