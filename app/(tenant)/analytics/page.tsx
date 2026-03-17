@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
+import { UserRole } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { H1, H2, MetaText, BodyText } from "@/components/ui/typography";
 import { computeTeacherRiskIndex, RiskStatus } from "@/modules/analysis/teacherRisk";
@@ -131,7 +132,7 @@ async function TeachersTab({
   user,
   windowDays,
 }: {
-  user: { id: string; tenantId: string; role: string };
+  user: { id: string; tenantId: string; role: UserRole };
   windowDays: number;
 }) {
   const [hodMemberships, coachAssignments] = await Promise.all([
@@ -489,7 +490,7 @@ async function StudentsTab({
   windowDays,
   searchParams,
 }: {
-  user: { id: string; tenantId: string; role: string };
+  user: { id: string; tenantId: string; role: UserRole };
   windowDays: number;
   searchParams: Record<string, string | string[] | undefined>;
 }) {

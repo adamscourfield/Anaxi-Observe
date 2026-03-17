@@ -15,6 +15,7 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
       findFirst: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
       count: vi.fn(),
       findMany: vi.fn(),
     },
@@ -152,24 +153,29 @@ describe("createOnCallRequest", () => {
 describe("acknowledgeOnCallRequest", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (prisma as any).onCallRequest.findFirst.mockResolvedValue(mockRequest());
-    (prisma as any).onCallRequest.update.mockResolvedValue(mockRequest({ status: "ACKNOWLEDGED", responderUserId: "responder_1" }));
+    (prisma as any).onCallRequest.findFirst
+      .mockResolvedValueOnce(mockRequest())
+      .mockResolvedValueOnce(mockRequest({ status: "ACKNOWLEDGED", responderUserId: "responder_1" }));
+    (prisma as any).onCallRequest.updateMany.mockResolvedValue({ count: 1 });
   });
 
   it("acknowledges an OPEN request", async () => {
     const result = await acknowledgeOnCallRequest("req_1", "tenant_1", "responder_1");
     expect(result.status).toBe("ACKNOWLEDGED");
-    expect((prisma as any).onCallRequest.update).toHaveBeenCalledOnce();
+    expect((prisma as any).onCallRequest.updateMany).toHaveBeenCalledOnce();
   });
 
   it("throws when request is not OPEN", async () => {
+    (prisma as any).onCallRequest.findFirst.mockReset();
     (prisma as any).onCallRequest.findFirst.mockResolvedValue(mockRequest({ status: "RESOLVED" }));
+    (prisma as any).onCallRequest.updateMany.mockResolvedValue({ count: 0 });
     await expect(
       acknowledgeOnCallRequest("req_1", "tenant_1", "responder_1")
     ).rejects.toThrow("request is not OPEN");
   });
 
   it("throws when request not found", async () => {
+    (prisma as any).onCallRequest.findFirst.mockReset();
     (prisma as any).onCallRequest.findFirst.mockResolvedValue(null);
     await expect(
       acknowledgeOnCallRequest("req_1", "tenant_1", "responder_1")
@@ -180,8 +186,10 @@ describe("acknowledgeOnCallRequest", () => {
 describe("resolveOnCallRequest", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (prisma as any).onCallRequest.findFirst.mockResolvedValue(mockRequest({ status: "ACKNOWLEDGED" }));
-    (prisma as any).onCallRequest.update.mockResolvedValue(mockRequest({ status: "RESOLVED", resolvedAt: new Date() }));
+    (prisma as any).onCallRequest.findFirst
+      .mockResolvedValueOnce(mockRequest({ status: "ACKNOWLEDGED" }))
+      .mockResolvedValueOnce(mockRequest({ status: "RESOLVED", resolvedAt: new Date() }));
+    (prisma as any).onCallRequest.updateMany.mockResolvedValue({ count: 1 });
   });
 
   it("resolves an ACKNOWLEDGED request", async () => {
@@ -190,14 +198,18 @@ describe("resolveOnCallRequest", () => {
   });
 
   it("throws when request already resolved", async () => {
+    (prisma as any).onCallRequest.findFirst.mockReset();
     (prisma as any).onCallRequest.findFirst.mockResolvedValue(mockRequest({ status: "RESOLVED" }));
+    (prisma as any).onCallRequest.updateMany.mockResolvedValue({ count: 0 });
     await expect(
       resolveOnCallRequest("req_1", "tenant_1", "responder_1")
     ).rejects.toThrow("request already resolved");
   });
 
   it("throws when request is cancelled", async () => {
+    (prisma as any).onCallRequest.findFirst.mockReset();
     (prisma as any).onCallRequest.findFirst.mockResolvedValue(mockRequest({ status: "CANCELLED" }));
+    (prisma as any).onCallRequest.updateMany.mockResolvedValue({ count: 0 });
     await expect(
       resolveOnCallRequest("req_1", "tenant_1", "responder_1")
     ).rejects.toThrow("request is cancelled");
@@ -207,8 +219,10 @@ describe("resolveOnCallRequest", () => {
 describe("cancelOnCallRequest", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (prisma as any).onCallRequest.findFirst.mockResolvedValue(mockRequest());
-    (prisma as any).onCallRequest.update.mockResolvedValue(mockRequest({ status: "CANCELLED" }));
+    (prisma as any).onCallRequest.findFirst
+      .mockResolvedValueOnce(mockRequest())
+      .mockResolvedValueOnce(mockRequest({ status: "CANCELLED" }));
+    (prisma as any).onCallRequest.updateMany.mockResolvedValue({ count: 1 });
   });
 
   it("cancels an OPEN request by the requester", async () => {
@@ -223,13 +237,16 @@ describe("cancelOnCallRequest", () => {
   });
 
   it("throws when request is not OPEN", async () => {
+    (prisma as any).onCallRequest.findFirst.mockReset();
     (prisma as any).onCallRequest.findFirst.mockResolvedValue(mockRequest({ status: "ACKNOWLEDGED" }));
+    (prisma as any).onCallRequest.updateMany.mockResolvedValue({ count: 0 });
     await expect(
       cancelOnCallRequest("req_1", "tenant_1", "user_1")
     ).rejects.toThrow("only OPEN requests can be cancelled");
   });
 
   it("throws when request not found", async () => {
+    (prisma as any).onCallRequest.findFirst.mockReset();
     (prisma as any).onCallRequest.findFirst.mockResolvedValue(null);
     await expect(
       cancelOnCallRequest("req_1", "tenant_1", "user_1")

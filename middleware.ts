@@ -22,7 +22,7 @@ export const config = {
     "/onboarding",
     "/students/:path*",
     "/api/students/:path*",
-    "/api/on-call/:path*",
+    "/api/oncall/:path*",
     "/api/email/:path*",
     "/api/csv/:path*",
     "/god/:path*",
