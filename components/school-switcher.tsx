@@ -32,18 +32,16 @@ export function SchoolSwitcher({
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => hasMultiple && setOpen(!open)}
-        className={`flex items-center gap-2 rounded-lg px-2 py-1.5 calm-transition ${hasMultiple ? "hover:bg-[#f4f6f9]" : "cursor-default"}`}
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 rounded-lg px-2 py-1.5 calm-transition hover:bg-[#f4f6f9]"
       >
         <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-[10px] font-bold text-accent">
           {initial}
         </span>
         <span className="text-[13px] font-medium text-text">{currentTenantName}</span>
-        {hasMultiple && (
-          <svg viewBox="0 0 16 16" fill="none" className={`h-3 w-3 text-muted calm-transition ${open ? "rotate-180" : ""}`} xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
+        <svg viewBox="0 0 16 16" fill="none" className={`h-3 w-3 text-muted calm-transition ${open ? "rotate-180" : ""}`} xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
 
       {open && (
