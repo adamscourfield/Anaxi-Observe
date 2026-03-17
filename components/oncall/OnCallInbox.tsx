@@ -1,17 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { OnCallRequestCard } from "./OnCallRequestCard";
+import { useRouter } from "next/navigation";
+import { OnCallStatusBadge } from "./OnCallStatusBadge";
 import { REQUEST_TYPE_LABELS, STATUS_LABELS } from "@/modules/oncall/types";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 
 type Status = "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "CANCELLED";
-type RequestType = "BEHAVIOUR" | "FIRST_AID";
 
 interface InboxRequest {
   id: string;
-  requestType: RequestType;
+  requestType: "BEHAVIOUR" | "FIRST_AID";
   location: string;
   status: Status;
   createdAt: Date | string;
@@ -26,17 +26,41 @@ interface OnCallInboxProps {
   canResolve?: boolean;
 }
 
-export function OnCallInbox({ requests, canAcknowledge, canResolve }: OnCallInboxProps) {
-  const [statusFilter, setStatusFilter] = useState<Status | "">("");
-  const [typeFilter, setTypeFilter] = useState<RequestType | "">("");
+function timeAgo(dateVal: Date | string): string {
+  const ms = Date.now() - new Date(dateVal).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
 
-  const openCount = requests.filter((r) => r.status === "OPEN").length;
+const STATUS_TABS: { key: string; label: string }[] = [
+  { key: "", label: "All" },
+  { key: "OPEN", label: "Open" },
+  { key: "ACKNOWLEDGED", label: "Acknowledged" },
+  { key: "RESOLVED", label: "Resolved" },
+];
 
-  const filtered = requests.filter((r) => {
-    if (statusFilter && r.status !== statusFilter) return false;
-    if (typeFilter && r.requestType !== typeFilter) return false;
-    return true;
-  });
+function InboxRow({ r, canAcknowledge, canResolve }: { r: InboxRequest; canAcknowledge?: boolean; canResolve?: boolean }) {
+  const router = useRouter();
+  const [actionPending, setActionPending] = useState<string | null>(null);
+  const showAck = canAcknowledge && r.status === "OPEN";
+  const showResolve = canResolve && (r.status === "OPEN" || r.status === "ACKNOWLEDGED");
+
+  async function handleAction(action: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    setActionPending(action);
+    try {
+      const res = await fetch(`/api/oncall/${r.id}/${action}`, { method: "POST" });
+      if (res.ok) {
+        router.refresh();
+      }
+    } finally {
+      setActionPending(null);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -45,7 +69,13 @@ export function OnCallInbox({ requests, canAcknowledge, canResolve }: OnCallInbo
           <StatusPill variant="error" size="sm">{openCount}</StatusPill>
           <span className="text-sm font-medium text-[var(--pill-error-text)]">open request{openCount !== 1 ? "s" : ""} requiring attention</span>
         </div>
-      )}
+        <p className="mt-0.5 text-xs text-muted">
+          {REQUEST_TYPE_LABELS[r.requestType]} · {r.location} · raised by {r.requester.fullName}
+        </p>
+        {r.responder && (
+          <p className="mt-0.5 text-xs text-muted">Responder: {r.responder.fullName}</p>
+        )}
+      </div>
 
       <div className="flex flex-wrap gap-2 rounded-xl border border-border/60 bg-surface/60 p-2">
         <select
@@ -74,16 +104,14 @@ export function OnCallInbox({ requests, canAcknowledge, canResolve }: OnCallInbo
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState title="No requests found" description="Adjust filters or create a new on-call request." />
+        <EmptyState
+          title="No requests found"
+          description={statusFilter ? `No ${STATUS_LABELS[statusFilter as Status]?.toLowerCase()} requests right now.` : "No on-call requests yet."}
+        />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {filtered.map((r) => (
-            <OnCallRequestCard
-              key={r.id}
-              request={r}
-              canAcknowledge={canAcknowledge}
-              canResolve={canResolve}
-            />
+            <InboxRow key={r.id} r={r} canAcknowledge={canAcknowledge} canResolve={canResolve} />
           ))}
         </div>
       )}

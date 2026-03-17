@@ -28,8 +28,8 @@ export async function createMeetingAction(formData: FormData) {
     title, type, startDateTime, endDateTime, location, notes, attendeeIds,
   });
 
-  revalidatePath("/tenant/meetings");
-  redirect(`/tenant/meetings/${meeting.id}`);
+  revalidatePath("/meetings");
+  redirect(`/meetings/${meeting.id}`);
 }
 
 export async function updateMeetingNotesAction(formData: FormData) {
@@ -40,7 +40,7 @@ export async function updateMeetingNotesAction(formData: FormData) {
   const notes = String(formData.get("notes") || "").trim() || undefined;
 
   await updateMeeting(user.tenantId, meetingId, user.id, { notes });
-  revalidatePath(`/tenant/meetings/${meetingId}`);
+  revalidatePath(`/meetings/${meetingId}`);
 }
 
 export async function addMeetingActionAction(formData: FormData) {
@@ -57,9 +57,9 @@ export async function addMeetingActionAction(formData: FormData) {
 
   await createAction(user.tenantId, meetingId, user.id, { description, ownerUserId, dueDate });
 
-  revalidatePath(`/tenant/meetings/${meetingId}`);
-  revalidatePath("/tenant/meetings/actions");
-  revalidatePath("/tenant/my-actions");
+  revalidatePath(`/meetings/${meetingId}`);
+  revalidatePath("/meetings/actions");
+  revalidatePath("/my-actions");
 }
 
 export async function markActionDoneAction(formData: FormData) {
@@ -69,7 +69,7 @@ export async function markActionDoneAction(formData: FormData) {
   const actionId = String(formData.get("actionId") || "");
   await completeAction(user.tenantId, actionId, user.id);
 
-  revalidatePath("/tenant/meetings/actions");
-  revalidatePath("/tenant/my-actions");
+  revalidatePath("/meetings/actions");
+  revalidatePath("/my-actions");
 }
 

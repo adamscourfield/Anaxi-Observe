@@ -80,7 +80,7 @@ export default async function OnCallFeedPage({ searchParams }: { searchParams: R
           />
 
           <Button type="submit">Apply</Button>
-          <Link href="/tenant/on-call/feed">
+          <Link href="/on-call/feed">
             <Button type="button" variant="secondary">Reset</Button>
           </Link>
         </form>
@@ -91,7 +91,7 @@ export default async function OnCallFeedPage({ searchParams }: { searchParams: R
           title="No feed entries for today"
           description={`No ${vocab.on_calls.plural.toLowerCase()} match your current filters.`}
           action={
-            <Link href="/tenant/on-call/feed">
+            <Link href="/on-call/feed">
               <Button type="button" variant="secondary">Clear filters</Button>
             </Link>
           }
@@ -113,7 +113,7 @@ export default async function OnCallFeedPage({ searchParams }: { searchParams: R
               {(requests as any[]).map((r: any) => (
                 <tr key={r.id} className="border-b border-border/70 last:border-0 hover:bg-bg/40">
                   <td className="px-3 py-2">
-                    <Link className="font-medium text-primaryBtn underline-offset-2 hover:underline" href={`/tenant/on-call/${r.id}`}>
+                    <Link className="font-medium text-primaryBtn underline-offset-2 hover:underline" href={`/on-call/${r.id}`}>
                       {new Date(r.createdAt).toLocaleTimeString()}
                     </Link>
                   </td>

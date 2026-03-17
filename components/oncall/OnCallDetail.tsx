@@ -1,4 +1,7 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { OnCallStatusBadge } from "./OnCallStatusBadge";
@@ -7,20 +10,7 @@ import { REQUEST_TYPE_LABELS } from "@/modules/oncall/types";
 import { StatusPill } from "@/components/ui/status-pill";
 
 interface OnCallDetailProps {
-  request: {
-    id: string;
-    requestType: "BEHAVIOUR" | "FIRST_AID";
-    location: string;
-    behaviourReasonCategory?: string | null;
-    notes?: string | null;
-    status: "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "CANCELLED";
-    createdAt: Date | string;
-    acknowledgedAt?: Date | string | null;
-    resolvedAt?: Date | string | null;
-    requester: { fullName: string; email: string };
-    student: { fullName: string; upn: string; yearGroup?: string | null };
-    responder?: { fullName: string } | null;
-  };
+  request: OnCallDetailRequest;
   canAcknowledge?: boolean;
   canResolve?: boolean;
   canCancel?: boolean;
@@ -31,7 +21,37 @@ function fmt(d?: Date | string | null) {
   return new Date(d).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
 }
 
+function DetailRow({ label, value }: { label: string; value: string | null | undefined }) {
+  if (!value) return null;
+  return (
+    <>
+      <dt className="text-xs font-medium uppercase tracking-wide text-muted">{label}</dt>
+      <dd className="text-sm text-text">{value}</dd>
+    </>
+  );
+}
+
 export function OnCallDetail({ request, canAcknowledge, canResolve, canCancel }: OnCallDetailProps) {
+  const router = useRouter();
+  const [actionPending, setActionPending] = useState<string | null>(null);
+
+  const showActions =
+    (canAcknowledge && request.status === "OPEN") ||
+    (canResolve && (request.status === "OPEN" || request.status === "ACKNOWLEDGED")) ||
+    (canCancel && request.status === "OPEN");
+
+  async function handleAction(action: "acknowledge" | "resolve" | "cancel") {
+    setActionPending(action);
+    try {
+      const res = await fetch(`/api/oncall/${request.id}/${action}`, { method: "POST" });
+      if (res.ok) {
+        router.refresh();
+      }
+    } finally {
+      setActionPending(null);
+    }
+  }
+
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-3">

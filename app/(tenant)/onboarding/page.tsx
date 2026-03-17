@@ -56,7 +56,7 @@ export default async function OnboardingPage({
     if (schoolName) {
       await prisma.tenant.update({ where: { id: admin.tenantId }, data: { name: schoolName } });
     }
-    nextRedirect("/tenant/onboarding?step=2");
+    nextRedirect("/onboarding?step=2");
   }
 
   // ── Step 2: Enable modules ───────────────────────────────────────────────────
@@ -71,7 +71,7 @@ export default async function OnboardingPage({
         create: { tenantId: admin.tenantId, key: mod.key, enabled }
       });
     }
-    nextRedirect("/tenant/onboarding?step=3");
+    nextRedirect("/onboarding?step=3");
   }
 
   // ── Step 3: Staff import info (redirect to import page) ──────────────────────
@@ -88,7 +88,7 @@ export default async function OnboardingPage({
       update: data,
       create: { tenantId: admin.tenantId, ...data }
     });
-    nextRedirect("/tenant/onboarding?step=5");
+    nextRedirect("/onboarding?step=5");
   }
 
   // ── Step 5: Signal labels ────────────────────────────────────────────────────
@@ -100,7 +100,7 @@ export default async function OnboardingPage({
       const description = String(formData.get(`description_${signal.key}`) || "");
       await upsertTenantSignalLabel(admin.tenantId, signal.key, displayName || signal.displayNameDefault, description);
     }
-    nextRedirect("/tenant/onboarding?step=6");
+    nextRedirect("/onboarding?step=6");
   }
 
   // ── Step 7: Finish ───────────────────────────────────────────────────────────

@@ -56,8 +56,8 @@ export async function createObservation(formData: FormData) {
     }
   });
 
-  revalidatePath("/tenant/observe/history");
-  redirect(`/tenant/observe/${observation.id}`);
+  revalidatePath("/observe/history");
+  redirect(`/observe/${observation.id}`);
 }
 
 export async function submitObservationDraft(formData: FormData) {
@@ -106,6 +106,6 @@ export async function submitObservationDraft(formData: FormData) {
     }
   });
 
-  revalidatePath("/tenant/observe/history");
-  redirect(`/tenant/observe/${observation.id}`);
+  revalidatePath("/observe/history");
+  redirect(`/observe/${observation.id}`);
 }

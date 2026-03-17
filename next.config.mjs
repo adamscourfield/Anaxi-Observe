@@ -24,5 +24,25 @@ if (!process.env.NEXTAUTH_SECRET) {
   process.env.NEXTAUTH_SECRET = "dev-insecure-nextauth-secret";
 }
 
-const nextConfig = {};
+const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/analysis/teachers",
+        destination: "/analytics?tab=teachers",
+        permanent: true,
+      },
+      {
+        source: "/analysis/cpd",
+        destination: "/analytics?tab=cpd",
+        permanent: true,
+      },
+      {
+        source: "/analysis/students",
+        destination: "/analytics?tab=students",
+        permanent: true,
+      },
+    ];
+  },
+};
 export default nextConfig;

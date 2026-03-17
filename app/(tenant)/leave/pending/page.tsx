@@ -36,7 +36,7 @@ export default async function LeavePendingPage() {
           <ul className="space-y-2 text-sm">
             {(pending as any[]).map((request) => (
               <li key={request.id}>
-                <Link className="font-medium text-accent hover:text-accentHover" href={`/tenant/leave/${request.id}`}>
+                <Link className="font-medium text-accent hover:text-accentHover" href={`/leave/${request.id}`}>
                   {request.requester?.fullName} · {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()} · {request.reason?.label}
                 </Link>
               </li>

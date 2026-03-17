@@ -2,105 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Google Fonts — Inter ───────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 :root {
-  --bg: #0b1020;
-  --surface: #11182d;
-  --text: #f3f6ff;
-  --text-muted: #9aa6c7;
-  --border: #263255;
-  --divider: #1b2644;
+  /* ── Brand palette ─────────────────────────────────────────────── */
+  --coral:              #fe9f9f;
+  --coral-hover:        rgba(254,159,159,0.10);
+  --coral-soft:         rgba(254,159,159,0.12);
+  --coral-border:       rgba(254,159,159,0.30);
 
-  --accent: #5b7cff;
-  --accent-hover: #6d8bff;
-  --accent-active: #4d6ef0;
-  --accent-tint: rgba(91, 124, 255, 0.18);
+  --brand-blue:         #4b66bb;
+  --brand-blue-hover:   #3f58a8;
+  --brand-blue-soft:    rgba(75,102,187,0.08);
+  --brand-blue-border:  rgba(75,102,187,0.20);
+  --brand-blue-glow:    rgba(75,102,187,0.16);
 
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --info: #38bdf8;
+  --amber:              #fdc683;
+  --amber-soft:         rgba(253,198,131,0.15);
+  --amber-border:       rgba(253,198,131,0.35);
 
-  --radius: 16px;
-  --radius-sm: 12px;
+  /* ── Surfaces ──────────────────────────────────────────────────── */
+  --bg:                 #f8f8f8;
+  --surface:            #ffffff;
 
-  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.45);
+  /* ── Text ──────────────────────────────────────────────────────── */
+  --text:               #1c1c1e;
+  --text-muted:         #6c6c70;
+  --border:             #e8e8ea;
+  --divider:            #f0f0f2;
 
-  --primary-btn: #5b7cff;
-  --primary-btn-hover: #6d8bff;
-  --primary-btn-active: #4d6ef0;
-  --overlay: rgba(3, 8, 20, 0.62);
+  /* ── Primary action — brand blue ───────────────────────────────── */
+  --accent:             #4b66bb;
+  --accent-hover:       #3f58a8;
+  --accent-active:      #364e9e;
+  --accent-tint:        rgba(75,102,187,0.08);
 
-  --pill-error-bg: rgba(239, 68, 68, 0.14);
-  --pill-error-text: #fecaca;
-  --pill-error-ring: rgba(239, 68, 68, 0.22);
-  --pill-warning-bg: rgba(245, 158, 11, 0.14);
-  --pill-warning-text: #fde68a;
-  --pill-warning-ring: rgba(245, 158, 11, 0.24);
-  --pill-success-bg: rgba(34, 197, 94, 0.14);
-  --pill-success-text: #bbf7d0;
-  --pill-success-ring: rgba(34, 197, 94, 0.2);
-  --pill-neutral-bg: #1c2746;
-  --pill-neutral-text: #b8c3df;
-  --pill-neutral-ring: rgba(184, 195, 223, 0.12);
-  --pill-info-bg: rgba(56, 189, 248, 0.14);
-  --pill-info-text: #bae6fd;
-  --pill-info-ring: rgba(56, 189, 248, 0.2);
-  --pill-accent-bg: rgba(91, 124, 255, 0.18);
-  --pill-accent-text: #d8e1ff;
-  --pill-accent-ring: rgba(91, 124, 255, 0.24);
+  /* ── Semantic colours ──────────────────────────────────────────── */
+  /* Success stays green — universally understood for positive data  */
+  --success:            #059669;
+  /* Warning uses amber from brand palette                           */
+  --warning:            #fdc683;
+  --warning-text:       #8a5a00;
+  /* Error / negative / drift uses coral from brand palette          */
+  --error:              #fe9f9f;
+  --error-text:         #a33030;
+  /* Info uses brand blue                                            */
+  --info:               #4b66bb;
+
+  /* ── Layout ────────────────────────────────────────────────────── */
+  --radius:             14px;
+  --radius-sm:          8px;
+  --sidebar-width:      260px;
+  --sidebar-collapsed-width: 72px;
+
+  /* ── Shadows — lighter and warmer than before ──────────────────── */
+  --shadow-sm:  0 1px 3px rgba(28,28,30,0.04), 0 1px 2px rgba(28,28,30,0.03);
+  --shadow-md:  0 4px 12px -2px rgba(28,28,30,0.06), 0 2px 4px -2px rgba(28,28,30,0.03);
+  --shadow-lg:  0 8px 24px -6px rgba(28,28,30,0.08), 0 3px 8px -3px rgba(28,28,30,0.04);
+
+  /* ── Button aliases ────────────────────────────────────────────── */
+  --primary-btn:        #4b66bb;
+  --primary-btn-hover:  #3f58a8;
+  --primary-btn-active: #364e9e;
+  --overlay:            rgba(0,0,0,0.3);
+
+  /* ── Status pills ──────────────────────────────────────────────── */
+  /* error / significant drift — coral                               */
+  --pill-error-bg:      rgba(254,159,159,0.12);
+  --pill-error-text:    #a33030;
+  --pill-error-ring:    rgba(254,159,159,0.35);
+
+  /* warning / emerging drift — amber                                */
+  --pill-warning-bg:    rgba(253,198,131,0.15);
+  --pill-warning-text:  #8a5a00;
+  --pill-warning-ring:  rgba(253,198,131,0.40);
+
+  /* success / stable — green (kept — universally understood)        */
+  --pill-success-bg:    #ecfdf5;
+  --pill-success-text:  #065f46;
+  --pill-success-ring:  #a7f3d0;
+
+  /* neutral                                                         */
+  --pill-neutral-bg:    #f3f4f6;
+  --pill-neutral-text:  #374151;
+  --pill-neutral-ring:  #d1d5db;
+
+  /* info — brand blue                                               */
+  --pill-info-bg:       rgba(75,102,187,0.08);
+  --pill-info-text:     #4b66bb;
+  --pill-info-ring:     rgba(75,102,187,0.22);
+
+  /* accent — brand blue tint                                        */
+  --pill-accent-bg:     rgba(75,102,187,0.08);
+  --pill-accent-text:   #3f58a8;
+  --pill-accent-ring:   rgba(75,102,187,0.22);
 }
 
+/* ── Reset ─────────────────────────────────────────────────────── */
 * {
   border-color: var(--border);
 }
 
 ::selection {
-  background: rgba(91, 124, 255, 0.3);
+  background: rgba(75,102,187,0.12);
   color: var(--text);
 }
 
+/* ── Base ──────────────────────────────────────────────────────── */
 html {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
 }
 
-html,
-body {
+html, body {
   min-height: 100%;
 }
 
 body {
-  background:
-    radial-gradient(ellipse 1100px 600px at 10% -6%, rgba(91, 124, 255, 0.18), transparent 58%),
-    radial-gradient(ellipse 900px 500px at 92% -10%, rgba(139, 92, 246, 0.11), transparent 50%),
-    radial-gradient(ellipse 600px 400px at 50% 100%, rgba(91, 124, 255, 0.05), transparent 60%),
-    var(--bg);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
   color: var(--text);
 }
 
-/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+/* ── Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.15); }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(38, 50, 85, 0.6);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(38, 50, 85, 0.9);
-}
-
-/* ─── Base Form Elements ─────────────────────────────────────────────────── */
-
+/* ── Form inputs ───────────────────────────────────────────────── */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -113,9 +147,10 @@ input[type="datetime-local"],
 input[type="time"],
 select,
 textarea {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: rgba(11, 16, 32, 0.6);
+  background: #ffffff;
   color: var(--text);
   font-size: 0.875rem;
   line-height: 1.5;
@@ -127,55 +162,47 @@ textarea::placeholder {
   opacity: 0.6;
 }
 
-/* ─── Transitions & Interactions ─────────────────────────────────────────── */
-
-button,
-input,
-select,
-textarea {
+/* ── Transitions ───────────────────────────────────────────────── */
+button, input, select, textarea {
   transition:
-    background-color 200ms cubic-bezier(0, 0, 0.2, 1),
-    border-color 200ms cubic-bezier(0, 0, 0.2, 1),
-    color 200ms cubic-bezier(0, 0, 0.2, 1),
-    box-shadow 200ms cubic-bezier(0, 0, 0.2, 1);
+    background-color 180ms cubic-bezier(0.4,0,0.2,1),
+    border-color     180ms cubic-bezier(0.4,0,0.2,1),
+    color            180ms cubic-bezier(0.4,0,0.2,1),
+    box-shadow       180ms cubic-bezier(0.4,0,0.2,1);
 }
 
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(91, 124, 255, 0.45);
-  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--brand-blue-glow);
+  border-color: var(--brand-blue);
 }
 
 .calm-transition {
-  transition: all 200ms cubic-bezier(0, 0, 0.2, 1);
+  transition: all 180ms cubic-bezier(0.4,0,0.2,1);
 }
 
-/* ─── Panel & Field (form containers) ───────────────────────────────────── */
-
+/* ── Panel ─────────────────────────────────────────────────────── */
 .panel {
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    rgba(17, 24, 45, 0.95) 0%,
-    rgba(11, 16, 32, 0.9) 100%
-  );
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
+  background: #ffffff;
+  box-shadow: var(--shadow-md);
 }
 
+/* ── Field ─────────────────────────────────────────────────────── */
 .field {
   display: block;
   width: 100%;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: rgba(11, 16, 32, 0.6);
+  background: var(--bg);
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
   line-height: 1.5;
   color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .field::placeholder {
@@ -183,45 +210,45 @@ textarea:focus-visible {
   opacity: 0.6;
 }
 
-.field:hover {
-  border-color: rgba(38, 50, 85, 0.9);
-  background: rgba(11, 16, 32, 0.7);
+.field:hover { border-color: #d0d0d4; }
+
+.field:focus-visible {
+  outline: none;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px var(--brand-blue-glow);
+  border-color: var(--brand-blue);
 }
 
-/* ─── Toolbar ────────────────────────────────────────────────────────────── */
-
+/* ── Toolbar ───────────────────────────────────────────────────── */
 .premium-toolbar {
-  border: 1px solid rgba(38, 50, 85, 0.7);
-  background: rgba(17, 24, 45, 0.72);
-  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
 }
 
-/* ─── Tables ─────────────────────────────────────────────────────────────── */
-
+/* ── Tables ────────────────────────────────────────────────────── */
 .table-shell {
   overflow: hidden;
-  border-radius: 1rem;
-  border: 1px solid rgba(38, 50, 85, 0.7);
-  background: rgba(17, 24, 45, 0.9);
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(10px);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: var(--shadow-md);
 }
 
 .table-header-strip {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  border-bottom: 1px solid rgba(38, 50, 85, 0.7);
-  background: rgba(11, 16, 32, 0.24);
-  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  padding: 0.625rem 1rem;
 }
 
 .table-head-row {
-  border-bottom: 1px solid rgba(38, 50, 85, 0.8);
-  background: rgba(11, 16, 32, 0.55);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
   color: var(--text-muted);
   font-size: 11px;
   font-weight: 600;
@@ -230,40 +257,42 @@ textarea:focus-visible {
 }
 
 .table-row {
-  border-bottom: 1px solid rgba(27, 38, 68, 0.6);
+  border-bottom: 1px solid var(--divider);
 }
 
-.table-row:last-child {
-  border-bottom: 0;
-}
+.table-row:last-child { border-bottom: 0; }
 
-.table-row:hover {
-  background: rgba(91, 124, 255, 0.04);
-}
+.table-row:hover { background: rgba(75,102,187,0.03); }
 
 .sticky-first-column {
   position: sticky;
   left: 0;
   z-index: 1;
-  background: rgba(17, 24, 45, 0.96);
-  box-shadow: 1px 0 0 rgba(38, 50, 85, 0.7);
+  background: #ffffff;
+  box-shadow: 1px 0 0 var(--border);
 }
 
 .sticky-first-column-header {
   z-index: 20;
-  background: rgba(11, 16, 32, 0.94);
+  background: var(--bg);
 }
 
-/* ─── Styled Divider ─────────────────────────────────────────────────────── */
-
+/* ── Styled divider ────────────────────────────────────────────── */
 .styled-divider {
   height: 1px;
   border: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--border) 20%,
-    var(--border) 80%,
-    transparent 100%
-  );
+  background: var(--border);
+}
+
+/* ── Drift cell — replaces raw amber/green with brand colours ──── */
+/* Negative delta (drift down) — coral tint                         */
+.drift-cell-negative {
+  border-left: 2px solid var(--coral-border);
+  background: rgba(254,159,159,0.05);
+}
+
+/* Positive delta (improving) — blue tint                           */
+.drift-cell-positive {
+  border-left: 2px solid var(--brand-blue-border);
+  background: rgba(75,102,187,0.04);
 }

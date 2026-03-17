@@ -17,11 +17,11 @@ export default async function ObservePage() {
         <p className="text-sm text-muted">Choose a workflow to continue.</p>
         <div className="flex flex-wrap gap-2 text-sm">
           {user.role !== "TEACHER" ? (
-            <Link href="/tenant/observe/new">
+            <Link href="/observe/new">
               <Button>New observation</Button>
             </Link>
           ) : null}
-          <Link href="/tenant/observe/history">
+          <Link href="/observe/history">
             <Button variant="secondary">Observation history</Button>
           </Link>
         </div>

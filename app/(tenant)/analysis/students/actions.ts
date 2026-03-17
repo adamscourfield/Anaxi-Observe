@@ -29,7 +29,7 @@ export async function toggleWatchlist(studentId: string): Promise<{ onWatchlist:
 
   if (existing) {
     await (prisma as any).studentWatchlist.delete({ where: { id: existing.id } });
-    revalidatePath("/analysis/students");
+    revalidatePath("/analytics");
     return { onWatchlist: false };
   } else {
     await (prisma as any).studentWatchlist.create({
@@ -39,7 +39,7 @@ export async function toggleWatchlist(studentId: string): Promise<{ onWatchlist:
         createdByUserId: user.id,
       },
     });
-    revalidatePath("/analysis/students");
+    revalidatePath("/analytics");
     return { onWatchlist: true };
   }
 }

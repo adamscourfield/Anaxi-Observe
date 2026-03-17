@@ -22,14 +22,14 @@ export default async function OnCallHomePage() {
         title="On call"
         subtitle="Triage incidents quickly and keep response ownership clear."
         actions={
-          <Link href="/tenant/on-call/new">
+          <Link href="/on-call/new">
             <Button>New request</Button>
           </Link>
         }
       />
 
       <OnCallInbox
-        requests={requests as any[]}
+        requests={requests}
         canAcknowledge={canAcknowledge}
         canResolve={canResolve}
       />

@@ -82,7 +82,7 @@ export default async function TeacherProfilePage({
     <div className="space-y-6">
       {/* Back link */}
       <Link
-        href={`/analysis/teachers?window=${windowDays}`}
+        href={`/analytics?tab=teachers&window=${windowDays}`}
         className="text-sm text-muted hover:underline"
       >
         ← Back to teacher priorities

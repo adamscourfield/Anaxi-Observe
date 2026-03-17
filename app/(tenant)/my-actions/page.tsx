@@ -33,7 +33,7 @@ export default async function MyActionsPage() {
           </>
         }
         actions={
-          <Link href="/tenant/meetings" className="rounded-xl border border-border/70 bg-bg/20 px-3.5 py-2 text-sm text-muted hover:bg-divider/60 hover:text-text">
+          <Link href="/meetings" className="rounded-xl border border-border/70 bg-bg/20 px-3.5 py-2 text-sm text-muted hover:bg-divider/60 hover:text-text">
             Meetings
           </Link>
         }

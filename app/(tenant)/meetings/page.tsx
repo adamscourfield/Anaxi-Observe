@@ -33,7 +33,7 @@ export default async function MeetingsPage({ searchParams }: { searchParams?: { 
         subtitle="Track upcoming conversations, outcomes, and follow-up actions."
         actions={
           hasPermission(user.role, "meetings:create") ? (
-            <Link href="/tenant/meetings/new">
+            <Link href="/meetings/new">
               <Button>New meeting</Button>
             </Link>
           ) : null
@@ -41,11 +41,11 @@ export default async function MeetingsPage({ searchParams }: { searchParams?: { 
       />
 
       <div className="flex flex-wrap gap-2 text-sm">
-        <Link className="rounded-md border border-border/80 px-3 py-1.5 hover:bg-divider/60" href="/tenant/meetings/actions">My actions</Link>
+        <Link className="rounded-md border border-border/80 px-3 py-1.5 hover:bg-divider/60" href="/meetings/actions">My actions</Link>
         {canViewAll && (
           <>
-            <Link className={`rounded-md border px-3 py-1.5 ${!showAll ? "border-accent bg-[var(--accent-tint)] text-text" : "border-border/80 text-muted hover:bg-divider/60 hover:text-text"}`} href="/tenant/meetings?scope=mine">Mine</Link>
-            <Link className={`rounded-md border px-3 py-1.5 ${showAll ? "border-accent bg-[var(--accent-tint)] text-text" : "border-border/80 text-muted hover:bg-divider/60 hover:text-text"}`} href="/tenant/meetings?scope=all">All</Link>
+            <Link className={`rounded-md border px-3 py-1.5 ${!showAll ? "border-accent bg-[var(--accent-tint)] text-text" : "border-border/80 text-muted hover:bg-divider/60 hover:text-text"}`} href="/meetings?scope=mine">Mine</Link>
+            <Link className={`rounded-md border px-3 py-1.5 ${showAll ? "border-accent bg-[var(--accent-tint)] text-text" : "border-border/80 text-muted hover:bg-divider/60 hover:text-text"}`} href="/meetings?scope=all">All</Link>
           </>
         )}
       </div>

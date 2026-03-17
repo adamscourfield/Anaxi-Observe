@@ -40,7 +40,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
         create: { tenantId: admin.tenantId, userId: value },
       });
     }
-    revalidatePath("/tenant/admin/taxonomies");
+    revalidatePath("/admin/taxonomies");
   }
 
   async function updateItem(formData: FormData) {
@@ -55,7 +55,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
     if (type === "reason") await (prisma as any).onCallReason.updateMany({ where: { id, tenantId: admin.tenantId }, data: { label } });
     if (type === "location") await (prisma as any).onCallLocation.updateMany({ where: { id, tenantId: admin.tenantId }, data: { label } });
     if (type === "recipient") await (prisma as any).onCallRecipient.updateMany({ where: { id, tenantId: admin.tenantId }, data: { email: label } });
-    revalidatePath("/tenant/admin/taxonomies");
+    revalidatePath("/admin/taxonomies");
   }
 
   async function toggleActive(formData: FormData) {
@@ -70,7 +70,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
     if (type === "reason") await (prisma as any).onCallReason.updateMany({ where: { id, tenantId: admin.tenantId }, data: { active: !active } });
     if (type === "location") await (prisma as any).onCallLocation.updateMany({ where: { id, tenantId: admin.tenantId }, data: { active: !active } });
     if (type === "recipient") await (prisma as any).onCallRecipient.updateMany({ where: { id, tenantId: admin.tenantId }, data: { active: !active } });
-    revalidatePath("/tenant/admin/taxonomies");
+    revalidatePath("/admin/taxonomies");
   }
 
   async function removeAuthoriser(formData: FormData) {
@@ -78,13 +78,13 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
     const admin = await requireAdminUser();
     const id = String(formData.get("id"));
     await (prisma as any).lOAAuthoriser.deleteMany({ where: { id, tenantId: admin.tenantId } });
-    revalidatePath("/tenant/admin/taxonomies");
+    revalidatePath("/admin/taxonomies");
   }
 
   const tabLink = (value: Tab, label: string) => (
     <Link
       key={value}
-      href={`/tenant/admin/taxonomies?tab=${value}`}
+      href={`/admin/taxonomies?tab=${value}`}
       className={`rounded-lg border px-3 py-1.5 text-sm calm-transition ${tab === value ? "border-transparent bg-primaryBtn text-white" : "border-border bg-surface text-text hover:bg-bg/80"}`}
     >
       {label}
@@ -123,10 +123,10 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
 
   return (
     <div className="space-y-4">
-      <Link href="/tenant/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
+      <Link href="/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
       <PageHeader title="Taxonomies" subtitle="Maintain configurable values used in leave and on-call workflows." />
       <Card className="text-sm text-muted">
-        For who can approve leave and who is covered, use <a className="text-accent hover:underline" href="/tenant/admin/leave-approvals">Leave approval rules</a>. Use this page for reasons, locations, and recipients.
+        For who can approve leave and who is covered, use <a className="text-accent hover:underline" href="/admin/leave-approvals">Leave approval rules</a>. Use this page for reasons, locations, and recipients.
       </Card>
       <div className="flex flex-wrap gap-2">
         {tabLink("loa-reasons", "LOA Reasons")}

@@ -51,7 +51,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
     if (schoolName) {
       await prisma.tenant.update({ where: { id: admin.tenantId }, data: { name: schoolName } });
     }
-    revalidatePath("/tenant/admin/settings");
+    revalidatePath("/admin/settings");
   }
 
   async function toggleFeature(formData: FormData) {
@@ -64,14 +64,14 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
       create: { tenantId: admin.tenantId, key, enabled: !enabled },
       update: { enabled: !enabled },
     });
-    revalidatePath("/tenant/admin/settings");
-    revalidatePath("/tenant/admin/features");
+    revalidatePath("/admin/settings");
+    revalidatePath("/admin/features");
   }
 
   const tabLink = (value: Tab, label: string) => (
     <Link
       key={value}
-      href={`/tenant/admin/settings?tab=${value}`}
+      href={`/admin/settings?tab=${value}`}
       className={`rounded-lg border px-3 py-1.5 text-sm calm-transition ${tab === value ? "border-transparent bg-primaryBtn text-white" : "border-border bg-surface text-text hover:bg-bg/80"}`}
     >
       {label}
@@ -80,7 +80,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
 
   return (
     <div className="space-y-4">
-      <Link href="/tenant/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
+      <Link href="/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
       <PageHeader title="Platform" subtitle="Configure school metadata, thresholds, and module availability." />
 
       <div className="flex flex-wrap gap-2">
