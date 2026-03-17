@@ -210,6 +210,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
                 <tr className="border-b border-border/80 text-left text-xs uppercase tracking-wide text-muted">
                   <th className="sticky left-0 z-10 bg-white px-4 py-3 font-medium">Student</th>
                   <th className="px-4 py-3 font-medium text-center">Year</th>
+                  <th className="px-4 py-3 font-medium text-center">Flags</th>
                   {hasBehaviourData && <th className="px-4 py-3 font-medium text-center">Band</th>}
                   <th className="px-4 py-3 font-medium text-center">Attendance</th>
                   <th className="px-4 py-3 font-medium text-center">Last snapshot</th>
@@ -224,23 +225,22 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
                       <td className="sticky left-0 z-10 bg-white px-4 py-3">
                         <div className="flex items-center gap-3">
                           <Avatar name={s.fullName} size="sm" />
-                          <div className="min-w-0">
-                            <Link
-                              href={`/students/${s.id}`}
-                              className="font-medium text-text hover:text-accent calm-transition"
-                            >
-                              {s.fullName}
-                            </Link>
-                            {(s.sendFlag || s.ppFlag) && (
-                              <div className="mt-0.5 flex gap-1">
-                                {s.sendFlag && <StatusPill variant="info" size="sm">SEND</StatusPill>}
-                                {s.ppFlag && <StatusPill variant="accent" size="sm">PP</StatusPill>}
-                              </div>
-                            )}
-                          </div>
+                          <Link
+                            href={`/students/${s.id}`}
+                            className="font-medium text-text hover:text-accent calm-transition"
+                          >
+                            {s.fullName}
+                          </Link>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center text-text">{s.yearGroup || "—"}</td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          {s.sendFlag && <StatusPill variant="info" size="sm">SEND</StatusPill>}
+                          {s.ppFlag && <StatusPill variant="accent" size="sm">PP</StatusPill>}
+                          {!s.sendFlag && !s.ppFlag && <span className="text-muted">—</span>}
+                        </div>
+                      </td>
                       {hasBehaviourData && (
                         <td className="px-4 py-3 text-center">
                           {s.computedBand ? (

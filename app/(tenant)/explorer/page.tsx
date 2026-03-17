@@ -402,88 +402,79 @@ export default async function ExplorerPage({
           </div>
 
           {/* Filters row */}
-          <div className="flex flex-wrap items-end gap-4">
-            {/* Window selector */}
-            <div className="flex flex-col gap-2">
-              <MetaText>Window</MetaText>
-              <select
-                name="windowDays"
-                defaultValue={String(windowDays)}
-                className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text"
-              >
-                {WINDOW_OPTIONS.map((w) => (
-                  <option key={w} value={String(w)}>{w} days</option>
-                ))}
-              </select>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Window selector — pill chips */}
+            <div className="inline-flex items-center rounded-lg border border-border bg-[#f4f7fb] p-0.5 shrink-0">
+              {WINDOW_OPTIONS.map((w) => (
+                <button
+                  key={w}
+                  type="submit"
+                  name="windowDays"
+                  value={String(w)}
+                  className={`rounded-md px-3 py-1 text-sm font-medium calm-transition ${
+                    windowDays === w
+                      ? "bg-white text-text shadow-sm"
+                      : "text-muted hover:text-text"
+                  }`}
+                >
+                  {w}d
+                </button>
+              ))}
             </div>
+
+            <span className="h-5 w-px bg-border/60 shrink-0" />
 
             {/* Department filter */}
-            <div className="flex flex-col gap-2">
-              <MetaText>Department</MetaText>
-              <select
-                name="departmentId"
-                defaultValue={filterDepartmentId}
-                className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text"
-              >
-                <option value="">All departments</option>
-                {(departments as any[]).map((d: any) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              name="departmentId"
+              defaultValue={filterDepartmentId}
+              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text"
+            >
+              <option value="">All departments</option>
+              {(departments as any[]).map((d: any) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
 
             {/* Year group filter */}
-            <div className="flex flex-col gap-2">
-              <MetaText>Year group</MetaText>
-              <select
-                name="yearGroup"
-                defaultValue={filterYearGroup}
-                className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text"
-              >
-                <option value="">All years</option>
-                {allYearGroups.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              name="yearGroup"
+              defaultValue={filterYearGroup}
+              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text"
+            >
+              <option value="">All years</option>
+              {allYearGroups.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
 
             {/* Subject filter (for observation list) */}
             {view === "INSTRUCTION_LIST" && (
-              <div className="flex flex-col gap-2">
-                <MetaText>Subject</MetaText>
-                <input
-                  type="text"
-                  name="subject"
-                  defaultValue={filterSubject}
-                  placeholder="Any subject"
-                  className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text placeholder:text-muted"
-                />
-              </div>
+              <input
+                type="text"
+                name="subject"
+                defaultValue={filterSubject}
+                placeholder="Any subject"
+                className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text placeholder:text-muted"
+              />
             )}
 
             {/* Student search (behaviour views) */}
             {isBehaviourView && (
-              <div className="flex flex-col gap-2">
-                <MetaText>Student search</MetaText>
-                <input
-                  type="text"
-                  name="studentSearch"
-                  defaultValue={studentSearch}
-                  placeholder="Name…"
-                  className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text placeholder:text-muted"
-                />
-              </div>
+              <input
+                type="text"
+                name="studentSearch"
+                defaultValue={studentSearch}
+                placeholder="Search student…"
+                className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text placeholder:text-muted"
+              />
             )}
 
-            <Button type="submit" className="px-4 py-1.5">Apply</Button>
+            <Button type="submit" variant="secondary" className="px-4 py-1.5 text-sm">Apply</Button>
 
             <Link
               href={`/explorer?view=${view}&windowDays=${windowDays}`}
-              className="calm-transition rounded-lg border border-border bg-surface px-4 py-1.5 text-sm text-muted transition duration-200 ease-calm hover:border-accentHover"
+              className="calm-transition rounded-lg px-3 py-1.5 text-sm text-muted hover:text-text"
             >
               Reset
             </Link>
@@ -579,14 +570,16 @@ export default async function ExplorerPage({
                         const isSorted = sortSignal === k;
                         const nextDir = isSorted && sortDir === "desc" ? "asc" : "desc";
                         return (
-                          <th key={k} className="px-3 py-3 text-right min-w-[90px]">
+                          <th key={k} className="w-10 min-w-[40px] px-1 py-2 text-center align-bottom">
                             <Link
                               href={buildFilterQuery({ sortSignal: k, sortDir: nextDir })}
                               title={signalLabels.get(k)}
-                              className={`inline-flex items-center justify-end gap-0.5 hover:text-text transition-colors ${isSorted ? "text-text" : ""}`}
+                              className={`inline-flex flex-col items-center gap-0.5 hover:text-text transition-colors ${isSorted ? "text-text" : ""}`}
                             >
-                              {signalLabels.get(k) ?? k}
-                              <span className="text-[10px]">{isSorted ? (sortDir === "desc" ? "↓" : "↑") : "⇅"}</span>
+                              <span className="block max-h-[80px] overflow-hidden [writing-mode:vertical-rl] [transform:rotate(180deg)] text-[11px] leading-tight">
+                                {signalLabels.get(k) ?? k}
+                              </span>
+                              <span className="text-[9px] mt-0.5">{isSorted ? (sortDir === "desc" ? "↓" : "↑") : "⇅"}</span>
                             </Link>
                           </th>
                         );
@@ -724,14 +717,16 @@ export default async function ExplorerPage({
                         const isSorted = sortSignal === k;
                         const nextDir = isSorted && sortDir === "desc" ? "asc" : "desc";
                         return (
-                          <th key={k} className="px-3 py-3 text-right min-w-[90px]">
+                          <th key={k} className="w-10 min-w-[40px] px-1 py-2 text-center align-bottom">
                             <Link
                               href={buildFilterQuery({ sortSignal: k, sortDir: nextDir })}
                               title={signalLabels.get(k)}
-                              className={`inline-flex items-center justify-end gap-0.5 hover:text-text transition-colors ${isSorted ? "text-text" : ""}`}
+                              className={`inline-flex flex-col items-center gap-0.5 hover:text-text transition-colors ${isSorted ? "text-text" : ""}`}
                             >
-                              {signalLabels.get(k) ?? k}
-                              <span className="text-[10px]">{isSorted ? (sortDir === "desc" ? "↓" : "↑") : "⇅"}</span>
+                              <span className="block max-h-[80px] overflow-hidden [writing-mode:vertical-rl] [transform:rotate(180deg)] text-[11px] leading-tight">
+                                {signalLabels.get(k) ?? k}
+                              </span>
+                              <span className="text-[9px] mt-0.5">{isSorted ? (sortDir === "desc" ? "↓" : "↑") : "⇅"}</span>
                             </Link>
                           </th>
                         );
