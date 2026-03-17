@@ -166,7 +166,7 @@ export default async function OnboardingPage({
               ))}
             </div>
             <div className="flex gap-2">
-              <a href="/tenant/onboarding?step=1"><Button type="button" variant="secondary">Back</Button></a>
+              <a href="/onboarding?step=1"><Button type="button" variant="secondary">Back</Button></a>
               <Button type="submit">Next</Button>
             </div>
           </form>
@@ -180,9 +180,9 @@ export default async function OnboardingPage({
             Use the Users admin page to bulk-import or add staff manually. Come back here when done.
           </MetaText>
           <div className="flex flex-wrap gap-2">
-            <a href="/tenant/onboarding?step=2"><Button type="button" variant="secondary">Back</Button></a>
-            <a href="/tenant/admin/users"><Button type="button" variant="secondary">Go to Users</Button></a>
-            <a href="/tenant/onboarding?step=4"><Button type="button">Next</Button></a>
+            <a href="/onboarding?step=2"><Button type="button" variant="secondary">Back</Button></a>
+            <a href="/admin/users"><Button type="button" variant="secondary">Go to Users</Button></a>
+            <a href="/onboarding?step=4"><Button type="button">Next</Button></a>
           </div>
         </Card>
       )}
@@ -205,7 +205,7 @@ export default async function OnboardingPage({
               ))}
             </div>
             <div className="flex gap-2">
-              <a href="/tenant/onboarding?step=3"><Button type="button" variant="secondary">Back</Button></a>
+              <a href="/onboarding?step=3"><Button type="button" variant="secondary">Back</Button></a>
               <Button type="submit">Next</Button>
             </div>
           </form>
@@ -251,7 +251,7 @@ export default async function OnboardingPage({
               </table>
             </div>
             <div className="flex gap-2">
-              <a href="/tenant/onboarding?step=4"><Button type="button" variant="secondary">Back</Button></a>
+              <a href="/onboarding?step=4"><Button type="button" variant="secondary">Back</Button></a>
               <Button type="submit">Next</Button>
             </div>
           </form>
@@ -265,9 +265,9 @@ export default async function OnboardingPage({
             Optionally upload a timetable CSV. This can be done later from the Admin panel.
           </MetaText>
           <div className="flex flex-wrap gap-2">
-            <a href="/tenant/onboarding?step=5"><Button type="button" variant="secondary">Back</Button></a>
-            <a href="/tenant/admin/timetable"><Button type="button" variant="secondary">Upload timetable</Button></a>
-            <a href="/tenant/onboarding?step=7"><Button type="button">Skip</Button></a>
+            <a href="/onboarding?step=5"><Button type="button" variant="secondary">Back</Button></a>
+            <a href="/admin/timetable"><Button type="button" variant="secondary">Upload timetable</Button></a>
+            <a href="/onboarding?step=7"><Button type="button">Skip</Button></a>
           </div>
         </Card>
       )}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
+import { sendEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   const user = await getSessionUserOrThrow();
@@ -9,23 +10,14 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { to, subject, message } = body;
 
-  if (!process.env.SENDGRID_API_KEY) {
+  const result = await sendEmail({ to, subject, message });
+
+  if (result.status === "not_configured") {
     return NextResponse.json({ status: "not_configured" }, { status: 202 });
   }
 
-  const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      personalizations: [{ to: [{ email: to }] }],
-      from: { email: process.env.FROM_EMAIL || "no-reply@anaxi.local" },
-      subject,
-      content: [{ type: "text/plain", value: message }]
-    })
-  });
-
-  return NextResponse.json({ status: res.ok ? "sent" : "failed" }, { status: res.ok ? 200 : 502 });
+  return NextResponse.json(
+    { status: result.status },
+    { status: result.status === "sent" ? 200 : 502 }
+  );
 }

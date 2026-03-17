@@ -37,7 +37,7 @@ export default async function MeetingDetailPage({ params }: { params: { id: stri
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Link href="/tenant/meetings" className="text-sm text-accent hover:underline">← Meetings</Link>
+        <Link href="/meetings" className="text-sm text-accent hover:underline">← Meetings</Link>
       </div>
 
       <div className="flex items-start justify-between">

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { sendOnboardingEmail } from "@/lib/email";
 import { StaffCsvRecord, StaffCsvError } from "./csv";
 
 export interface StaffImportResult {
@@ -54,11 +55,20 @@ export async function runStaffImport(
   let rowsProcessed = 0;
   let rowsFailed = parseErrors.length;
 
+  // Batch-fetch existing user emails to detect new vs. updated users without N+1 queries
+  const existingUsers = await (prisma as any).user.findMany({
+    where: { tenantId, email: { in: rows.map((r) => r.email) } },
+    select: { email: true },
+  });
+  const existingEmails = new Set<string>(existingUsers.map((u: { email: string }) => u.email));
+
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     const rowNumber = i + 1;
 
     try {
+      const isNewUser = !existingEmails.has(row.email);
+
       // 1) Upsert User by (tenantId, email)
       const user = await (prisma as any).user.upsert({
         where: { tenantId_email: { tenantId, email: row.email } },
@@ -153,6 +163,12 @@ export async function runStaffImport(
             message: `Coach with email "${row.coachEmail}" not found in tenant`,
           });
         }
+      }
+
+      // 5) Send onboarding email for newly created active users
+      if (isNewUser && row.membershipStatus !== "ARCHIVED") {
+        // Fire-and-forget — email failures should not block the import
+        sendOnboardingEmail({ to: row.email, fullName: row.fullName }).catch(() => {});
       }
 
       rowsProcessed++;
