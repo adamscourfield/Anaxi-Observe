@@ -1,4 +1,5 @@
 // lib/insights/cache.ts
+import { logger } from "@/lib/logger";
 
 export interface InsightRun {
     id: string;
@@ -30,6 +31,6 @@ export const invalidateInsightRuns = (): void => {
 export const computeInsightsIfNeeded = (): void => {
     // Logic to determine if insights need computing and perform the computation
     // Add computation logic here
-    console.log("Computing insights if needed...");
+    logger.info("Computing insights if needed...");
     // For example, check timestamps and decide whether to compute
 };

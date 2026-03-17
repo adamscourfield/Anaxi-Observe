@@ -9,6 +9,7 @@ import { GLOBAL_SCALE } from "@/modules/observations/signalDefinitions";
 import { clearDraft, loadDraft, persistDraft, ScaleKey } from "./observationDraft";
 import { NotObservedButton } from "./NotObservedButton";
 import { ProgressHeader } from "./ProgressHeader";
+import { SignalHelpSheet } from "./SignalHelpSheet";
 import { SignalTileGroup } from "./SignalTileGroup";
 
 type Signal = {
@@ -30,6 +31,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
   const [pendingValue, setPendingValue] = useState<ScaleKey | null>(null);
   const [pendingNotObserved, setPendingNotObserved] = useState(false);
   const [showSpeedPrompt, setShowSpeedPrompt] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const speedPromptContinueRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -185,13 +187,24 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         <BodyText className="line-clamp-2 text-muted">{description}</BodyText>
       </Card>
 
-      <SignalTileGroup
-        options={GLOBAL_SCALE.map((scale) => ({ key: scale.key, label: scale.label }))}
-        selected={selected?.valueKey || null}
-        onSelect={(value) => saveSignal({ valueKey: value as ScaleKey, notObserved: false })}
-      />
-      <NotObservedButton onClick={() => saveSignal({ valueKey: null, notObserved: true })} />
-      <BodyText className="text-center text-xs text-muted">Use &ldquo;Skip for now&rdquo; if there wasn&rsquo;t enough evidence &mdash; you can revisit any signal in review.</BodyText>
+      <div className="flex gap-6">
+        <div className="flex-1 space-y-3">
+          <SignalTileGroup
+            options={GLOBAL_SCALE.map((scale) => ({ key: scale.key, label: scale.label }))}
+            selected={pendingValue}
+            onSelect={(value) => {
+              setPendingValue(value as ScaleKey);
+              setPendingNotObserved(false);
+            }}
+          />
+          <NotObservedButton
+            onClick={() => {
+              setPendingValue(null);
+              setPendingNotObserved(true);
+            }}
+            active={pendingNotObserved}
+          />
+          <BodyText className="text-center text-xs text-muted">Use &ldquo;Skip for now&rdquo; if there wasn&rsquo;t enough evidence &mdash; you can revisit any signal in review.</BodyText>
 
           <Button
             type="button"
@@ -215,6 +228,14 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         </aside>
       </div>
 
+      <SignalHelpSheet
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        description={description}
+        lookFors={currentSignal.lookFors}
+        scaleRows={scaleRows}
+      />
+
       {showSpeedPrompt ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-[var(--overlay)] p-4 pt-40" role="presentation" onClick={() => setShowSpeedPrompt(false)}>
           <Card
@@ -224,7 +245,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
             className="w-full max-w-md space-y-3"
             onClick={(event) => event.stopPropagation()}
           >
-            <H3 id="speed-prompt-title">Finish quickly?</H3>
+            <div id="speed-prompt-title"><H3>Finish quickly?</H3></div>
             <BodyText className="text-muted">You&rsquo;ve captured the key signals for this lesson phase. Mark the remaining signals as Skipped?</BodyText>
             <div className="flex gap-2">
               <Button

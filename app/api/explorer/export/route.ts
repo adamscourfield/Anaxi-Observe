@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import { canExportExplorer, canViewBehaviourExplorer } from "@/modules/authz";
@@ -237,7 +238,7 @@ export async function POST(req: NextRequest) {
     if (error?.message === "FORBIDDEN" || error?.message === "FEATURE_DISABLED") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    console.error("Explorer export error:", error);
+    logger.error("Explorer export error", { error: error?.message ?? String(error) });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

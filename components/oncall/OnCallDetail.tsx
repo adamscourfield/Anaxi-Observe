@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,22 @@ import { OnCallStatusBadge } from "./OnCallStatusBadge";
 import { H3, MetaText } from "@/components/ui/typography";
 import { REQUEST_TYPE_LABELS } from "@/modules/oncall/types";
 import { StatusPill } from "@/components/ui/status-pill";
+
+interface OnCallDetailRequest {
+  id: string;
+  status: "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "CANCELLED";
+  requestType: "BEHAVIOUR" | "FIRST_AID";
+  student: { fullName: string; upn: string; yearGroup?: string | null };
+  location: string;
+  behaviourReasonCategory?: string | null;
+  notes?: string | null;
+  requester: { fullName: string };
+  responder?: { fullName: string } | null;
+  createdAt: Date | string;
+  acknowledgedAt?: Date | string | null;
+  resolvedAt?: Date | string | null;
+  requesterUserId?: string;
+}
 
 interface OnCallDetailProps {
   request: OnCallDetailRequest;
@@ -144,7 +161,7 @@ export function OnCallDetail({ request, canAcknowledge, canResolve, canCancel }:
         )}
       </div>
 
-      <Link href="/tenant/on-call" className="calm-transition inline-flex items-center gap-1.5 text-sm text-muted hover:text-accent">
+      <Link href="/on-call" className="calm-transition inline-flex items-center gap-1.5 text-sm text-muted hover:text-accent">
         &larr; Back to on call inbox
       </Link>
     </div>

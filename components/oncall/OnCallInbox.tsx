@@ -6,12 +6,14 @@ import { OnCallStatusBadge } from "./OnCallStatusBadge";
 import { REQUEST_TYPE_LABELS, STATUS_LABELS } from "@/modules/oncall/types";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
+import { Button } from "@/components/ui/button";
 
 type Status = "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "CANCELLED";
+type RequestType = "BEHAVIOUR" | "FIRST_AID";
 
 interface InboxRequest {
   id: string;
-  requestType: "BEHAVIOUR" | "FIRST_AID";
+  requestType: RequestType;
   location: string;
   status: Status;
   createdAt: Date | string;
@@ -36,13 +38,6 @@ function timeAgo(dateVal: Date | string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-const STATUS_TABS: { key: string; label: string }[] = [
-  { key: "", label: "All" },
-  { key: "OPEN", label: "Open" },
-  { key: "ACKNOWLEDGED", label: "Acknowledged" },
-  { key: "RESOLVED", label: "Resolved" },
-];
-
 function InboxRow({ r, canAcknowledge, canResolve }: { r: InboxRequest; canAcknowledge?: boolean; canResolve?: boolean }) {
   const router = useRouter();
   const [actionPending, setActionPending] = useState<string | null>(null);
@@ -63,19 +58,78 @@ function InboxRow({ r, canAcknowledge, canResolve }: { r: InboxRequest; canAckno
   }
 
   return (
+    <div
+      className="cursor-pointer rounded-xl border border-border/60 bg-surface/60 p-4 calm-transition hover:border-accent/40"
+      onClick={() => router.push(`/on-call/${r.id}`)}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-text">
+            {r.student.fullName}
+            {r.student.yearGroup && <span className="ml-1 text-muted">({r.student.yearGroup})</span>}
+          </p>
+          <p className="mt-0.5 text-xs text-muted">
+            {REQUEST_TYPE_LABELS[r.requestType]} · {r.location} · raised by {r.requester.fullName}
+          </p>
+          {r.responder && (
+            <p className="mt-0.5 text-xs text-muted">Responder: {r.responder.fullName}</p>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <OnCallStatusBadge status={r.status} />
+          <span className="whitespace-nowrap text-xs text-muted">{timeAgo(r.createdAt)}</span>
+        </div>
+      </div>
+
+      {(showAck || showResolve) && (
+        <div className="mt-3 flex gap-2">
+          {showAck && (
+            <Button
+              type="button"
+              variant="secondary"
+              className="px-3 py-1.5 text-xs"
+              disabled={actionPending === "acknowledge"}
+              onClick={(e) => handleAction("acknowledge", e)}
+            >
+              Acknowledge
+            </Button>
+          )}
+          {showResolve && (
+            <Button
+              type="button"
+              className="px-3 py-1.5 text-xs"
+              disabled={actionPending === "resolve"}
+              onClick={(e) => handleAction("resolve", e)}
+            >
+              Resolve
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function OnCallInbox({ requests, canAcknowledge, canResolve }: OnCallInboxProps) {
+  const [statusFilter, setStatusFilter] = useState<Status | "">("");
+  const [typeFilter, setTypeFilter] = useState<RequestType | "">("");
+
+  const openCount = requests.filter((r) => r.status === "OPEN").length;
+
+  const filtered = requests.filter((r) => {
+    if (statusFilter && r.status !== statusFilter) return false;
+    if (typeFilter && r.requestType !== typeFilter) return false;
+    return true;
+  });
+
+  return (
     <div className="space-y-4">
       {openCount > 0 && (
         <div className="flex items-center gap-3 rounded-2xl border border-error/25 bg-[var(--pill-error-bg)] px-4 py-3">
           <StatusPill variant="error" size="sm">{openCount}</StatusPill>
           <span className="text-sm font-medium text-[var(--pill-error-text)]">open request{openCount !== 1 ? "s" : ""} requiring attention</span>
         </div>
-        <p className="mt-0.5 text-xs text-muted">
-          {REQUEST_TYPE_LABELS[r.requestType]} · {r.location} · raised by {r.requester.fullName}
-        </p>
-        {r.responder && (
-          <p className="mt-0.5 text-xs text-muted">Responder: {r.responder.fullName}</p>
-        )}
-      </div>
+      )}
 
       <div className="flex flex-wrap gap-2 rounded-xl border border-border/60 bg-surface/60 p-2">
         <select
