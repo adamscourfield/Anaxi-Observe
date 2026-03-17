@@ -180,12 +180,11 @@ export function TenantNav({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-30 flex h-screen flex-col bg-white calm-transition ${sidebarWidth}`}
-      style={{ boxShadow: "2px 0 16px rgba(15,23,42,0.08)" }}
+      className={`fixed left-0 top-0 z-30 flex h-screen flex-col bg-bg calm-transition ${sidebarWidth}`}
       aria-label="Sidebar menu"
     >
       {/* Logo area */}
-      <div className={`flex items-center ${collapsed ? "justify-center px-2" : "px-5"} h-16 shrink-0 border-b border-[#f0f2f5]`}>
+      <div className={`flex items-center ${collapsed ? "justify-center px-2" : "px-5"} h-16 shrink-0`}>
         <Link href="/home" className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} group`}>
           <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
             <Image src="/anaxi-logo.png" alt="Anaxi" width={22} height={22} priority className="h-[22px] w-[22px] object-contain" />
@@ -254,7 +253,7 @@ export function TenantNav({
       </nav>
 
       {/* Bottom: sign out + collapse */}
-      <div className="border-t border-[#f0f2f5] px-3 py-3">
+      <div className="px-3 py-3">
         <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"}`}>
           <form action="/api/auth/signout" method="post" className={collapsed ? "" : "flex-1"}>
             <button
@@ -282,7 +281,7 @@ export function TenantNav({
       {collapsed && (
         <button
           onClick={() => setCollapsed(false)}
-          className="absolute -right-3.5 top-20 z-40 inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-white text-muted shadow-md calm-transition hover:text-accent"
+          className="absolute -right-3.5 top-20 z-40 inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-bg text-muted shadow-md calm-transition hover:text-accent"
           type="button"
           title="Expand navigation"
         >
