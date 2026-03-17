@@ -104,14 +104,11 @@ function LeadershipHome({
   const displayUrgentStudents = allUrgentStudents.slice(0, 8);
   const hasBehaviourData = cohortRows.length > 0 || studentRows.length > 0;
 
-  const cohortAlerts = [...cohortRows]
-    .filter((r) => r.attendanceDelta !== null || r.onCallsDelta !== null)
-    .sort((a, b) => {
-      const aScore = (a.attendanceDelta !== null ? -a.attendanceDelta : 0) + (a.onCallsDelta !== null ? a.onCallsDelta : 0);
-      const bScore = (b.attendanceDelta !== null ? -b.attendanceDelta : 0) + (b.onCallsDelta !== null ? b.onCallsDelta : 0);
-      return bScore - aScore;
-    })
-    .slice(0, 2);
+  const sortedCohorts = [...cohortRows].sort((a, b) => {
+    const aNum = parseInt(a.yearGroup?.replace(/\D/g, "") ?? "0");
+    const bNum = parseInt(b.yearGroup?.replace(/\D/g, "") ?? "0");
+    return aNum - bNum;
+  });
 
   const totalObs = teacherRows.reduce((sum, r) => sum + r.teacherCoverage, 0);
   const urgentCount = allUrgentStudents.length;
@@ -222,63 +219,57 @@ function LeadershipHome({
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <Card className="space-y-3">
-          <div className="flex items-center justify-between">
+        <Card className="space-y-3 overflow-hidden p-0">
+          <div className="flex items-center justify-between px-5 pt-4">
             <p className="text-[14px] font-semibold text-text">Cohort Change</p>
             <Link href={`/explorer?view=BEHAVIOUR_COHORTS_PIVOT&window=${windowDays}`} className="text-[12px] text-accent hover:underline">Explorer →</Link>
           </div>
           {!hasBehaviourData ? (
-            <div className="space-y-2">
+            <div className="space-y-2 px-5 pb-4">
               <BodyText className="text-muted">Behaviour snapshots not yet imported.</BodyText>
               <Link href="/admin/imports" className="text-[12px] text-accent hover:underline">Import behaviour data →</Link>
             </div>
-          ) : cohortAlerts.length === 0 ? (
-            <MetaText>No significant cohort changes detected.</MetaText>
+          ) : sortedCohorts.length === 0 ? (
+            <div className="px-5 pb-4"><MetaText>No cohort data available.</MetaText></div>
           ) : (
-            <ul className="space-y-1">
-              {cohortAlerts.map((row) => (
-                <li key={row.yearGroup}>
-                  <Link href={`/explorer?view=BEHAVIOUR_COHORTS_PIVOT&year=${encodeURIComponent(row.yearGroup ?? "")}&window=${windowDays}`} className="block rounded-lg p-3 hover:bg-[#fe9f9f]/10 calm-transition">
-                    <p className="text-sm font-medium text-text">{row.yearGroup ?? "Year group"}</p>
-                    <div className="mt-1.5 grid grid-cols-3 gap-2">
-                      <div className="text-center">
-                        <p className="text-xs text-muted">Attendance</p>
-                        <p className="text-sm font-medium tabular-nums text-text">
-                          {row.attendanceMean !== null ? `${row.attendanceMean.toFixed(1)}%` : "—"}
-                        </p>
-                        {row.attendanceDelta !== null && (
-                          <p className={`text-xs tabular-nums ${row.attendanceDelta < 0 ? "text-[#fe9f9f]" : "text-green-600"}`}>
-                            {row.attendanceDelta > 0 ? "+" : ""}{row.attendanceDelta.toFixed(1)}%
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-muted">Behaviour</p>
-                        <p className="text-sm font-medium tabular-nums text-text">
-                          {row.detentionsMean !== null ? row.detentionsMean.toFixed(1) : "—"}
-                        </p>
-                        {row.detentionsDelta !== null && (
-                          <p className={`text-xs tabular-nums ${row.detentionsDelta > 0 ? "text-[#fe9f9f]" : "text-green-600"}`}>
-                            {row.detentionsDelta > 0 ? "+" : ""}{row.detentionsDelta.toFixed(1)}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-muted">On calls</p>
-                        <p className="text-sm font-medium tabular-nums text-text">
-                          {row.onCallsMean !== null ? row.onCallsMean.toFixed(1) : "—"}
-                        </p>
-                        {row.onCallsDelta !== null && (
-                          <p className={`text-xs tabular-nums ${row.onCallsDelta > 0 ? "text-[#fe9f9f]" : "text-green-600"}`}>
-                            {row.onCallsDelta > 0 ? "+" : ""}{row.onCallsDelta.toFixed(1)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-bg/60 text-xs uppercase tracking-[0.05em] text-muted">
+                    <th className="px-4 py-2 text-left font-medium">Year</th>
+                    <th className="px-3 py-2 text-right font-medium">Att %</th>
+                    <th className="px-3 py-2 text-right font-medium">Δ</th>
+                    <th className="px-3 py-2 text-right font-medium">Detent.</th>
+                    <th className="px-3 py-2 text-right font-medium">Δ</th>
+                    <th className="px-3 py-2 text-right font-medium">On call</th>
+                    <th className="px-3 py-2 text-right font-medium">Δ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedCohorts.map((row) => (
+                    <tr key={row.yearGroup} className="border-b border-border/50 last:border-0 hover:bg-accent/[0.03] calm-transition">
+                      <td className="px-4 py-2.5">
+                        <Link href={`/explorer?view=BEHAVIOUR_COHORTS_PIVOT&year=${encodeURIComponent(row.yearGroup ?? "")}&window=${windowDays}`} className="font-medium text-accent hover:underline">
+                          {row.yearGroup}
+                        </Link>
+                      </td>
+                      <td className="px-3 py-2.5 text-right tabular-nums text-text">{row.attendanceMean !== null ? `${row.attendanceMean.toFixed(1)}` : "—"}</td>
+                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.attendanceDelta !== null ? (row.attendanceDelta < 0 ? "text-[var(--error-text)]" : "text-green-600") : "text-muted"}`}>
+                        {row.attendanceDelta !== null ? `${row.attendanceDelta > 0 ? "+" : ""}${row.attendanceDelta.toFixed(1)}` : "—"}
+                      </td>
+                      <td className="px-3 py-2.5 text-right tabular-nums text-text">{row.detentionsMean !== null ? row.detentionsMean.toFixed(1) : "—"}</td>
+                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.detentionsDelta !== null ? (row.detentionsDelta > 0 ? "text-[var(--error-text)]" : "text-green-600") : "text-muted"}`}>
+                        {row.detentionsDelta !== null ? `${row.detentionsDelta > 0 ? "+" : ""}${row.detentionsDelta.toFixed(1)}` : "—"}
+                      </td>
+                      <td className="px-3 py-2.5 text-right tabular-nums text-text">{row.onCallsMean !== null ? row.onCallsMean.toFixed(1) : "—"}</td>
+                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.onCallsDelta !== null ? (row.onCallsDelta > 0 ? "text-[var(--error-text)]" : "text-green-600") : "text-muted"}`}>
+                        {row.onCallsDelta !== null ? `${row.onCallsDelta > 0 ? "+" : ""}${row.onCallsDelta.toFixed(1)}` : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Card>
 
