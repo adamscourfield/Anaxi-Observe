@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Label, MetaText } from "@/components/ui/typography";
 
 interface User {
   id: string;
@@ -57,27 +58,33 @@ export function ActionForm({ meetingId, attendees, onCreated, onCancel }: Action
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded border border-border p-3">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-border/70 bg-surface/95 p-4 shadow-sm">
+      {error && (
+        <div className="rounded-xl border border-error/20 bg-[var(--pill-error-bg)] px-3 py-2.5">
+          <MetaText className="text-[var(--pill-error-text)]">{error}</MetaText>
+        </div>
+      )}
       <div>
-        <label className="mb-1 block text-xs font-medium text-text">Description</label>
+        <Label htmlFor="action-desc">Description</Label>
         <textarea
+          id="action-desc"
           required
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
-          className="w-full rounded border border-border bg-bg p-2 text-sm"
+          className="field"
           placeholder="What needs to be done?"
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-xs font-medium text-text">Owner</label>
+          <Label htmlFor="action-owner">Owner</Label>
           <select
+            id="action-owner"
             required
             value={ownerUserId}
             onChange={(e) => setOwnerUserId(e.target.value)}
-            className="w-full rounded border border-border bg-bg p-2 text-sm"
+            className="field"
           >
             <option value="">Select person</option>
             {attendees.map((u) => (
@@ -86,18 +93,19 @@ export function ActionForm({ meetingId, attendees, onCreated, onCancel }: Action
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-text">Due date</label>
+          <Label htmlFor="action-due">Due date</Label>
           <input
+            id="action-due"
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded border border-border bg-bg p-2 text-sm"
+            className="field"
           />
         </div>
       </div>
       <div className="flex gap-2">
-        <Button type="submit" disabled={submitting}>{submitting ? "Adding…" : "Add Action"}</Button>
-        {onCancel && <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>}
+        <Button type="submit" disabled={submitting}>{submitting ? "Adding..." : "Add action"}</Button>
+        {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>}
       </div>
     </form>
   );

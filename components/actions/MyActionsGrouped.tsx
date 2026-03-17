@@ -64,7 +64,7 @@ export function MyActionsGrouped({ grouped: initial, currentUserId }: MyActionsG
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 border-b border-border pb-2">
+      <div className="flex flex-wrap gap-1.5 rounded-xl border border-border/60 bg-surface/60 p-1.5">
         {TABS.map((tab) => {
           const count = tab === "All" ? openCount + blockedCount + doneCount
             : tab === "Open" ? openCount
@@ -74,14 +74,14 @@ export function MyActionsGrouped({ grouped: initial, currentUserId }: MyActionsG
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+              className={`calm-transition rounded-lg px-3.5 py-2 text-sm font-medium ${
                 activeTab === tab
-                  ? "border-accent bg-[var(--accent-tint)] text-text"
-                  : "border-border/80 text-muted hover:bg-divider/60 hover:text-text"
+                  ? "bg-[var(--accent-tint)] text-text shadow-sm"
+                  : "text-muted hover:bg-divider/50 hover:text-text"
               }`}
             >
               {tab}
-              <span className="ml-1 text-xs opacity-80">({count})</span>
+              <span className="ml-1.5 text-xs opacity-70">({count})</span>
             </button>
           );
         })}

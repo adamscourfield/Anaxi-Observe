@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Label, MetaText } from "@/components/ui/typography";
 import { REASON_CATEGORIES, LOCATION_SUGGESTIONS } from "@/modules/oncall/types";
 
 interface Student {
@@ -78,11 +79,10 @@ export function OnCallRequestForm({ students }: OnCallRequestFormProps) {
   }
 
   return (
-    <Card className="max-w-2xl space-y-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Student search */}
-        <div className="space-y-1">
-          <label htmlFor="oncall-student-search" className="text-sm font-medium text-text">Student</label>
+    <Card className="max-w-2xl space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="oncall-student-search">Student</Label>
           <div className="relative">
             <input
               id="oncall-student-search"
@@ -95,28 +95,28 @@ export function OnCallRequestForm({ students }: OnCallRequestFormProps) {
                 setShowDropdown(true);
               }}
               onFocus={() => setShowDropdown(true)}
-              placeholder="Search by name or UPN…"
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              placeholder="Search by name or UPN..."
+              className="field"
               autoComplete="off"
             />
             {showDropdown && filtered.length > 0 && (
               <ul
                 role="listbox"
                 aria-label="Student search results"
-                className="absolute z-10 mt-1 w-full rounded-md border border-border bg-surface shadow-md"
+                className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-border/70 bg-surface shadow-md"
               >
                 {filtered.map((s) => (
                   <li key={s.id} role="option" aria-selected={selectedStudent?.id === s.id}>
                     <button
                       type="button"
-                      className="w-full cursor-pointer px-3 py-2 text-left text-sm text-text hover:bg-bg"
+                      className="calm-transition w-full cursor-pointer px-3 py-2.5 text-left text-sm text-text hover:bg-divider/50"
                       onMouseDown={() => {
                         setSelectedStudent(s);
                         setQuery("");
                         setShowDropdown(false);
                       }}
                     >
-                      {s.fullName} <span className="text-muted">({s.upn}{s.yearGroup ? ` · ${s.yearGroup}` : ""})</span>
+                      {s.fullName} <span className="text-muted">({s.upn}{s.yearGroup ? ` \u00b7 ${s.yearGroup}` : ""})</span>
                     </button>
                   </li>
                 ))}
@@ -125,14 +125,12 @@ export function OnCallRequestForm({ students }: OnCallRequestFormProps) {
           </div>
         </div>
 
-        {/* Type */}
-        <div className="space-y-1">
-          <label htmlFor="oncall-type-behaviour" className="text-sm font-medium text-text">Type</label>
+        <div className="space-y-1.5">
+          <Label>Type</Label>
           <div className="flex gap-3">
             {(["BEHAVIOUR", "FIRST_AID"] as const).map((t) => (
               <label key={t} className="flex cursor-pointer items-center gap-2 text-sm text-text">
                 <input
-                  id={`oncall-type-${t.toLowerCase()}`}
                   type="radio"
                   name="requestType"
                   value={t}
@@ -146,18 +144,17 @@ export function OnCallRequestForm({ students }: OnCallRequestFormProps) {
           </div>
         </div>
 
-        {/* Behaviour reason */}
         {requestType === "BEHAVIOUR" && (
-          <div className="space-y-1">
-            <label htmlFor="oncall-reason" className="text-sm font-medium text-text">Behaviour reason category</label>
+          <div className="space-y-1.5">
+            <Label htmlFor="oncall-reason">Behaviour reason category</Label>
             <select
               id="oncall-reason"
               value={behaviourReasonCategory}
               onChange={(e) => setBehaviourReasonCategory(e.target.value)}
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text"
+              className="field"
               required
             >
-              <option value="">Select reason…</option>
+              <option value="">Select reason...</option>
               {REASON_CATEGORIES.map((r) => (
                 <option key={r} value={r}>{r}</option>
               ))}
@@ -165,17 +162,16 @@ export function OnCallRequestForm({ students }: OnCallRequestFormProps) {
           </div>
         )}
 
-        {/* Location */}
-        <div className="space-y-1">
-          <label htmlFor="oncall-location" className="text-sm font-medium text-text">Location</label>
+        <div className="space-y-1.5">
+          <Label htmlFor="oncall-location">Location</Label>
           <input
             id="oncall-location"
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Hallway, Room 12…"
+            placeholder="e.g. Hallway, Room 12..."
             list="location-suggestions"
-            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+            className="field"
             required
           />
           <datalist id="location-suggestions">
@@ -183,23 +179,26 @@ export function OnCallRequestForm({ students }: OnCallRequestFormProps) {
           </datalist>
         </div>
 
-        {/* Notes */}
-        <div className="space-y-1">
-          <label htmlFor="oncall-notes" className="text-sm font-medium text-text">Notes <span className="text-muted">(optional)</span></label>
+        <div className="space-y-1.5">
+          <Label htmlFor="oncall-notes">Notes <span className="font-normal text-muted">(optional)</span></Label>
           <textarea
             id="oncall-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
-            placeholder="Additional context…"
+            className="field"
+            placeholder="Additional context..."
           />
         </div>
 
-        {error && <p className="text-sm text-error">{error}</p>}
+        {error && (
+          <div className="rounded-xl border border-error/20 bg-[var(--pill-error-bg)] px-3 py-2.5">
+            <MetaText className="text-[var(--pill-error-text)]">{error}</MetaText>
+          </div>
+        )}
 
         <Button type="submit" disabled={submitting} className="w-full">
-          {submitting ? "Submitting…" : "Submit On Call Request"}
+          {submitting ? "Submitting..." : "Submit on call request"}
         </Button>
       </form>
     </Card>

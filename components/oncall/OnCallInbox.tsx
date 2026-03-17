@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { OnCallRequestCard } from "./OnCallRequestCard";
 import { REQUEST_TYPE_LABELS, STATUS_LABELS } from "@/modules/oncall/types";
-import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { StatusPill } from "@/components/ui/status-pill";
 
 type Status = "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "CANCELLED";
 type RequestType = "BEHAVIOUR" | "FIRST_AID";
@@ -41,17 +41,18 @@ export function OnCallInbox({ requests, canAcknowledge, canResolve }: OnCallInbo
   return (
     <div className="space-y-4">
       {openCount > 0 && (
-        <div className="flex items-center gap-2 rounded-lg border border-error/30 bg-error/10 px-4 py-3">
-          <span className="text-sm font-semibold text-error">{openCount} open request{openCount !== 1 ? "s" : ""}</span>
-          <span className="text-xs text-error/70">requiring attention</span>
+        <div className="flex items-center gap-3 rounded-2xl border border-error/25 bg-[var(--pill-error-bg)] px-4 py-3">
+          <StatusPill variant="error" size="sm">{openCount}</StatusPill>
+          <span className="text-sm font-medium text-[var(--pill-error-text)]">open request{openCount !== 1 ? "s" : ""} requiring attention</span>
         </div>
       )}
 
-      <Card className="flex flex-wrap gap-2 p-3">
+      <div className="flex flex-wrap gap-2 rounded-xl border border-border/60 bg-surface/60 p-2">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as Status | "")}
-          className="rounded-md border border-border bg-bg/60 px-3 py-1.5 text-sm text-text"
+          className="field py-1.5"
+          aria-label="Filter by status"
         >
           <option value="">All statuses</option>
           {(Object.keys(STATUS_LABELS) as Status[]).map((s) => (
@@ -62,14 +63,15 @@ export function OnCallInbox({ requests, canAcknowledge, canResolve }: OnCallInbo
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value as RequestType | "")}
-          className="rounded-md border border-border bg-bg/60 px-3 py-1.5 text-sm text-text"
+          className="field py-1.5"
+          aria-label="Filter by type"
         >
           <option value="">All types</option>
           {(Object.keys(REQUEST_TYPE_LABELS) as RequestType[]).map((t) => (
             <option key={t} value={t}>{REQUEST_TYPE_LABELS[t]}</option>
           ))}
         </select>
-      </Card>
+      </div>
 
       {filtered.length === 0 ? (
         <EmptyState title="No requests found" description="Adjust filters or create a new on-call request." />

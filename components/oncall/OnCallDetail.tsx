@@ -2,7 +2,9 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { OnCallStatusBadge } from "./OnCallStatusBadge";
+import { H3, MetaText } from "@/components/ui/typography";
 import { REQUEST_TYPE_LABELS } from "@/modules/oncall/types";
+import { StatusPill } from "@/components/ui/status-pill";
 
 interface OnCallDetailProps {
   request: {
@@ -34,79 +36,76 @@ export function OnCallDetail({ request, canAcknowledge, canResolve, canCancel }:
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
         <OnCallStatusBadge status={request.status} />
-        <span className="text-sm font-medium text-text">{REQUEST_TYPE_LABELS[request.requestType]}</span>
+        <StatusPill variant="neutral" size="sm">{REQUEST_TYPE_LABELS[request.requestType]}</StatusPill>
       </div>
 
-      <Card className="space-y-3">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <span className="font-medium text-text">Student</span>
-          <span className="text-text">{request.student.fullName} ({request.student.upn})</span>
-
-          <span className="font-medium text-text">Year Group</span>
-          <span className="text-text">{request.student.yearGroup ?? "—"}</span>
-
-          <span className="font-medium text-text">Type</span>
-          <span className="text-text">{REQUEST_TYPE_LABELS[request.requestType]}</span>
-
-          <span className="font-medium text-text">Location</span>
-          <span className="text-text">{request.location}</span>
-
+      <Card className="space-y-4">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+          <div>
+            <MetaText className="mb-0.5 font-medium">Student</MetaText>
+            <p className="text-text">{request.student.fullName} ({request.student.upn})</p>
+          </div>
+          <div>
+            <MetaText className="mb-0.5 font-medium">Year Group</MetaText>
+            <p className="text-text">{request.student.yearGroup ?? "\u2014"}</p>
+          </div>
+          <div>
+            <MetaText className="mb-0.5 font-medium">Location</MetaText>
+            <p className="text-text">{request.location}</p>
+          </div>
           {request.behaviourReasonCategory && (
-            <>
-              <span className="font-medium text-text">Reason</span>
-              <span className="text-text">{request.behaviourReasonCategory}</span>
-            </>
+            <div>
+              <MetaText className="mb-0.5 font-medium">Reason</MetaText>
+              <p className="text-text">{request.behaviourReasonCategory}</p>
+            </div>
           )}
-
           {request.notes && (
-            <>
-              <span className="font-medium text-text">Notes</span>
-              <span className="text-text">{request.notes}</span>
-            </>
+            <div className="sm:col-span-2">
+              <MetaText className="mb-0.5 font-medium">Notes</MetaText>
+              <p className="text-text">{request.notes}</p>
+            </div>
           )}
-
-          <span className="font-medium text-text">Raised by</span>
-          <span className="text-text">{request.requester.fullName}</span>
-
+          <div>
+            <MetaText className="mb-0.5 font-medium">Raised by</MetaText>
+            <p className="text-text">{request.requester.fullName}</p>
+          </div>
           {request.responder && (
-            <>
-              <span className="font-medium text-text">Responder</span>
-              <span className="text-text">{request.responder.fullName}</span>
-            </>
+            <div>
+              <MetaText className="mb-0.5 font-medium">Responder</MetaText>
+              <p className="text-text">{request.responder.fullName}</p>
+            </div>
           )}
         </div>
       </Card>
 
-      {/* Timeline */}
-      <div className="space-y-2">
-        <h2 className="text-sm font-semibold text-text">Timeline</h2>
-        <ol className="space-y-2 border-l-2 border-divider pl-4">
+      <div className="space-y-3">
+        <H3>Timeline</H3>
+        <ol className="space-y-3 border-l-2 border-accent/20 pl-4">
           <li className="space-y-0.5">
-            <p className="text-xs font-medium text-text">Created</p>
-            <p className="text-xs text-muted">{fmt(request.createdAt)}</p>
+            <p className="text-xs font-semibold text-text">Created</p>
+            <MetaText>{fmt(request.createdAt)}</MetaText>
           </li>
           {request.acknowledgedAt && (
             <li className="space-y-0.5">
-              <p className="text-xs font-medium text-text">Acknowledged</p>
-              <p className="text-xs text-muted">
+              <p className="text-xs font-semibold text-text">Acknowledged</p>
+              <MetaText>
                 {fmt(request.acknowledgedAt)}
                 {request.responder ? ` by ${request.responder.fullName}` : ""}
-              </p>
+              </MetaText>
             </li>
           )}
           {request.resolvedAt && (
             <li className="space-y-0.5">
-              <p className="text-xs font-medium text-text">Resolved</p>
-              <p className="text-xs text-muted">
+              <p className="text-xs font-semibold text-text">Resolved</p>
+              <MetaText>
                 {fmt(request.resolvedAt)}
                 {request.responder ? ` by ${request.responder.fullName}` : ""}
-              </p>
+              </MetaText>
             </li>
           )}
         </ol>
       </div>
 
-      {/* Actions */}
       <div className="flex flex-wrap gap-3">
         {canAcknowledge && request.status === "OPEN" && (
           <form method="POST" action={`/api/oncall/${request.id}/acknowledge`}>
@@ -125,8 +124,8 @@ export function OnCallDetail({ request, canAcknowledge, canResolve, canCancel }:
         )}
       </div>
 
-      <Link href="/tenant/on-call" className="text-sm text-muted underline">
-        ← Back to On Call inbox
+      <Link href="/tenant/on-call" className="calm-transition inline-flex items-center gap-1.5 text-sm text-muted hover:text-accent">
+        &larr; Back to on call inbox
       </Link>
     </div>
   );
