@@ -37,6 +37,46 @@ The workflow `Start application` runs `npm run dev` which starts Next.js on port
 - `modules/` — Feature modules
 - `prisma/` — Schema, migrations, and seed scripts
 
+## Analytics Consolidation
+- The three analytics list pages (`/analysis/teachers`, `/analysis/cpd`, `/analysis/students`) have been consolidated into a single tabbed page at `/analytics`.
+- Tab switching uses `?tab=teachers|cpd|students` query parameter.
+- Permanent redirects from old URLs are configured in `next.config.mjs`.
+- Detail pages remain at their original routes (`/analysis/teachers/[memberId]`, `/analysis/cpd/[signalKey]`, `/analysis/students/[id]`).
+- The sidebar shows a single "Analytics" nav item instead of three separate items.
+- The `actions.ts` file for student watchlist toggle remains at `app/(tenant)/analysis/students/actions.ts`.
+
+## Design System (v2 — Premium Redesign)
+- **Layout**: No top header on authenticated pages. Full-height sidebar owns brand + nav + logout. Content area uses `px-8 py-8` with `max-w-[1400px]`.
+- **Sidebar**: Fixed full-height (`h-screen`), white bg, border-right. Brand mark at top, nav sections in middle, logout anchored at bottom. Collapsible with expand button.
+- **Accent colour**: Indigo (`#4f46e5`) — used for active nav items (solid fill), buttons, links, and focus rings.
+- **Typography**: H1 = 30px/bold, H2 = 20px/semibold, H3 = 16px/semibold. Inter font.
+- **Tokens**: All design tokens in `app/globals.css` (:root). Tailwind maps them in `tailwind.config.ts`.
+- **Cards**: `rounded-xl p-5`, subtle shadow, no translate-y hover effects.
+- **Buttons**: Active press uses `scale-[0.98]`, not translate. Focus ring uses `ring-offset-2`.
+- **Login page**: Full-viewport split layout — left panel has indigo gradient with brand messaging, right panel has the form.
+- **Nav active state**: Solid `bg-accent text-white` pill with shadow — not a tinted background.
+- **Core UI components**: `components/ui/` — Card, Button, PageHeader, StatusPill, SectionHeader, CollapsibleCard, EmptyState, TileOption, DriverChips, StatCard, Avatar.
+- **Sidebar CSS var**: `--sidebar-width: 260px`, `--sidebar-collapsed-width: 72px`.
+
+## Home Page
+- Home page at `/home` has three role-based variants: Leadership (SLT/ADMIN), HOD, and Teacher.
+- **StatCard** (`components/ui/stat-card.tsx`): White card with coloured top accent bar, used for hero stat rows on each variant.
+- **Avatar** (`components/ui/avatar.tsx`): Circular initials badge with deterministic colour, used on teacher name rows.
+- Leadership hero: 4 stat cards (observations, urgent students, CPD drift signals, teachers drifting).
+- HOD hero: 2 stat cards (dept observations, dept CPD signals).
+- Teacher hero: 2 stat cards (your observations, open actions).
+- Priority lists (CPD, teachers, students) are polished with avatars, status pills, and driver chips.
+- Cohort change shown inline (not collapsible), Leave Approvals and Positive Momentum collapsed sections removed.
+
+## Explorer Page
+- Located at `app/(tenant)/explorer/page.tsx`.
+- 7 view modes: Teachers pivot, Departments pivot, Observation list, Teacher priorities, CPD signals, Students, Cohorts.
+- **Teacher priorities** view uses `computeTeacherRiskIndex` to show per-teacher drift status, coverage, and top signal drivers.
+- **CPD signals** view uses `computeCpdPriorities` + `getTopImprovingSignals` for school-wide signal weakness ranking and positive momentum highlights.
+- View switcher styled to match `SegmentedTabs` component (rounded-lg, bg-[#f4f7fb], white active tab).
+- Observation list includes `Avatar` for teachers and `formatPhaseLabel` utility for human-readable lesson phase display.
+- HOD scope filtering enforced on Teacher priorities and CPD signals views.
+
 ## Replit Migration Notes
 - Dev/start scripts updated to use `-p 5000 -H 0.0.0.0`
 - `NEXTAUTH_URL` set to the Replit dev domain

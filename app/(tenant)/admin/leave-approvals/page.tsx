@@ -33,7 +33,7 @@ export default async function AdminLeaveApprovalsPage() {
     const appliesTo = String(formData.get("appliesTo") || "ALL_STAFF");
     if (!name) return;
     await (prisma as any).leaveApprovalGroup.create({ data: { tenantId: admin.tenantId, name, appliesTo } });
-    revalidatePath("/tenant/admin/leave-approvals");
+    revalidatePath("/admin/leave-approvals");
   }
 
   async function deleteGroup(formData: FormData) {
@@ -41,7 +41,7 @@ export default async function AdminLeaveApprovalsPage() {
     const admin = await requireAdminUser();
     const id = String(formData.get("id"));
     await (prisma as any).leaveApprovalGroup.deleteMany({ where: { id, tenantId: admin.tenantId } });
-    revalidatePath("/tenant/admin/leave-approvals");
+    revalidatePath("/admin/leave-approvals");
   }
 
   async function addApprover(formData: FormData) {
@@ -57,7 +57,7 @@ export default async function AdminLeaveApprovalsPage() {
       update: {},
       create: { tenantId: admin.tenantId, groupId, approverUserId },
     });
-    revalidatePath("/tenant/admin/leave-approvals");
+    revalidatePath("/admin/leave-approvals");
   }
 
   async function removeApprover(formData: FormData) {
@@ -68,7 +68,7 @@ export default async function AdminLeaveApprovalsPage() {
     const grp = await (prisma as any).leaveApprovalGroup.findFirst({ where: { id: groupId, tenantId: admin.tenantId } });
     if (!grp) return;
     await (prisma as any).leaveApprovalGroupMember.deleteMany({ where: { groupId, approverUserId } });
-    revalidatePath("/tenant/admin/leave-approvals");
+    revalidatePath("/admin/leave-approvals");
   }
 
   async function addScope(formData: FormData) {
@@ -84,7 +84,7 @@ export default async function AdminLeaveApprovalsPage() {
       update: {},
       create: { tenantId: admin.tenantId, groupId, subjectUserId },
     });
-    revalidatePath("/tenant/admin/leave-approvals");
+    revalidatePath("/admin/leave-approvals");
   }
 
   async function removeScope(formData: FormData) {
@@ -95,16 +95,16 @@ export default async function AdminLeaveApprovalsPage() {
     const grp = await (prisma as any).leaveApprovalGroup.findFirst({ where: { id: groupId, tenantId: admin.tenantId } });
     if (!grp) return;
     await (prisma as any).leaveApprovalGroupScope.deleteMany({ where: { groupId, subjectUserId } });
-    revalidatePath("/tenant/admin/leave-approvals");
+    revalidatePath("/admin/leave-approvals");
   }
 
   return (
     <div className="space-y-4">
-      <Link href="/tenant/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
+      <Link href="/admin" className="text-xs text-accent hover:underline">← Back to Admin</Link>
       <PageHeader title="Leave approval rules" subtitle="Manage approval groups, approvers, and optional scoped staff coverage." />
 
       <Card className="text-sm text-muted">
-        Recommended model: configure approvers and scope here. Use <a className="text-accent hover:underline" href="/tenant/admin/taxonomies?tab=loa-reasons">LOA reasons</a> in Taxonomies for request categories.
+        Recommended model: configure approvers and scope here. Use <a className="text-accent hover:underline" href="/admin/taxonomies?tab=loa-reasons">LOA reasons</a> in Taxonomies for request categories.
       </Card>
 
       <Card>

@@ -24,17 +24,17 @@ export default async function AdminVocabPage() {
         update: { labelSingular: singular, labelPlural: plural },
       });
     }
-    revalidatePath("/tenant/admin/vocab");
+    revalidatePath("/admin/vocab");
   }
 
   const byKey = new Map<string, any>((vocab as any[]).map((v: any) => [v.key, v]));
 
   return (
     <div className="space-y-4">
-      <Link href="/tenant/admin/terminology" className="text-xs text-accent hover:underline">← Back to Terminology</Link>
+      <Link href="/admin/terminology" className="text-xs text-accent hover:underline">← Back to Terminology</Link>
       <PageHeader title="Terminology · Vocabulary" subtitle="Set singular/plural labels for behaviour event language." />
       <Card className="text-sm text-muted">
-        This controls event nouns (for example: detention/detentions). For broader UI wording, use <a className="text-accent hover:underline" href="/tenant/admin/language">Language</a>.
+        This controls event nouns (for example: detention/detentions). For broader UI wording, use <a className="text-accent hover:underline" href="/admin/language">Language</a>.
       </Card>
       <form action={saveVocab} className="space-y-3">
         {REQUIRED_KEYS.map((key) => {

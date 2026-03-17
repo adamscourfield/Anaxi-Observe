@@ -9,7 +9,6 @@ import { GLOBAL_SCALE } from "@/modules/observations/signalDefinitions";
 import { clearDraft, loadDraft, persistDraft, ScaleKey } from "./observationDraft";
 import { NotObservedButton } from "./NotObservedButton";
 import { ProgressHeader } from "./ProgressHeader";
-import { SignalHelpSheet } from "./SignalHelpSheet";
 import { SignalTileGroup } from "./SignalTileGroup";
 
 type Signal = {
@@ -28,7 +27,8 @@ type LabelMap = Record<string, { displayName: string; description?: string }>;
 export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: string; signals: Signal[]; labelMap: LabelMap }) {
   const router = useRouter();
   const params = useSearchParams();
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [pendingValue, setPendingValue] = useState<ScaleKey | null>(null);
+  const [pendingNotObserved, setPendingNotObserved] = useState(false);
   const [showSpeedPrompt, setShowSpeedPrompt] = useState(false);
   const speedPromptContinueRef = useRef<HTMLButtonElement | null>(null);
 
@@ -45,7 +45,8 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
   }, [showSpeedPrompt]);
 
   const orderedByOrder = useMemo(() => [...signals].sort((a, b) => a.order - b.order), [signals]);
-  const draft = useMemo(() => loadDraft(draftKey, orderedByOrder.map((signal) => signal.key)), [draftKey, orderedByOrder]);
+  const signalKeys = useMemo(() => orderedByOrder.map((signal) => signal.key), [orderedByOrder]);
+  const [draft, setDraft] = useState(() => loadDraft(draftKey, signalKeys));
 
   const hasContext = Boolean(draft.context.teacherId && draft.context.yearGroup && draft.context.subject);
 
@@ -62,17 +63,31 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
   const currentIndex = Math.max(0, Math.min(Number(params.get("index") || "0"), Math.max(total - 1, 0)));
   const currentSignal = orderedSignals.list[currentIndex];
 
+  useEffect(() => {
+    const saved = draft.signalState[currentSignal?.key];
+    if (saved?.notObserved) {
+      setPendingNotObserved(true);
+      setPendingValue(null);
+    } else if (saved?.valueKey) {
+      setPendingValue(saved.valueKey);
+      setPendingNotObserved(false);
+    } else {
+      setPendingValue(null);
+      setPendingNotObserved(false);
+    }
+  }, [currentIndex, currentSignal?.key, draft.signalState]);
+
   if (!hasContext) {
-    router.replace("/tenant/observe/new");
+    router.replace("/observe/new");
     return null;
   }
 
-  const goToIndex = (index: number) => router.push(`/tenant/observe/new/signals?index=${Math.max(0, Math.min(index, total - 1))}`);
+  const goToIndex = (index: number) => router.push(`/observe/new/signals?index=${Math.max(0, Math.min(index, total - 1))}`);
 
   const advance = () => {
     const nextIndex = currentIndex + 1;
     if (nextIndex >= total) {
-      router.push("/tenant/observe/new/review");
+      router.push("/observe/new/review");
       return;
     }
 
@@ -91,7 +106,15 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
     goToIndex(nextIndex);
   };
 
-  const saveSignal = (entry: { valueKey: ScaleKey | null; notObserved: boolean }) => {
+  const updateDraft = (updated: typeof draft) => {
+    setDraft(updated);
+    persistDraft(draftKey, updated);
+  };
+
+  const confirmAndAdvance = () => {
+    const entry = pendingNotObserved
+      ? { valueKey: null, notObserved: true }
+      : { valueKey: pendingValue, notObserved: false };
     const next = {
       ...draft,
       signalState: {
@@ -99,19 +122,45 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         [currentSignal.key]: entry,
       },
     };
-    persistDraft(draftKey, next);
+    updateDraft(next);
     advance();
   };
+
+  const hasSelection = pendingValue !== null || pendingNotObserved;
+  const isLastSignal = currentIndex === total - 1;
 
   const override = labelMap[currentSignal.key];
   const title = override?.displayName || currentSignal.displayNameDefault;
   const description = override?.description || currentSignal.descriptionDefault;
-  const selected = draft.signalState[currentSignal.key];
 
   const scaleRows = GLOBAL_SCALE.map((scale) => ({ label: scale.label, guidance: currentSignal.scaleGuidance[scale.key] }));
 
+  const infoPanel = (
+    <div className="space-y-3">
+      <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">Guidance</p>
+      <p className="text-sm text-muted">{description}</p>
+      {currentSignal.lookFors?.length ? (
+        <div>
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-muted mb-1.5">Look for</p>
+          <ul className="list-disc pl-4 space-y-1 text-sm text-muted">
+            {currentSignal.lookFors.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </div>
+      ) : null}
+      <div className="space-y-2">
+        <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">Scale guidance</p>
+        {scaleRows.map((row) => (
+          <div key={row.label} className="rounded-lg border border-border bg-surface p-3">
+            <p className="text-sm font-medium text-text">{row.label}</p>
+            <p className="text-xs text-muted mt-0.5">{row.guidance}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-4 bg-bg p-4">
+    <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-4 bg-bg p-4">
       <ProgressHeader
         current={currentIndex + 1}
         total={total}
@@ -120,7 +169,7 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         onExit={() => {
           if (window.confirm("Discard observation?")) {
             clearDraft(draftKey);
-            router.push("/tenant/observe");
+            router.push("/observe/history");
           }
         }}
       />
@@ -144,7 +193,27 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
       <NotObservedButton onClick={() => saveSignal({ valueKey: null, notObserved: true })} />
       <BodyText className="text-center text-xs text-muted">Use &ldquo;Skip for now&rdquo; if there wasn&rsquo;t enough evidence &mdash; you can revisit any signal in review.</BodyText>
 
-      <SignalHelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} description={description} lookFors={currentSignal.lookFors} scaleRows={scaleRows} />
+          <Button
+            type="button"
+            disabled={!hasSelection}
+            onClick={confirmAndAdvance}
+            className="w-full"
+          >
+            {isLastSignal ? "Review observation →" : "Next →"}
+          </Button>
+          <BodyText className="text-xs text-muted">Select a rating or skip, then press Next to continue.</BodyText>
+
+          <div id="signal-info-panel" className="md:hidden">
+            {infoPanel}
+          </div>
+        </div>
+
+        <aside className="hidden md:block w-80 shrink-0 sticky top-4 self-start">
+          <Card className="space-y-3 max-h-[calc(100vh-6rem)] overflow-y-auto">
+            {infoPanel}
+          </Card>
+        </aside>
+      </div>
 
       {showSpeedPrompt ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-[var(--overlay)] p-4 pt-40" role="presentation" onClick={() => setShowSpeedPrompt(false)}>
@@ -177,8 +246,8 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
                     const state = next.signalState[signal.key];
                     if (!state.valueKey && !state.notObserved) next.signalState[signal.key] = { valueKey: null, notObserved: true };
                   }
-                  persistDraft(draftKey, next);
-                  router.push("/tenant/observe/new/review");
+                  updateDraft(next);
+                  router.push("/observe/new/review");
                 }}
               >
                 Mark remaining as Skipped

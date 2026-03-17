@@ -110,7 +110,7 @@ export function ObservationContextForm({ teachers, draftKey, signalKeys }: { tea
         disabled={!canContinue}
         onClick={() => {
           persistDraft(draftKey, { context, signalState: loadDraft(draftKey, signalKeys).signalState });
-          router.push("/tenant/observe/new/signals");
+          router.push("/observe/new/signals");
         }}
         className="w-full"
       >

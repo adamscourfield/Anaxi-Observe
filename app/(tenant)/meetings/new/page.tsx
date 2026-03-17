@@ -9,7 +9,7 @@ import { H1 } from "@/components/ui/typography";
 export default async function NewMeetingPage() {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "MEETINGS");
-  if (!hasPermission(user.role, "meetings:create")) redirect("/tenant/meetings");
+  if (!hasPermission(user.role, "meetings:create")) redirect("/meetings");
 
   const users = await (prisma as any).user.findMany({
     where: { tenantId: user.tenantId, isActive: true },

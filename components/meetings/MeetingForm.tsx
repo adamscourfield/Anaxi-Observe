@@ -76,7 +76,7 @@ export function MeetingForm({ users, currentUserId }: MeetingFormProps) {
       }
 
       const meeting = await res.json();
-      router.push(`/tenant/meetings/${meeting.id}`);
+      router.push(`/meetings/${meeting.id}`);
     } catch {
       setError("Network error");
       setSubmitting(false);

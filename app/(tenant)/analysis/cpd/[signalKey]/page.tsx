@@ -94,7 +94,7 @@ export default async function CpdSignalDrilldownPage({
     <div className="space-y-6">
       {/* Back link */}
       <Link
-        href={`/analysis/cpd?${backParams.toString()}`}
+        href={`/analytics?tab=cpd&${backParams.toString()}`}
         className="text-sm text-muted hover:underline"
       >
         ← Back to CPD priorities
@@ -256,7 +256,7 @@ export default async function CpdSignalDrilldownPage({
 
       {/* CTAs */}
       <div className="flex flex-wrap items-center gap-3">
-        <Link href={`/tenant/observe/history?signalKey=${signalKey}&window=${windowDays}`} passHref>
+        <Link href={`/observe/history?signalKey=${signalKey}&window=${windowDays}`} passHref>
           <Button variant="secondary">View observations</Button>
         </Link>
       </div>

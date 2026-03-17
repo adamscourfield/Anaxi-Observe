@@ -10,9 +10,11 @@ import {
   computeTeacherSignalProfile,
   TeacherRiskRow,
 } from "@/modules/analysis/teacherRisk";
-import { computeCohortPivot } from "@/modules/analysis/cohortPivot";
-import { computeStudentRiskIndex } from "@/modules/analysis/studentRisk";
+import { computeCohortPivot, CohortPivotRow } from "@/modules/analysis/cohortPivot";
+import { computeStudentRiskIndex, StudentRiskRow } from "@/modules/analysis/studentRisk";
 import { HomeAssembly } from "@/modules/home/assembler";
+
+/* eslint-disable @typescript-eslint/no-explicit-any -- Prisma dynamic model access */
 
 async function safe<T>(task: Promise<T>, fallback: T): Promise<T> {
   try {
@@ -25,15 +27,39 @@ async function safe<T>(task: Promise<T>, fallback: T): Promise<T> {
 export async function hydrateLeadershipHomeData({
   user,
   windowDays,
+  hasLeaveFeature,
+  hasOnCallFeature,
 }: {
   user: SessionUser;
   windowDays: number;
+  hasLeaveFeature: boolean;
+  hasOnCallFeature: boolean;
 }) {
-  const [cpdRows, teacherRows, cohortResult, studentResult] = await Promise.all([
+  const pendingLeavePromise = hasLeaveFeature
+    ? safe(
+        (prisma as any).lOARequest.count({
+          where: { tenantId: user.tenantId, status: "PENDING" },
+        }),
+        0 as number
+      )
+    : Promise.resolve(0);
+
+  const openOnCallPromise = hasOnCallFeature
+    ? safe(
+        (prisma as any).onCallRequest.count({
+          where: { tenantId: user.tenantId, status: "OPEN" },
+        }),
+        0 as number
+      )
+    : Promise.resolve(0);
+
+  const [cpdRows, teacherRows, cohortResult, studentResult, pendingLeaveCount, openOnCallCount] = await Promise.all([
     safe(computeCpdPriorities(user.tenantId, windowDays), [] as CpdPriorityRow[]),
     safe(computeTeacherRiskIndex(user.tenantId, windowDays), [] as TeacherRiskRow[]),
-    safe(computeCohortPivot(user.tenantId, windowDays), { rows: [] as any[], computedAt: new Date() }),
-    safe(computeStudentRiskIndex(user.tenantId, windowDays, user.id), { rows: [] as any[], computedAt: new Date() }),
+    safe(computeCohortPivot(user.tenantId, windowDays), { rows: [] as CohortPivotRow[], computedAt: new Date() }),
+    safe(computeStudentRiskIndex(user.tenantId, windowDays, user.id), { rows: [] as StudentRiskRow[], computedAt: new Date() }),
+    pendingLeavePromise,
+    openOnCallPromise,
   ]);
 
   return {
@@ -42,6 +68,8 @@ export async function hydrateLeadershipHomeData({
     cohortRows: cohortResult.rows,
     studentRows: studentResult.rows,
     topImproving: getTopImprovingSignals(cpdRows),
+    pendingLeaveCount: pendingLeaveCount as number,
+    openOnCallCount: openOnCallCount as number,
   };
 }
 

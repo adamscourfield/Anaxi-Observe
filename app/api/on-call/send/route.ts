@@ -75,6 +75,6 @@ export async function POST(req: Request) {
     emailError = to.length ? "SENDGRID_API_KEY missing" : "No active recipients configured";
   }
 
-  const url = new URL(`/tenant/on-call/feed?created=${requestRow.id}${emailError ? `&emailError=${encodeURIComponent(emailError)}` : ""}`, req.url);
+  const url = new URL(`/on-call/feed?created=${requestRow.id}${emailError ? `&emailError=${encodeURIComponent(emailError)}` : ""}`, req.url);
   return NextResponse.redirect(url);
 }

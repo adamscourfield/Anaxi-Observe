@@ -40,24 +40,24 @@ export default async function AdminIndexPage() {
   });
 
   const peopleAccessCards: AdminCard[] = [
-    { href: "/tenant/admin/users", label: "Users", desc: "Staff accounts, roles, status, and notification flags" },
-    { href: "/tenant/admin/departments", label: "Departments", desc: "Department structure, memberships, and HODs" },
-    { href: "/tenant/admin/coaching", label: "Coaching", desc: "Coach ↔ coachee visibility assignments" },
-    { href: "/tenant/admin/leave-approvals", label: "Leave approval rules", desc: "Approval groups and staff coverage scope" },
+    { href: "/admin/users", label: "Users", desc: "Staff accounts, roles, status, and notification flags" },
+    { href: "/admin/departments", label: "Departments", desc: "Department structure, memberships, and HODs" },
+    { href: "/admin/coaching", label: "Coaching", desc: "Coach ↔ coachee visibility assignments" },
+    { href: "/admin/leave-approvals", label: "Leave approval rules", desc: "Approval groups and staff coverage scope" },
   ];
 
   const platformCards: AdminCard[] = [
-    { href: "/tenant/admin/settings", label: "Platform", desc: "School settings, thresholds, and module toggles" },
+    { href: "/admin/settings", label: "Platform", desc: "School settings, thresholds, and module toggles" },
   ];
 
   const languageCards: AdminCard[] = [
-    { href: "/tenant/admin/terminology", label: "Terminology", desc: "Language, vocabulary, and signal labels" },
+    { href: "/admin/terminology", label: "Terminology", desc: "Language, vocabulary, and signal labels" },
   ];
 
   const operationsCards: AdminCard[] = [
-    { href: "/tenant/admin/taxonomies", label: "Taxonomies", desc: "LOA/on-call reasons, locations, and recipients" },
-    { href: "/tenant/admin/timetable", label: "Timetable", desc: "Timetable CSV import and latest rows" },
-    { href: "/tenant/admin/imports", label: "Import jobs", desc: "Import status, row counts, and errors" },
+    { href: "/admin/taxonomies", label: "Taxonomies", desc: "LOA/on-call reasons, locations, and recipients" },
+    { href: "/admin/timetable", label: "Timetable", desc: "Timetable CSV import and latest rows" },
+    { href: "/admin/imports", label: "Import jobs", desc: "Import status, row counts, and errors" },
   ];
 
   return (
@@ -76,7 +76,7 @@ export default async function AdminIndexPage() {
         }
         actions={
           !onboardingDone?.onboardingCompletedAt ? (
-            <Link href="/tenant/onboarding"><Button>Run onboarding wizard</Button></Link>
+            <Link href="/onboarding"><Button>Run onboarding wizard</Button></Link>
           ) : undefined
         }
       />

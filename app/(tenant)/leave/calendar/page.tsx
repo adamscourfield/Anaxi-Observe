@@ -9,6 +9,8 @@ function dayKey(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
+const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
 export default async function LeaveCalendarPage() {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "LEAVE");
@@ -37,6 +39,13 @@ export default async function LeaveCalendarPage() {
     date.setDate(i + 1);
     return date;
   }).filter((d) => d.getMonth() === start.getMonth());
+
+  // Calculate leading empty cells for the calendar grid (Monday = 0)
+  const firstDayOfWeek = (start.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
+  const leadingBlanks = Array.from({ length: firstDayOfWeek }, (_, i) => i);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return (
     <div className="space-y-5">
