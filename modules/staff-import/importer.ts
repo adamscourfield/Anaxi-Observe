@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { sendOnboardingEmail } from "@/lib/email";
 import { StaffCsvRecord, StaffCsvError } from "./csv";
 
 export interface StaffImportResult {
@@ -59,6 +60,12 @@ export async function runStaffImport(
     const rowNumber = i + 1;
 
     try {
+      // Check if this is a new user before upserting
+      const existingUser = await (prisma as any).user.findUnique({
+        where: { tenantId_email: { tenantId, email: row.email } },
+      });
+      const isNewUser = !existingUser;
+
       // 1) Upsert User by (tenantId, email)
       const user = await (prisma as any).user.upsert({
         where: { tenantId_email: { tenantId, email: row.email } },
@@ -153,6 +160,12 @@ export async function runStaffImport(
             message: `Coach with email "${row.coachEmail}" not found in tenant`,
           });
         }
+      }
+
+      // 5) Send onboarding email for newly created active users
+      if (isNewUser && row.membershipStatus !== "ARCHIVED") {
+        // Fire-and-forget — email failures should not block the import
+        sendOnboardingEmail({ to: row.email, fullName: row.fullName }).catch(() => {});
       }
 
       rowsProcessed++;
