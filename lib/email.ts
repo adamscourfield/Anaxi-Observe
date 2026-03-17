@@ -47,7 +47,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     logger.error("email.failed", { to, subject, httpStatus: res.status });
     return { status: "failed" };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const errorMessage = err instanceof Error ? err.message : String(err);
     logger.error("email.error", { to, subject, error: errorMessage });
     return { status: "failed" };
   }

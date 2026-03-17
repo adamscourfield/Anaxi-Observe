@@ -55,16 +55,19 @@ export async function runStaffImport(
   let rowsProcessed = 0;
   let rowsFailed = parseErrors.length;
 
+  // Batch-fetch existing user emails to detect new vs. updated users without N+1 queries
+  const existingUsers = await (prisma as any).user.findMany({
+    where: { tenantId, email: { in: rows.map((r) => r.email) } },
+    select: { email: true },
+  });
+  const existingEmails = new Set<string>(existingUsers.map((u: { email: string }) => u.email));
+
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     const rowNumber = i + 1;
 
     try {
-      // Check if this is a new user before upserting
-      const existingUser = await (prisma as any).user.findUnique({
-        where: { tenantId_email: { tenantId, email: row.email } },
-      });
-      const isNewUser = !existingUser;
+      const isNewUser = !existingEmails.has(row.email);
 
       // 1) Upsert User by (tenantId, email)
       const user = await (prisma as any).user.upsert({
