@@ -9,24 +9,6 @@ import { H3, MetaText } from "@/components/ui/typography";
 import { REQUEST_TYPE_LABELS } from "@/modules/oncall/types";
 import { StatusPill } from "@/components/ui/status-pill";
 
-type OnCallStatus = "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "CANCELLED";
-type RequestType = "BEHAVIOUR" | "FIRST_AID";
-
-interface OnCallDetailRequest {
-  id: string;
-  requestType: RequestType;
-  location: string;
-  behaviourReasonCategory?: string | null;
-  notes?: string | null;
-  status: OnCallStatus;
-  createdAt: Date | string;
-  acknowledgedAt?: Date | string | null;
-  resolvedAt?: Date | string | null;
-  requester: { fullName: string; email: string };
-  student: { fullName: string; upn: string; yearGroup?: string | null };
-  responder?: { fullName: string } | null;
-}
-
 interface OnCallDetailProps {
   request: OnCallDetailRequest;
   canAcknowledge?: boolean;
