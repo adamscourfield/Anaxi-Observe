@@ -195,6 +195,7 @@ model User {
   leaveApprovalGroupScopes    LeaveApprovalGroupScope[] @relation("LeaveApprovalGroupSubject")
   timetableEntries            TimetableEntry[]   @relation("TimetableTeacher")
   timetableImportJobs         TimetableImportJob[] @relation("TimetableImportUploader")
+  subjectTeachings            StudentSubjectTeacher[] @relation("SubjectTeacher")
   observationsAsTeacher       Observation[]      @relation("ObservedTeacher")
   observationsAsObserver      Observation[]      @relation("ObserverUser")
   watchlistEntries            StudentWatchlist[]  @relation("WatchlistCreator")
@@ -394,6 +395,7 @@ model StudentSubjectTeacher {
   subjectId     String
   subject       Subject   @relation(fields: [tenantId, subjectId], references: [tenantId, id])
   teacherId     String
+  teacher       User      @relation("SubjectTeacher", fields: [tenantId, teacherId], references: [tenantId, id])
   effectiveFrom DateTime
   effectiveTo   DateTime?
 

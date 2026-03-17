@@ -1,35 +1,93 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { H1, MetaText } from "@/components/ui/typography";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionHeader } from "@/components/ui/section-header";
+
+const COLUMN_GUIDE = [
+  { field: "UPN", required: true, description: "Unique Pupil Number (8-character code)", example: "A123456789" },
+  { field: "Name", required: true, description: "Student full name", example: "Jane Smith" },
+  { field: "YearGroup", required: true, description: "Year group label", example: "Year 10" },
+  { field: "Attendance", required: false, description: "Attendance percentage (0–100)", example: "94.5" },
+  { field: "Detentions", required: false, description: "Detention count for the period", example: "3" },
+  { field: "InternalExclusions", required: false, description: "Internal exclusion count", example: "1" },
+  { field: "Suspensions", required: false, description: "Suspension count", example: "0" },
+  { field: "OnCalls", required: false, description: "On-call count for the period", example: "2" },
+  { field: "Lateness", required: false, description: "Lateness count", example: "4" },
+  { field: "PositivePointsTotal", required: false, description: "Total positive behaviour points", example: "12" },
+  { field: "SEND", required: false, description: "SEND flag — TRUE or FALSE", example: "TRUE" },
+  { field: "PP", required: false, description: "Pupil Premium flag — TRUE or FALSE", example: "FALSE" },
+  { field: "Status", required: false, description: "Student status — leave blank for ACTIVE", example: "ACTIVE" },
+];
+
+const DEFAULT_MAPPING = JSON.stringify(
+  Object.fromEntries(COLUMN_GUIDE.map(({ field }) => [field, field])),
+  null, 2
+);
 
 export default function StudentsImportPage() {
   return (
-    <div className="space-y-4">
-      <H1>Import student snapshots</H1>
-      <Card>
-        <form action="/api/students/import" method="post" encType="multipart/form-data" className="space-y-3">
-          <input type="file" name="file" accept=".csv" required className="block text-sm text-text file:mr-3 file:rounded-lg file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm" />
-          <input type="date" name="snapshotDate" className="field" required />
-          <textarea
-            name="mappingJson"
-            className="field h-32 w-full font-mono text-xs"
-            defaultValue={JSON.stringify({
-              UPN: "UPN",
-              Name: "Name",
-              YearGroup: "YearGroup",
-              PositivePointsTotal: "PositivePointsTotal",
-              Detentions: "Detentions",
-              InternalExclusions: "InternalExclusions",
-              Suspensions: "Suspensions",
-              Attendance: "Attendance",
-              Lateness: "Lateness",
-              OnCalls: "OnCalls",
-              SEND: "SEND",
-              PP: "PP",
-              Status: "Status"
-            }, null, 2)}
-          />
-          <MetaText>Mapping JSON keys must be required field names; values are CSV column names.</MetaText>
+    <div className="max-w-3xl space-y-6">
+      <PageHeader
+        title="Import student snapshots"
+        subtitle="Upload a CSV file of behaviour data for a given date. Each row is one student."
+      />
+
+      <Card className="space-y-4">
+        <SectionHeader title="CSV column guide" subtitle="Your CSV file must have a header row. Column names must match exactly (case-sensitive)." />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-bg/60 text-left text-xs uppercase tracking-wide text-muted">
+                <th className="px-3 py-2 font-medium">Column name</th>
+                <th className="px-3 py-2 font-medium text-center">Required</th>
+                <th className="px-3 py-2 font-medium">Description</th>
+                <th className="px-3 py-2 font-medium text-muted">Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              {COLUMN_GUIDE.map(({ field, required, description, example }) => (
+                <tr key={field} className="border-b border-border/50 last:border-0">
+                  <td className="px-3 py-2 font-mono text-[12px] font-semibold text-accent">{field}</td>
+                  <td className="px-3 py-2 text-center">
+                    {required ? (
+                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-error align-middle" title="Required" />
+                    ) : (
+                      <span className="text-xs text-muted">opt.</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-muted">{description}</td>
+                  <td className="px-3 py-2 font-mono text-[12px] text-muted">{example}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted">
+          If your CSV uses different column names, edit the mapping below to map each field to your actual column header.
+        </p>
+      </Card>
+
+      <Card className="space-y-4">
+        <SectionHeader title="Upload file" />
+        <form action="/api/students/import" method="post" encType="multipart/form-data" className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-text">CSV file</label>
+            <input type="file" name="file" accept=".csv" required className="block text-sm text-text file:mr-3 file:rounded-lg file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-text">Snapshot date</label>
+            <input type="date" name="snapshotDate" className="field" required />
+            <p className="text-xs text-muted">The date this data was captured (e.g. end of half-term).</p>
+          </div>
+          <details className="rounded-lg border border-border bg-bg p-3 text-sm">
+            <summary className="cursor-pointer font-medium text-muted">Advanced: column name mapping</summary>
+            <p className="mt-2 text-xs text-muted">Only edit this if your CSV columns have different names to those shown above. The keys (left side) are fixed field names — only change the values (right side) to match your CSV headers.</p>
+            <textarea
+              name="mappingJson"
+              className="field mt-2 h-48 w-full font-mono text-xs"
+              defaultValue={DEFAULT_MAPPING}
+            />
+          </details>
           <Button type="submit">Upload and process</Button>
         </form>
       </Card>

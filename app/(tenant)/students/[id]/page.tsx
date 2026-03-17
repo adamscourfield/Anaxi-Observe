@@ -12,9 +12,9 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
     where: { id: params.id, tenantId: user.tenantId },
     include: {
       snapshots: { orderBy: { snapshotDate: "asc" } },
-      subjects: { include: { subject: true, teacher: true }, where: { OR: [{ effectiveTo: null }, { effectiveTo: { gt: new Date() } }] } },
+      subjects: { include: { subject: true, teacher: { select: { fullName: true, email: true } } }, where: { OR: [{ effectiveTo: null }, { effectiveTo: { gt: new Date() } }] } },
       changeFlags: { orderBy: { createdAt: "desc" }, take: 50 },
-      onCallRequests: { orderBy: { createdAt: "desc" }, take: 20, include: { location: true, reason: true } }
+      onCallRequests: { orderBy: { createdAt: "desc" }, take: 20 }
     }
   });
   if (!student) notFound();
@@ -29,7 +29,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
       <Card>
         <SectionHeader title="Teachers by subject (current)" />
         <ul className="mt-2 list-disc pl-5 text-sm">
-          {(student.subjects as any[]).map((x: any) => <li key={x.id}>{x.subject?.name}: {x.teacher?.fullName} ({x.teacher?.email})</li>)}
+          {(student.subjects as any[]).map((x: any) => <li key={x.id}>{x.subject?.name}: {x.teacher?.fullName ?? "—"}{x.teacher?.email ? ` (${x.teacher.email})` : ""}</li>)}
         </ul>
       </Card>
 
@@ -77,7 +77,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
         <ul className="mt-2 space-y-1 text-sm">
           {(student.onCallRequests as any[]).map((oc: any) => (
             <li key={oc.id}>
-              {new Date(oc.createdAt).toISOString().slice(0,10)} · {oc.category} · {oc.status} · {oc.location?.label || oc.locationText || "—"} · {oc.reason?.label || "—"}
+              {new Date(oc.createdAt).toISOString().slice(0,10)} · {oc.requestType} · {oc.status} · {oc.location || "—"}{oc.behaviourReasonCategory ? ` · ${oc.behaviourReasonCategory}` : ""}
             </li>
           ))}
         </ul>

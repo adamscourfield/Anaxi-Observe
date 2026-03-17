@@ -124,6 +124,7 @@ export function TenantNav({
   const canAccessAdminUsers = hasPermission(role, "admin:users");
   const canAccessAdminSettings = hasPermission(role, "admin:settings");
   const canSeeAnalysis = hasAnyPermission(role, ["analysis:view", "analysis:export"]);
+  void canSeeAnalysis; // Explorer covers all analytics views; Analytics page removed from nav
   const canViewStrategy = role === "ADMIN" || role === "SLT";
 
   const navItem = (label: string, href: string, badgeCount?: number): NavItem => ({
@@ -140,7 +141,7 @@ export function TenantNav({
       items: [
         ...(has("OBSERVATIONS") ? [navItem("New observation", "/observe/new")] : []),
         ...(has("OBSERVATIONS") ? [navItem("Observation history", "/observe/history")] : []),
-        ...(has("ANALYSIS") && canSeeAnalysis ? [navItem("Explorer", "/explorer")] : []),
+        ...(has("ANALYSIS") ? [navItem("Explorer", "/explorer")] : []),
       ],
     },
     {
@@ -157,12 +158,6 @@ export function TenantNav({
         ...(has("MEETINGS") ? [navItem("Meetings", "/meetings")] : []),
         ...(has("LEAVE") ? [navItem("Leave of absence", "/leave", leaveCount)] : []),
         ...(canViewStrategy ? [navItem("Strategy Board", "/strategy")] : []),
-      ],
-    },
-    {
-      label: "Analytics",
-      items: [
-        ...(has("ANALYSIS") && canSeeAnalysis ? [navItem("Analytics", "/analytics")] : []),
       ],
     },
     {
