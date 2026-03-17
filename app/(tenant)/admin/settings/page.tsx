@@ -10,6 +10,23 @@ import { SectionHeader } from "@/components/ui/section-header";
 const TABS = ["school", "modules"] as const;
 type Tab = (typeof TABS)[number];
 
+const FEATURE_FRIENDLY_NAMES: Record<string, string> = {
+  OBSERVATIONS: "Observations",
+  SIGNALS: "Signals & Analysis",
+  STUDENTS: "Students",
+  STUDENTS_IMPORT: "Student Import",
+  BEHAVIOUR_IMPORT: "Behaviour Import",
+  LEAVE: "Leave of Absence",
+  LEAVE_OF_ABSENCE: "Leave (Legacy)",
+  ON_CALL: "On Call",
+  MEETINGS: "Meetings",
+  TIMETABLE: "Timetable",
+  ADMIN: "Administration",
+  ADMIN_SETTINGS: "Admin Settings",
+  ANALYSIS: "Analytics & Insights",
+  STUDENT_ANALYSIS: "Student Analysis",
+};
+
 const FEATURE_DESCRIPTIONS: Record<string, string> = {
   OBSERVATIONS: "Observation workflows, review history, and signal capture.",
   SIGNALS: "Signal definitions and signal-based analysis capabilities.",
@@ -142,23 +159,50 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
       ) : null}
 
       {tab === "modules" ? (
-        <Card>
-          <SectionHeader title="Module toggles" subtitle="Enable or disable modules for this school." />
-          <div className="mt-3 space-y-2">
-            {features.map((feature: any) => (
-              <form key={feature.key} action={toggleFeature} className="flex flex-wrap items-center gap-3 rounded-lg border border-border/70 px-3 py-2">
-                <input type="hidden" name="key" value={feature.key} />
-                <input type="hidden" name="enabled" value={String(feature.enabled)} />
-                <div className="w-72 min-w-[16rem]">
-                  <span className="text-sm font-medium text-text">{feature.key}</span>
-                  <p className="text-xs text-muted">{FEATURE_DESCRIPTIONS[feature.key] ?? "Controls access to this module across the tenant."}</p>
-                </div>
-                <span className="text-sm text-muted">{feature.enabled ? "Enabled" : "Disabled"}</span>
-                <Button variant="secondary" type="submit">Toggle</Button>
-              </form>
-            ))}
+        <div className="space-y-4">
+          <SectionHeader title="Modules" subtitle="Control which features are available across your school." />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature: any) => {
+              const friendlyName = FEATURE_FRIENDLY_NAMES[feature.key] ?? feature.key;
+              return (
+                <form key={feature.key} action={toggleFeature}>
+                  <input type="hidden" name="key" value={feature.key} />
+                  <input type="hidden" name="enabled" value={String(feature.enabled)} />
+                  <button
+                    type="submit"
+                    className={`group w-full rounded-xl border p-4 text-left calm-transition ${
+                      feature.enabled
+                        ? "border-accent/30 bg-accent/[0.04] hover:border-accent/50"
+                        : "border-border bg-surface hover:border-border hover:bg-bg/40"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-sm font-semibold ${feature.enabled ? "text-text" : "text-muted"}`}>
+                          {friendlyName}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-muted">
+                          {FEATURE_DESCRIPTIONS[feature.key] ?? "Controls access to this module."}
+                        </p>
+                      </div>
+                      <div
+                        className={`relative mt-0.5 inline-block h-[22px] w-[40px] shrink-0 rounded-full transition-colors duration-200 ${
+                          feature.enabled ? "bg-accent" : "bg-slate-200"
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-[3px] h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${
+                            feature.enabled ? "translate-x-[20px]" : "translate-x-[3px]"
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </button>
+                </form>
+              );
+            })}
           </div>
-        </Card>
+        </div>
       ) : null}
     </div>
   );

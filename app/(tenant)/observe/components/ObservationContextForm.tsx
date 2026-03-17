@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { H1, MetaText, Label } from "@/components/ui/typography";
 import { TileOption } from "@/components/ui/tile-option";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { DEFAULT_CONTEXT, loadDraft, persistDraft, Phase } from "./observationDraft";
 
 type Teacher = { id: string; fullName: string; email: string };
@@ -21,15 +22,15 @@ const YEAR_GROUPS = ["7", "8", "9", "10", "11", "12", "13"];
 
 export function ObservationContextForm({ teachers, draftKey, signalKeys }: { teachers: Teacher[]; draftKey: string; signalKeys: string[] }) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
   const initial = useMemo(() => loadDraft(draftKey, signalKeys).context, [draftKey, signalKeys]);
   const [context, setContext] = useState(initial || DEFAULT_CONTEXT);
 
-  const filteredTeachers = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return teachers;
-    return teachers.filter((teacher) => `${teacher.fullName} ${teacher.email}`.toLowerCase().includes(q));
-  }, [query, teachers]);
+  const teacherOptions = useMemo(
+    () => teachers.map((t) => ({ value: t.id, label: t.fullName, detail: t.email })),
+    [teachers]
+  );
+
+  const yearGroupOptions = YEAR_GROUPS.map((y) => ({ value: y, label: `Year ${y}` }));
 
   const canContinue = Boolean(context.teacherId && context.yearGroup && context.subject.trim());
 
@@ -48,34 +49,24 @@ export function ObservationContextForm({ teachers, draftKey, signalKeys }: { tea
 
       <div>
         <Label>Teacher</Label>
-        <input
-          className="field mb-2"
-          placeholder="Search teacher"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-        <select
-          className="field"
+        <SearchableSelect
+          options={teacherOptions}
           value={context.teacherId}
-          onChange={(event) => setContext((current) => ({ ...current, teacherId: event.target.value }))}
-        >
-          <option value="">Select teacher</option>
-          {filteredTeachers.map((teacher) => (
-            <option key={teacher.id} value={teacher.id}>{teacher.fullName} ({teacher.email})</option>
-          ))}
-        </select>
+          onChange={(value) => setContext((current) => ({ ...current, teacherId: value }))}
+          placeholder="Select teacher"
+          searchPlaceholder="Search by name or email…"
+        />
       </div>
 
       <div>
         <Label>Year group</Label>
-        <select
-          className="field"
+        <SearchableSelect
+          options={yearGroupOptions}
           value={context.yearGroup}
-          onChange={(event) => setContext((current) => ({ ...current, yearGroup: event.target.value }))}
-        >
-          <option value="">Select year group</option>
-          {YEAR_GROUPS.map((year) => <option key={year} value={year}>Year {year}</option>)}
-        </select>
+          onChange={(value) => setContext((current) => ({ ...current, yearGroup: value }))}
+          placeholder="Select year group"
+          searchPlaceholder="Search year group…"
+        />
       </div>
 
       <div>
