@@ -62,7 +62,7 @@ export default async function TenantLayout({ children }: { children: React.React
         leaveCount={leaveCount}
       />
       <div className="ml-[var(--sidebar-width)] flex min-h-screen flex-col calm-transition" id="tenant-content">
-        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-white/40 bg-white/50 px-8 backdrop-blur-xl lg:px-10">
+        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between px-8 backdrop-blur-md lg:px-10">
           <SchoolSwitcher currentTenantName={tenantName} tenants={tenantOptions} />
           <Link href="/profile" className="flex items-center gap-3 rounded-lg px-2 py-1.5 calm-transition hover:bg-[#f0f0f2]">
             <span className="hidden text-[13px] text-muted sm:block">{user.fullName || user.email}</span>
