@@ -11,7 +11,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 
 export default async function AdminUsersPage() {
   const user = await requireAdminUser();
-  const users = await (prisma as any).user.findMany({ where: { tenantId: user.tenantId }, orderBy: { createdAt: "desc" } });
+  const users = await (prisma as any).user.findMany({ where: { tenantId: user.tenantId }, orderBy: { fullName: "asc" } });
   const scopes = await (prisma as any).lOAApprovalScope.findMany({ where: { tenantId: user.tenantId } });
 
   const scopedByApprover = new Map<string, Set<string>>();

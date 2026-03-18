@@ -148,7 +148,7 @@ export function SignalFlowScreen({
         onExit={() => {
           if (window.confirm("Exit this observation? Your progress will be lost.")) {
             clearDraft(draftKey);
-            router.push("/observe");
+            router.push("/home");
           }
         }}
       />

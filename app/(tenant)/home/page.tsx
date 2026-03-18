@@ -60,20 +60,50 @@ function roleVariant(role: UserRole): "leadership" | "hod" | "teacher" {
   return "teacher";
 }
 
+function WindowSelector({ windowDays }: { windowDays: number }) {
+  return (
+    <div className="flex items-center rounded-lg border border-border bg-white p-1 shadow-sm">
+      {[7, 14, 21, 28].map((w) => (
+        <Link
+          key={w}
+          href={`/home?window=${w}`}
+          className={`rounded-md px-3 py-1 text-[0.75rem] font-medium calm-transition ${
+            windowDays === w
+              ? "bg-accent text-white shadow-sm"
+              : "text-muted hover:text-text"
+          }`}
+        >
+          {w}d
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 function PageTitle({
   windowDays,
   computedAt,
+  userName,
 }: {
   windowDays: number;
   computedAt: Date;
+  userName: string;
 }) {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const firstName = userName.split(" ")[0];
+
   return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <h1 className="text-[24px] font-bold tracking-[-0.025em] text-text">Anaxi briefing</h1>
-        <p className="mt-0.5 text-[13px] text-muted">Your personalised overview of school operations and priorities.</p>
+        <h1 className="text-[26px] font-bold tracking-[-0.03em] text-text">
+          {greeting}, {firstName}
+        </h1>
+        <p className="mt-0.5 text-[13px] text-muted">
+          Your personalised overview · Updated {formatComputedAt(computedAt)}
+        </p>
       </div>
-      <p className="text-[11px] text-muted">Updated {formatComputedAt(computedAt)} · {windowDays}d window</p>
+      <WindowSelector windowDays={windowDays} />
     </div>
   );
 }
@@ -155,8 +185,8 @@ function LeadershipHome({
       <section className="grid gap-4 lg:grid-cols-2">
         <Card className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[14px] font-semibold text-text">CPD priorities</p>
-            <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="text-[12px] text-accent hover:underline">View all →</Link>
+            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">CPD priorities</h2>
+            <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">View all →</Link>
           </div>
           {topCpd.length === 0 ? (
             <MetaText>No weakening signals detected in this window.</MetaText>
@@ -185,8 +215,8 @@ function LeadershipHome({
 
         <Card className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[14px] font-semibold text-text">Teacher Support Priorities</p>
-            <Link href={`/analytics?tab=teachers&window=${windowDays}`} className="text-[12px] text-accent hover:underline">View all →</Link>
+            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Teacher support priorities</h2>
+            <Link href={`/analytics?tab=teachers&window=${windowDays}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">View all →</Link>
           </div>
           {topTeachers.length === 0 ? (
             <MetaText>No observation data available in this window.</MetaText>
@@ -221,8 +251,8 @@ function LeadershipHome({
       <section className="grid gap-4 lg:grid-cols-2">
         <Card className="space-y-3 overflow-hidden p-0">
           <div className="flex items-center justify-between px-5 pt-4">
-            <p className="text-[14px] font-semibold text-text">Cohort Change</p>
-            <Link href={`/explorer?view=BEHAVIOUR_COHORTS_PIVOT&window=${windowDays}`} className="text-[12px] text-accent hover:underline">Explorer →</Link>
+            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Cohort change</h2>
+            <Link href={`/explorer?view=BEHAVIOUR_COHORTS_PIVOT&window=${windowDays}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">Explorer →</Link>
           </div>
           {!hasBehaviourData ? (
             <div className="space-y-2 px-5 pb-4">
@@ -275,8 +305,8 @@ function LeadershipHome({
 
         <Card className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[14px] font-semibold text-text">Student Support Priorities</p>
-            <Link href={`/analytics?tab=students&window=${windowDays}`} className="text-[12px] text-accent hover:underline">View all →</Link>
+            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Student support priorities</h2>
+            <Link href={`/analytics?tab=students&window=${windowDays}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">View all →</Link>
           </div>
           {displayUrgentStudents.length === 0 ? (
             <MetaText>No urgent or priority students in this window.</MetaText>
@@ -392,8 +422,8 @@ function HodHome({
       <section className="grid gap-4 lg:grid-cols-2">
         <Card className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[14px] font-semibold text-text">Dept CPD priorities</p>
-            <Link href={`/analytics?tab=cpd&window=${windowDays}&department=${deptId}`} className="text-[12px] text-accent hover:underline">View all →</Link>
+            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Dept CPD priorities</h2>
+            <Link href={`/analytics?tab=cpd&window=${windowDays}&department=${deptId}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">View all →</Link>
           </div>
           {topDeptCpd.length === 0 ? (
             <MetaText>No weakening signals detected in this window.</MetaText>
@@ -413,8 +443,8 @@ function HodHome({
 
         <Card className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[14px] font-semibold text-text">Dept teacher priorities</p>
-            <Link href={`/analytics?tab=teachers&window=${windowDays}&department=${deptId}`} className="text-[12px] text-accent hover:underline">View all →</Link>
+            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Dept teacher priorities</h2>
+            <Link href={`/analytics?tab=teachers&window=${windowDays}&department=${deptId}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">View all →</Link>
           </div>
           {topDeptTeachers.length === 0 ? (
             <MetaText>No observation data for your department in this window.</MetaText>
@@ -440,7 +470,7 @@ function HodHome({
       </section>
 
       <section className="space-y-3">
-        <p className="text-[14px] font-semibold text-text">Your recent observations</p>
+        <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Your recent observations</h2>
         <Card className="space-y-3">
           {!selfProfile || selfProfile.teacherCoverage === 0 ? (
             <div className="space-y-2">
@@ -494,7 +524,7 @@ function HodHome({
 
       {wholeSchoolTop1 && (
         <Card className="space-y-2">
-          <p className="text-[14px] font-semibold text-text">Whole-school focus</p>
+          <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Whole-school focus</h2>
           <p className="text-sm text-text">{wholeSchoolTop1.label}</p>
           <MetaText>{Math.round(wholeSchoolTop1.driftRate * 100)}% of covered teachers · {wholeSchoolTop1.teachersCovered} covered</MetaText>
           <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="text-[12px] text-accent hover:underline">See CPD priorities →</Link>
@@ -572,7 +602,7 @@ function TeacherHome({
       </div>
 
       <section className="space-y-3">
-        <p className="text-[14px] font-semibold text-text">Your recent observations</p>
+        <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Your recent observations</h2>
         <Card className="space-y-3">
           {!selfProfile || selfProfile.teacherCoverage === 0 ? (
             <div className="space-y-2">
@@ -621,8 +651,8 @@ function TeacherHome({
       {hasMeetingsFeature && openActions.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[14px] font-semibold text-text">Your actions</p>
-            <Link href="/my-actions" className="text-[12px] text-accent hover:underline">View all →</Link>
+            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Your actions</h2>
+            <Link href="/my-actions" className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">View all →</Link>
           </div>
           <Card>
             <ul className="space-y-1">
@@ -648,7 +678,7 @@ function TeacherHome({
         <section className="grid gap-4 sm:grid-cols-2">
           {hasLeaveFeature && (
             <Card className="space-y-3">
-              <p className="text-[14px] font-semibold text-text">Leave of absence</p>
+              <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Leave of absence</h2>
               {loaRequest ? (
                 <div className="flex items-center justify-between">
                   <BodyText className="text-sm">
@@ -671,7 +701,7 @@ function TeacherHome({
           )}
           {hasOnCallFeature && (
             <Card className="space-y-3">
-              <p className="text-[14px] font-semibold text-text">On call</p>
+              <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">On call</h2>
               {onCallRequests.length === 0 ? (
                 <MetaText>No recent on-call requests.</MetaText>
               ) : (
@@ -695,7 +725,7 @@ function TeacherHome({
 
       {wholeSchoolTop1 && (
         <Card className="space-y-2">
-          <p className="text-[14px] font-semibold text-text">Whole-school focus</p>
+          <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Whole-school focus</h2>
           <p className="text-sm text-text">{wholeSchoolTop1.label}</p>
           <MetaText>School-wide signal movement this window.</MetaText>
           <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="text-[12px] text-accent hover:underline">See CPD priorities →</Link>
@@ -818,7 +848,7 @@ export default async function HomePage({
 
   return (
     <div className="space-y-6">
-      <PageTitle windowDays={windowDays} computedAt={computedAt} />
+      <PageTitle windowDays={windowDays} computedAt={computedAt} userName={user.fullName} />
       {content}
     </div>
   );
