@@ -8,6 +8,37 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { SectionHeader } from "@/components/ui/section-header";
+import { Avatar } from "@/components/ui/avatar";
+import { StatusPill } from "@/components/ui/status-pill";
+import { StatCard } from "@/components/ui/stat-card";
+
+// ─── Inline icons ─────────────────────────────────────────────────────────────
+
+function KeyIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 1a4 4 0 00-3.46 6.02L2 11.56V14h2.44l.56-.56v-1.38h1.38l.56-.56V10h1.38l.64-.64A4 4 0 1010 1z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="11" cy="4" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className="h-3 w-3" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// ─── Role pill mapping ────────────────────────────────────────────────────────
+
+const rolePillVariant: Record<string, "accent" | "info" | "warning" | "error"> = {
+  TEACHER: "accent",
+  LEADER: "info",
+  SLT: "warning",
+  ADMIN: "error",
+};
 
 export default async function AdminUsersPage() {
   const user = await requireAdminUser();
@@ -19,6 +50,21 @@ export default async function AdminUsersPage() {
     if (!scopedByApprover.has(scope.approverId)) scopedByApprover.set(scope.approverId, new Set());
     scopedByApprover.get(scope.approverId)!.add(scope.targetUserId);
   }
+
+  // ── Computed stats ──────────────────────────────────────────────────────────
+  const allUsers = users as any[];
+  const activeCount = allUsers.filter((u) => u.isActive).length;
+  const inactiveCount = allUsers.length - activeCount;
+  const roleCounts = allUsers.reduce((acc: Record<string, number>, u: any) => {
+    acc[u.role] = (acc[u.role] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const roleBreakdown = Object.entries(roleCounts)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([role, count]) => `${count} ${role.charAt(0) + role.slice(1).toLowerCase()}${count !== 1 ? "s" : ""}`)
+    .join(", ");
+
+  // ── Server actions ──────────────────────────────────────────────────────────
 
   async function createUser(formData: FormData) {
     "use server";
@@ -111,10 +157,10 @@ export default async function AdminUsersPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <PageHeader
         title="Users"
-        subtitle="Manage staff access, account status, LOA approval scope, and on-call notification preferences."
+        subtitle="Manage staff accounts, roles, permissions, and leave-of-absence approval scope."
         actions={
           <Link href="/admin/users/import">
             <Button variant="secondary" type="button">Import users</Button>
@@ -122,100 +168,204 @@ export default async function AdminUsersPage() {
         }
       />
 
+      {/* ── Summary stats ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard label="Total staff" value={allUsers.length} context={roleBreakdown} />
+        <StatCard label="Active" value={activeCount} accent="success" />
+        <StatCard label="Inactive" value={inactiveCount} accent="warning" />
+        <StatCard label="Admins & SLT" value={(roleCounts["ADMIN"] || 0) + (roleCounts["SLT"] || 0)} accent="info" />
+      </div>
+
+      {/* ── Create user ────────────────────────────────────────────── */}
       <Card>
-        <SectionHeader title="Create user" subtitle="Create an account with a temporary password and role." />
-        <form action={createUser} className="mt-3 grid gap-3 sm:grid-cols-2">
-          <input name="fullName" placeholder="Full name" className="rounded-lg border border-border bg-bg px-3 py-2 text-sm" required />
-          <input name="email" placeholder="Email" type="email" className="rounded-lg border border-border bg-bg px-3 py-2 text-sm" required />
-          <select name="role" className="rounded-lg border border-border bg-bg px-3 py-2 text-sm">
-            <option>TEACHER</option><option>LEADER</option><option>SLT</option><option>ADMIN</option>
-          </select>
-          <input name="password" placeholder="Temporary password" className="rounded-lg border border-border bg-bg px-3 py-2 text-sm" required />
-          <div className="sm:col-span-2">
+        <SectionHeader title="Create user" subtitle="Add a new staff member with a temporary password." />
+        <form action={createUser} className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.04em] text-muted">Full name</label>
+            <input name="fullName" placeholder="e.g. Jane Smith" className="field w-full" required />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.04em] text-muted">Email</label>
+            <input name="email" type="email" placeholder="jane@school.edu" className="field w-full" required />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.04em] text-muted">Role</label>
+            <select name="role" className="field w-full">
+              <option value="TEACHER">Teacher</option>
+              <option value="LEADER">Leader</option>
+              <option value="SLT">SLT</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.04em] text-muted">Temporary password</label>
+            <input name="password" type="password" placeholder="••••••••" className="field w-full" required />
+          </div>
+          <div className="sm:col-span-2 lg:col-span-4">
             <Button type="submit">Create user</Button>
           </div>
         </form>
       </Card>
 
-      <Card className="overflow-hidden p-0">
-        {(users as any[]).length === 0 ? (
-          <div className="p-4">
-            <EmptyState title="No users yet" description="Create a user manually or import users from CSV." />
+      {/* ── User list ──────────────────────────────────────────────── */}
+      {allUsers.length === 0 ? (
+        <EmptyState title="No users yet" description="Create a user manually or import users from a CSV file." />
+      ) : (
+        <div className="table-shell">
+          {/* table header strip */}
+          <div className="table-header-strip">
+            <p className="text-[13px] font-medium text-text">
+              {allUsers.length} staff member{allUsers.length !== 1 ? "s" : ""}
+            </p>
           </div>
-        ) : (
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-bg/60 text-left text-xs uppercase tracking-[0.05em] text-muted">
-                  <th className="p-2">Name</th>
-                  <th className="p-2">Email</th>
-                  <th className="p-2 text-center">Role</th>
-                  <th className="p-2 text-center">Active</th>
-                  <th className="p-2 text-center">LOA all</th>
-                  <th className="p-2 text-center">On-call emails</th>
-                  <th className="p-2">LOA scoped approvals</th>
-                  <th className="p-2">Actions</th>
+                <tr className="table-head-row">
+                  <th className="px-4 py-3 text-left">Staff member</th>
+                  <th className="px-4 py-3 text-left">Role</th>
+                  <th className="px-4 py-3 text-center">Status</th>
+                  <th className="px-4 py-3 text-center">LOA&nbsp;(all)</th>
+                  <th className="px-4 py-3 text-center">On-call</th>
+                  <th className="px-4 py-3 text-left">Scoped LOA approvals</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {(users as any[]).map((u: any) => {
+                {allUsers.map((u: any) => {
                   const scoped = Array.from(scopedByApprover.get(u.id) || []);
                   return (
-                    <tr key={u.id} className="border-b border-border/70 align-top last:border-0">
-                      <td className="p-2">{u.fullName}</td>
-                      <td className="p-2">{u.email}</td>
-                      <td className="p-2 text-center">{u.role}</td>
-                      <td className="p-2 text-center">{u.isActive ? "Yes" : "No"}</td>
-                      <td className="p-2 text-center">
-                        <form action={toggleApproveAllLoa}>
+                    <tr key={u.id} className="table-row align-top">
+                      {/* ── Staff member (avatar + name + email) ─── */}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={u.fullName} size="md" />
+                          <div className="min-w-0">
+                            <p className="truncate text-[13px] font-semibold leading-tight text-text">{u.fullName}</p>
+                            <p className="truncate text-[12px] text-muted">{u.email}</p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* ── Role ────────────────────────────────── */}
+                      <td className="px-4 py-3">
+                        <StatusPill variant={rolePillVariant[u.role] || "neutral"} size="sm">{u.role}</StatusPill>
+                      </td>
+
+                      {/* ── Status ──────────────────────────────── */}
+                      <td className="px-4 py-3 text-center">
+                        <StatusPill variant={u.isActive ? "success" : "neutral"} size="sm">
+                          {u.isActive ? "Active" : "Inactive"}
+                        </StatusPill>
+                      </td>
+
+                      {/* ── LOA (all) toggle ───────────────────── */}
+                      <td className="px-4 py-3 text-center">
+                        <form action={toggleApproveAllLoa} className="inline-flex">
                           <input type="hidden" name="id" value={u.id} />
                           <input type="hidden" name="enabled" value={String(u.canApproveAllLoa)} />
-                          <Button variant="ghost" className="px-2 py-1 text-xs" type="submit">{u.canApproveAllLoa ? "Yes" : "No"}</Button>
+                          <button
+                            type="submit"
+                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold calm-transition ${
+                              u.canApproveAllLoa
+                                ? "bg-[var(--pill-success-bg)] text-[var(--pill-success-text)] ring-1 ring-inset ring-[var(--pill-success-ring)]"
+                                : "bg-[var(--pill-neutral-bg)] text-[var(--pill-neutral-text)] ring-1 ring-inset ring-[var(--pill-neutral-ring)]"
+                            } hover:opacity-80`}
+                            title={u.canApproveAllLoa ? "Click to revoke" : "Click to grant"}
+                          >
+                            {u.canApproveAllLoa ? "✓" : "–"}
+                          </button>
                         </form>
                       </td>
-                      <td className="p-2 text-center">
-                        <form action={toggleOnCallEmail}>
+
+                      {/* ── On-call toggle ─────────────────────── */}
+                      <td className="px-4 py-3 text-center">
+                        <form action={toggleOnCallEmail} className="inline-flex">
                           <input type="hidden" name="id" value={u.id} />
                           <input type="hidden" name="enabled" value={String(u.receivesOnCallEmails)} />
-                          <Button variant="ghost" className="px-2 py-1 text-xs" type="submit">{u.receivesOnCallEmails ? "Yes" : "No"}</Button>
+                          <button
+                            type="submit"
+                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold calm-transition ${
+                              u.receivesOnCallEmails
+                                ? "bg-[var(--pill-success-bg)] text-[var(--pill-success-text)] ring-1 ring-inset ring-[var(--pill-success-ring)]"
+                                : "bg-[var(--pill-neutral-bg)] text-[var(--pill-neutral-text)] ring-1 ring-inset ring-[var(--pill-neutral-ring)]"
+                            } hover:opacity-80`}
+                            title={u.receivesOnCallEmails ? "Click to disable" : "Click to enable"}
+                          >
+                            {u.receivesOnCallEmails ? "✓" : "–"}
+                          </button>
                         </form>
                       </td>
-                      <td className="p-2">
-                        <div className="space-y-2">
+
+                      {/* ── Scoped LOA approvals ───────────────── */}
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           {scoped.map((targetUserId) => {
-                            const target = (users as any[]).find((x) => x.id === targetUserId);
+                            const target = allUsers.find((x) => x.id === targetUserId);
                             return (
-                              <form key={targetUserId} action={removeScopedLoaApprover} className="flex items-center justify-between gap-2 rounded-lg border border-border/70 px-2 py-1.5">
+                              <form key={targetUserId} action={removeScopedLoaApprover} className="group inline-flex">
                                 <input type="hidden" name="approverId" value={u.id} />
                                 <input type="hidden" name="targetUserId" value={targetUserId} />
-                                <span className="truncate">{target?.fullName || targetUserId}</span>
-                                <Button variant="ghost" className="px-2 py-1 text-xs" type="submit">Remove</Button>
+                                <button
+                                  type="submit"
+                                  className="inline-flex items-center gap-1 rounded-full bg-[var(--pill-info-bg)] px-2.5 py-1 text-[11px] font-medium text-[var(--pill-info-text)] ring-1 ring-inset ring-[var(--pill-info-ring)] calm-transition hover:bg-red-50 hover:text-red-600 hover:ring-red-200"
+                                  title={`Remove ${target?.fullName || targetUserId}`}
+                                >
+                                  <span className="max-w-[100px] truncate">{target?.fullName || targetUserId}</span>
+                                  <span className="opacity-50 group-hover:opacity-100"><XIcon /></span>
+                                </button>
                               </form>
                             );
                           })}
-                          <form action={addScopedLoaApprover} className="flex gap-2">
+                          <form action={addScopedLoaApprover} className="inline-flex items-center gap-1.5">
                             <input type="hidden" name="approverId" value={u.id} />
-                            <select name="targetUserId" className="min-w-0 flex-1 rounded-lg border border-border bg-bg px-2 py-1.5 text-sm">
-                              <option value="">Add staff...</option>
-                              {(users as any[])
-                                .filter((staff: any) => staff.id !== u.id)
+                            <select name="targetUserId" className="h-7 min-w-0 max-w-[130px] rounded-full border border-dashed border-border bg-transparent px-2 text-[11px] text-muted focus:border-accent focus:ring-1 focus:ring-accent/30">
+                              <option value="">+ Add…</option>
+                              {allUsers
+                                .filter((staff: any) => staff.id !== u.id && !scoped.includes(staff.id))
                                 .map((staff: any) => <option key={staff.id} value={staff.id}>{staff.fullName}</option>)}
                             </select>
-                            <Button variant="secondary" className="px-3 py-1.5 text-xs" type="submit">Add</Button>
+                            <button type="submit" className="hidden" />
                           </form>
                         </div>
                       </td>
-                      <td className="p-2">
-                        <div className="flex flex-col gap-2">
+
+                      {/* ── Actions ─────────────────────────────── */}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* Reset password */}
+                          <form action={resetPassword} className="flex items-center gap-1">
+                            <input type="hidden" name="id" value={u.id} />
+                            <input
+                              name="password"
+                              placeholder="New pw"
+                              className="h-7 w-[80px] rounded-md border border-border bg-bg px-2 text-[11px] focus:border-accent focus:ring-1 focus:ring-accent/30"
+                            />
+                            <button
+                              type="submit"
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted calm-transition hover:bg-bg hover:text-text"
+                              title="Reset password"
+                            >
+                              <KeyIcon />
+                            </button>
+                          </form>
+
+                          {/* Toggle active */}
                           <form action={toggleActive}>
                             <input type="hidden" name="id" value={u.id} />
                             <input type="hidden" name="active" value={String(u.isActive)} />
-                            <Button variant="secondary" className="w-full px-3 py-1.5 text-xs" type="submit">{u.isActive ? "Deactivate" : "Activate"}</Button>
-                          </form>
-                          <form action={resetPassword} className="flex gap-2">
-                            <input type="hidden" name="id" value={u.id} />
-                            <input name="password" placeholder="New password" className="min-w-0 flex-1 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs" />
-                            <Button variant="ghost" className="px-2 py-1 text-xs" type="submit">Reset</Button>
+                            <button
+                              type="submit"
+                              className={`rounded-md px-2.5 py-1.5 text-[11px] font-medium calm-transition ${
+                                u.isActive
+                                  ? "text-muted hover:bg-red-50 hover:text-red-600"
+                                  : "text-muted hover:bg-emerald-50 hover:text-emerald-600"
+                              }`}
+                              title={u.isActive ? "Deactivate user" : "Activate user"}
+                            >
+                              {u.isActive ? "Deactivate" : "Activate"}
+                            </button>
                           </form>
                         </div>
                       </td>
@@ -225,8 +375,8 @@ export default async function AdminUsersPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </Card>
+        </div>
+      )}
     </div>
   );
 }
