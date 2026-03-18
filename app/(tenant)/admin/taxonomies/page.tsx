@@ -156,7 +156,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
     const admin = await requireAdminUser();
     const approverId = String(formData.get("approverId") || "").trim();
     const targetUserId = String(formData.get("targetUserId") || "").trim();
-    if (!approverId || !targetUserId) return;
+    if (!approverId || !targetUserId || approverId === targetUserId) return;
     await (prisma as any).lOAApprovalScope.upsert({
       where: { tenantId_approverId_targetUserId: { tenantId: admin.tenantId, approverId, targetUserId } },
       update: {},
@@ -401,7 +401,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
                 >
                   <option value="">Select a staff member…</option>
                   {(staff as any[])
-                    .filter((s) => !globalAuthoriserIds.has(s.id))
+                    .filter((s) => !globalAuthoriserIds.has(s.id) && !scopedApproverIds.has(s.id))
                     .map((s) => (
                       <option value={s.id} key={s.id}>
                         {s.fullName} ({s.email})
@@ -514,9 +514,11 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
                   required
                 >
                   <option value="">Authoriser…</option>
-                  {(staff as any[]).map((s) => (
-                    <option value={s.id} key={s.id}>{s.fullName}</option>
-                  ))}
+                  {(staff as any[])
+                    .filter((s) => !globalAuthoriserIds.has(s.id))
+                    .map((s) => (
+                      <option value={s.id} key={s.id}>{s.fullName}</option>
+                    ))}
                 </select>
                 <select
                   name="targetUserId"
