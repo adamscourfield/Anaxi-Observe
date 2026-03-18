@@ -554,124 +554,103 @@ export default async function ExplorerPage({
           {teacherPivotRows.length === 0 ? (
             <Empty title="No teachers in scope" description="No teachers with observations in this window." />
           ) : (
-            <>
-              {/* Mobile card fallback (< md) */}
-              <div className="md:hidden divide-y divide-divider">
-                {teacherPivotRows.map((row) => {
-                  const worstDeltas = signalKeys
-                    .map((k) => ({ key: k, label: signalLabels.get(k) ?? k, delta: row.signalData[k]?.delta ?? null }))
-                    .filter((x) => x.delta !== null)
-                    .sort((a, b) => (a.delta as number) - (b.delta as number))
-                    .slice(0, 3);
-                  return (
-                    <div key={row.teacherMembershipId} className="px-4 py-3 space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="font-medium text-text hover:underline">
-                          {row.teacherName}
-                        </Link>
+            <div className="divide-y divide-border/20">
+              {teacherPivotRows.map((row) => {
+                // Compute signals sorted by delta (worst first)
+                const signalEntries = signalKeys.map((k) => ({
+                  key: k,
+                  label: signalLabels.get(k) ?? k,
+                  ...(row.signalData[k] ?? { currentMean: null, prevMean: null, delta: null, coverageCount: 0 }),
+                }));
+                const driftingDown = signalEntries.filter((s) => s.delta !== null && s.delta < 0).sort((a, b) => (a.delta as number) - (b.delta as number));
+                const improving = signalEntries.filter((s) => s.delta !== null && s.delta > 0).sort((a, b) => (b.delta as number) - (a.delta as number));
+                const stable = signalEntries.filter((s) => s.delta !== null && s.delta === 0);
+                const noData = signalEntries.filter((s) => s.currentMean === null);
+
+                return (
+                  <div key={row.teacherMembershipId} className="group px-5 py-4 calm-transition hover:bg-white/50">
+                    {/* Top row: teacher info + status */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5">
+                          <Avatar name={row.teacherName} size="sm" />
+                          <div className="min-w-0">
+                            <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="text-[0.875rem] font-semibold text-text hover:text-accent calm-transition hover:underline">
+                              {row.teacherName}
+                            </Link>
+                            <p className="text-xs text-muted">{row.departmentNames.join(", ") || "—"}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="text-right">
+                          <p className="text-[0.6875rem] font-medium uppercase tracking-wide text-muted">Coverage</p>
+                          <p className="text-sm tabular-nums font-semibold text-text">{row.teacherCoverage}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[0.6875rem] font-medium uppercase tracking-wide text-muted">Drift</p>
+                          <p className={`text-sm tabular-nums font-semibold ${row.normalizedIDS > 0 ? "text-amber-700" : "text-text"}`}>{row.normalizedIDS.toFixed(1)}</p>
+                        </div>
                         <StatusPill variant={STATUS_VARIANT[row.status]} size="sm">
                           {STATUS_LABELS[row.status]}
                         </StatusPill>
                       </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted">
-                        <span>{row.departmentNames.join(", ") || "—"}</span>
-                        <span>Coverage: {row.teacherCoverage}</span>
-                      </div>
-                      {worstDeltas.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 pt-0.5">
-                          {worstDeltas.map((x) => (
-                            <span key={x.key} className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50/60 px-2 py-0.5 text-xs text-amber-800">
-                              {x.label?.slice(0, 10)}: Δ {(x.delta as number) > 0 ? "+" : ""}{(x.delta as number).toFixed(1)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      <Link
-                        href={buildFilterQuery({ density: "comfortable" })}
-                        className="inline-block text-xs text-accent hover:underline mt-1"
-                      >
-                        Open full pivot →
-                      </Link>
                     </div>
-                  );
-                })}
-              </div>
-              {/* Desktop table (≥ md) */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="sticky top-0 z-10">
-                    <tr className="border-b border-border/20 bg-white/30 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">
-                      <th className="sticky-first-column sticky-first-column-header whitespace-nowrap px-4 py-3">Teacher</th>
-                      <th className="px-4 py-3">Department</th>
-                      <th className="px-4 py-3 text-right">Coverage</th>
-                      <th className="px-4 py-3">Band</th>
-                      <th className="px-4 py-3 text-right">Drift</th>
-                      {signalKeys.map((k) => {
-                        const isSorted = sortSignal === k;
-                        const nextDir = isSorted && sortDir === "desc" ? "asc" : "desc";
-                        return (
-                          <th key={k} className="w-10 min-w-[40px] px-1 py-2 text-center align-bottom">
-                            <Link
-                              href={buildFilterQuery({ sortSignal: k, sortDir: nextDir })}
-                              title={signalLabels.get(k)}
-                              className={`inline-flex flex-col items-center gap-0.5 hover:text-text transition-colors ${isSorted ? "text-text" : ""}`}
-                            >
-                              <span className="block max-h-[80px] overflow-hidden [writing-mode:vertical-rl] [transform:rotate(180deg)] text-[11px] leading-tight">
-                                {signalLabels.get(k) ?? k}
-                              </span>
-                              <span className="text-[9px] mt-0.5">{isSorted ? (sortDir === "desc" ? "↓" : "↑") : "⇅"}</span>
-                            </Link>
-                          </th>
-                        );
-                      })}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teacherPivotRows.map((row) => (
-                      <tr key={row.teacherMembershipId} className="border-b border-divider last:border-0 group">
-                        <td className="sticky-first-column whitespace-nowrap px-4 py-3 font-medium text-text group-hover:bg-bg calm-transition">
-                          <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="inline-flex items-center gap-2 hover:underline">
-                            <Avatar name={row.teacherName} size="sm" />
-                            {row.teacherName}
-                          </Link>
-                        </td>
-                        <td className="px-4 py-3 text-muted text-xs group-hover:bg-bg calm-transition">{row.departmentNames.join(", ") || "—"}</td>
-                        <td className="px-4 py-3 text-right tabular-nums text-muted group-hover:bg-bg calm-transition">{row.teacherCoverage}</td>
-                        <td className="px-4 py-3 group-hover:bg-bg calm-transition">
-                          <StatusPill variant={STATUS_VARIANT[row.status]} size="sm">
-                            {STATUS_LABELS[row.status]}
-                          </StatusPill>
-                        </td>
-                        <td className="px-4 py-3 text-right tabular-nums text-muted group-hover:bg-bg calm-transition">{row.normalizedIDS.toFixed(1)}</td>
-                        {signalKeys.map((k) => {
-                          const cell = row.signalData[k] ?? { currentMean: null, prevMean: null, delta: null, coverageCount: 0 };
-                          const label = signalLabels.get(k) ?? k;
+
+                    {/* Signal heatmap strip */}
+                    <div className="mt-3 flex items-center gap-0.5" title="Signal scores: each cell = 1 signal. Colour shows current score level. Sorted best → worst.">
+                      {signalEntries
+                        .filter((s) => s.currentMean !== null)
+                        .sort((a, b) => (b.currentMean ?? 0) - (a.currentMean ?? 0))
+                        .map((s) => {
+                          const mean = s.currentMean as number;
+                          let bg = "bg-slate-200";
+                          if (mean >= 3.5) bg = "bg-emerald-500";
+                          else if (mean >= 2.5) bg = "bg-blue-500";
+                          else if (mean >= 1.5) bg = "bg-amber-400";
+                          else bg = "bg-rose-400";
+                          const deltaStr = s.delta !== null ? ` Δ${s.delta > 0 ? "+" : ""}${s.delta.toFixed(1)}` : "";
                           return (
-                            <td
-                              key={k}
-                              className={pivotCellClass(cell.delta, density)}
-                              title={pivotCellTooltip(label, cell, windowDays, computedAtStr)}
-                            >
-                              <div className="flex flex-col items-end gap-0.5">
-                                <span className="text-text tabular-nums">
-                                  {cell.currentMean !== null ? cell.currentMean.toFixed(1) : "—"}
-                                </span>
-                                <span className="text-[11px] text-muted tabular-nums">
-                                  Δ {cell.delta !== null ? (cell.delta > 0 ? "+" : "") + cell.delta.toFixed(1) : "—"}
-                                </span>
-                              </div>
-                              {cell.delta !== null && cell.delta > VISUAL_THRESHOLD && (
-                                <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-green-400 align-middle" />
-                              )}
-                            </td>
+                            <span
+                              key={s.key}
+                              className={`h-3 w-3 rounded-sm ${bg} calm-transition`}
+                              title={`${s.label}: ${mean.toFixed(1)}${deltaStr}`}
+                            />
                           );
                         })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+                      {noData.length > 0 && (
+                        <>
+                          <span className="mx-0.5" />
+                          {noData.map((s) => (
+                            <span key={s.key} className="h-3 w-3 rounded-sm bg-slate-100 border border-slate-200" title={`${s.label}: no data`} />
+                          ))}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Drifting & improving signal chips */}
+                    {(driftingDown.length > 0 || improving.length > 0) && (
+                      <div className="mt-2.5 flex flex-wrap gap-1.5">
+                        {driftingDown.slice(0, 4).map((s) => (
+                          <span key={s.key} className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50/60 px-2 py-0.5 text-xs text-amber-800" title={`${s.label}: ${s.currentMean?.toFixed(1)} (Δ${(s.delta as number).toFixed(1)})`}>
+                            <span className="font-medium">{s.label.length > 14 ? s.label.slice(0, 12) + "…" : s.label}</span>
+                            <span className="tabular-nums">{s.currentMean?.toFixed(1)}</span>
+                            <span className="tabular-nums text-amber-600">↓{Math.abs(s.delta as number).toFixed(1)}</span>
+                          </span>
+                        ))}
+                        {improving.slice(0, 2).map((s) => (
+                          <span key={s.key} className="inline-flex items-center gap-1 rounded-md border border-green-200 bg-green-50/60 px-2 py-0.5 text-xs text-green-800" title={`${s.label}: ${s.currentMean?.toFixed(1)} (Δ+${(s.delta as number).toFixed(1)})`}>
+                            <span className="font-medium">{s.label.length > 14 ? s.label.slice(0, 12) + "…" : s.label}</span>
+                            <span className="tabular-nums">{s.currentMean?.toFixed(1)}</span>
+                            <span className="tabular-nums text-green-600">↑{(s.delta as number).toFixed(1)}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}
@@ -689,112 +668,92 @@ export default async function ExplorerPage({
           {deptPivotRows.length === 0 ? (
             <Empty title="No departments in scope" description="No departments with data in this window." />
           ) : (
-            <>
-              {/* Mobile card fallback (< md) */}
-              <div className="md:hidden divide-y divide-divider">
-                {deptPivotRows.map((row) => {
-                  const worstDeltas = signalKeys
-                    .map((k) => ({ key: k, label: signalLabels.get(k) ?? k, delta: row.signalData[k]?.delta ?? null }))
-                    .filter((x) => x.delta !== null)
-                    .sort((a, b) => (a.delta as number) - (b.delta as number))
-                    .slice(0, 3);
-                  return (
-                    <div key={row.departmentId} className="px-4 py-3 space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <Link href={`/scope?departmentId=${row.departmentId}&window=${windowDays}`} className="font-medium text-text hover:underline">
+            <div className="divide-y divide-border/20">
+              {deptPivotRows.map((row) => {
+                const signalEntries = signalKeys.map((k) => ({
+                  key: k,
+                  label: signalLabels.get(k) ?? k,
+                  ...(row.signalData[k] ?? { currentMean: null, prevMean: null, delta: null, coverageCount: 0 }),
+                }));
+                const driftingDown = signalEntries.filter((s) => s.delta !== null && s.delta < 0).sort((a, b) => (a.delta as number) - (b.delta as number));
+                const improving = signalEntries.filter((s) => s.delta !== null && s.delta > 0).sort((a, b) => (b.delta as number) - (a.delta as number));
+                const noData = signalEntries.filter((s) => s.currentMean === null);
+
+                return (
+                  <div key={row.departmentId} className="px-5 py-4 calm-transition hover:bg-white/50">
+                    {/* Top row: department info + stats */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <Link href={`/scope?departmentId=${row.departmentId}&window=${windowDays}`} className="text-[0.875rem] font-semibold text-text hover:text-accent calm-transition hover:underline">
                           {row.departmentName}
                         </Link>
                       </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted">
-                        <span>Teachers: {row.teacherCount}</span>
-                        <span>Obs: {row.observationCount}</span>
-                      </div>
-                      {worstDeltas.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 pt-0.5">
-                          {worstDeltas.map((x) => (
-                            <span key={x.key} className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50/60 px-2 py-0.5 text-xs text-amber-800">
-                              {x.label?.slice(0, 10)}: Δ {(x.delta as number) > 0 ? "+" : ""}{(x.delta as number).toFixed(1)}
-                            </span>
-                          ))}
+                      <div className="flex items-center gap-4 shrink-0 text-right">
+                        <div>
+                          <p className="text-[0.6875rem] font-medium uppercase tracking-wide text-muted">Teachers</p>
+                          <p className="text-sm tabular-nums font-semibold text-text">{row.teacherCount}</p>
                         </div>
-                      )}
-                      <Link
-                        href={buildFilterQuery({ density: "comfortable" })}
-                        className="inline-block text-xs text-accent hover:underline mt-1"
-                      >
-                        Open full pivot →
-                      </Link>
+                        <div>
+                          <p className="text-[0.6875rem] font-medium uppercase tracking-wide text-muted">Observations</p>
+                          <p className="text-sm tabular-nums font-semibold text-text">{row.observationCount}</p>
+                        </div>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-              {/* Desktop table (≥ md) */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="sticky top-0 z-10">
-                    <tr className="border-b border-border/20 bg-white/30 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">
-                      <th className="sticky-first-column sticky-first-column-header px-4 py-3">Department</th>
-                      <th className="px-4 py-3 text-right">Teachers</th>
-                      <th className="px-4 py-3 text-right">Observations</th>
-                      {signalKeys.map((k) => {
-                        const isSorted = sortSignal === k;
-                        const nextDir = isSorted && sortDir === "desc" ? "asc" : "desc";
-                        return (
-                          <th key={k} className="w-10 min-w-[40px] px-1 py-2 text-center align-bottom">
-                            <Link
-                              href={buildFilterQuery({ sortSignal: k, sortDir: nextDir })}
-                              title={signalLabels.get(k)}
-                              className={`inline-flex flex-col items-center gap-0.5 hover:text-text transition-colors ${isSorted ? "text-text" : ""}`}
-                            >
-                              <span className="block max-h-[80px] overflow-hidden [writing-mode:vertical-rl] [transform:rotate(180deg)] text-[11px] leading-tight">
-                                {signalLabels.get(k) ?? k}
-                              </span>
-                              <span className="text-[9px] mt-0.5">{isSorted ? (sortDir === "desc" ? "↓" : "↑") : "⇅"}</span>
-                            </Link>
-                          </th>
-                        );
-                      })}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {deptPivotRows.map((row) => (
-                      <tr key={row.departmentId} className="border-b border-divider last:border-0 hover:bg-bg">
-                        <td className="sticky-first-column px-4 py-3 font-medium text-text">
-                          <Link href={`/scope?departmentId=${row.departmentId}&window=${windowDays}`} className="hover:underline">
-                            {row.departmentName}
-                          </Link>
-                        </td>
-                        <td className="px-4 py-3 text-right tabular-nums text-muted">{row.teacherCount}</td>
-                        <td className="px-4 py-3 text-right tabular-nums text-muted">{row.observationCount}</td>
-                        {signalKeys.map((k) => {
-                          const cell = row.signalData[k] ?? { currentMean: null, prevMean: null, delta: null, coverageCount: 0 };
-                          const label = signalLabels.get(k) ?? k;
+
+                    {/* Signal heatmap strip */}
+                    <div className="mt-3 flex items-center gap-0.5" title="Signal scores: each cell = 1 signal. Colour shows current score level.">
+                      {signalEntries
+                        .filter((s) => s.currentMean !== null)
+                        .sort((a, b) => (b.currentMean ?? 0) - (a.currentMean ?? 0))
+                        .map((s) => {
+                          const mean = s.currentMean as number;
+                          let bg = "bg-slate-200";
+                          if (mean >= 3.5) bg = "bg-emerald-500";
+                          else if (mean >= 2.5) bg = "bg-blue-500";
+                          else if (mean >= 1.5) bg = "bg-amber-400";
+                          else bg = "bg-rose-400";
+                          const deltaStr = s.delta !== null ? ` Δ${s.delta > 0 ? "+" : ""}${s.delta.toFixed(1)}` : "";
                           return (
-                            <td
-                              key={k}
-                              className={pivotCellClass(cell.delta, density)}
-                              title={pivotCellTooltip(label, cell, windowDays, computedAtStr)}
-                            >
-                              <div className="flex flex-col items-end gap-0.5">
-                                <span className="text-text tabular-nums">
-                                  {cell.currentMean !== null ? cell.currentMean.toFixed(1) : "—"}
-                                </span>
-                                <span className="text-[11px] text-muted tabular-nums">
-                                  Δ {cell.delta !== null ? (cell.delta > 0 ? "+" : "") + cell.delta.toFixed(1) : "—"}
-                                </span>
-                              </div>
-                              {cell.delta !== null && cell.delta > VISUAL_THRESHOLD && (
-                                <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-green-400 align-middle" />
-                              )}
-                            </td>
+                            <span
+                              key={s.key}
+                              className={`h-3 w-3 rounded-sm ${bg} calm-transition`}
+                              title={`${s.label}: ${mean.toFixed(1)}${deltaStr}`}
+                            />
                           );
                         })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+                      {noData.length > 0 && (
+                        <>
+                          <span className="mx-0.5" />
+                          {noData.map((s) => (
+                            <span key={s.key} className="h-3 w-3 rounded-sm bg-slate-100 border border-slate-200" title={`${s.label}: no data`} />
+                          ))}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Drifting & improving signal chips */}
+                    {(driftingDown.length > 0 || improving.length > 0) && (
+                      <div className="mt-2.5 flex flex-wrap gap-1.5">
+                        {driftingDown.slice(0, 4).map((s) => (
+                          <span key={s.key} className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50/60 px-2 py-0.5 text-xs text-amber-800" title={`${s.label}: ${s.currentMean?.toFixed(1)} (Δ${(s.delta as number).toFixed(1)})`}>
+                            <span className="font-medium">{s.label.length > 14 ? s.label.slice(0, 12) + "…" : s.label}</span>
+                            <span className="tabular-nums">{s.currentMean?.toFixed(1)}</span>
+                            <span className="tabular-nums text-amber-600">↓{Math.abs(s.delta as number).toFixed(1)}</span>
+                          </span>
+                        ))}
+                        {improving.slice(0, 2).map((s) => (
+                          <span key={s.key} className="inline-flex items-center gap-1 rounded-md border border-green-200 bg-green-50/60 px-2 py-0.5 text-xs text-green-800" title={`${s.label}: ${s.currentMean?.toFixed(1)} (Δ+${(s.delta as number).toFixed(1)})`}>
+                            <span className="font-medium">{s.label.length > 14 ? s.label.slice(0, 12) + "…" : s.label}</span>
+                            <span className="tabular-nums">{s.currentMean?.toFixed(1)}</span>
+                            <span className="tabular-nums text-green-600">↑{(s.delta as number).toFixed(1)}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}

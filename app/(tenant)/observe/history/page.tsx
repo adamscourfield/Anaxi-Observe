@@ -209,83 +209,170 @@ export default async function ObservationHistoryPage({
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
-          {/* Table header */}
-          <div className="border-b border-border/30 bg-white/40">
-            <div className={`grid items-center gap-4 px-5 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted ${
-              user.role !== "TEACHER" ? "grid-cols-[1fr_1fr_1fr_80px_100px_80px_40px]" : "grid-cols-[1fr_1fr_80px_100px_80px_40px]"
-            }`}>
-              <span>Teacher</span>
-              {user.role !== "TEACHER" && <span>Observer</span>}
-              <span>Subject · Year</span>
-              <span>Date</span>
-              <span>Phase</span>
-              <span>Signals</span>
-              <span />
-            </div>
+          {/* Desktop table (≥ md) */}
+          <div className="hidden md:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                  <th className="px-5 py-3">Teacher</th>
+                  {user.role !== "TEACHER" && <th className="px-4 py-3">Observer</th>}
+                  <th className="px-4 py-3">Subject · Year</th>
+                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Phase</th>
+                  <th className="px-4 py-3">Signals</th>
+                  <th className="w-10" />
+                </tr>
+              </thead>
+              <tbody>
+                {(observations as any[]).map((obs: any) => {
+                  const signalValues = (obs.signals as any[]).filter((s: any) => s.valueKey);
+                  const phase = obs.phase as string;
+                  const phaseBadge = PHASE_BADGE[phase] ?? PHASE_BADGE.UNKNOWN;
+
+                  // Compute signal counts per scale level
+                  const scaleCounts: Record<string, number> = {};
+                  for (const s of signalValues) {
+                    const k = s.valueKey as string;
+                    scaleCounts[k] = (scaleCounts[k] ?? 0) + 1;
+                  }
+
+                  return (
+                    <tr key={obs.id} className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50">
+                      <td className="px-5 py-3">
+                        <Link href={`/observe/${obs.id}`} className="flex items-center gap-2.5 min-w-0">
+                          <div className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-bold text-accent sm:flex">
+                            {(obs.observedTeacher?.fullName ?? "?").split(" ").slice(0, 2).map((n: string) => n[0]).join("")}
+                          </div>
+                          <span className="truncate font-semibold text-text group-hover:text-accent calm-transition">
+                            {obs.observedTeacher?.fullName ?? "—"}
+                          </span>
+                        </Link>
+                      </td>
+
+                      {user.role !== "TEACHER" && (
+                        <td className="px-4 py-3 text-muted">
+                          {obs.observer?.fullName ?? "—"}
+                        </td>
+                      )}
+
+                      <td className="px-4 py-3">
+                        <span className="text-text">{obs.subject}</span>
+                        <span className="ml-1.5 text-muted">Y{obs.yearGroup}</span>
+                      </td>
+
+                      <td className="px-4 py-3 tabular-nums text-muted whitespace-nowrap">
+                        {new Date(obs.observedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.6875rem] font-semibold ${phaseBadge}`}>
+                          {formatPhaseLabel(phase)}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {signalValues.length === 0 ? (
+                          <span className="text-xs text-muted">—</span>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            {(["STRONG", "CONSISTENT", "SOME", "LIMITED"] as const).map((level) => {
+                              const count = scaleCounts[level];
+                              if (!count) return null;
+                              return (
+                                <span
+                                  key={level}
+                                  className={`inline-flex items-center gap-0.5 rounded-md border px-1.5 py-0.5 text-[0.6875rem] font-medium ${SCALE_BADGE[level]}`}
+                                  title={`${count} ${level.toLowerCase()}`}
+                                >
+                                  <span className={`h-1.5 w-1.5 rounded-full ${SCALE_COLORS[level]}`} />
+                                  {count}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="pr-4 py-3 text-right">
+                        <Link href={`/observe/${obs.id}`}>
+                          <svg className="h-3.5 w-3.5 text-border calm-transition group-hover:text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
 
-          {/* Rows */}
-          <div>
-            {(observations as any[]).map((obs: any, idx: number) => {
+          {/* Mobile card list (< md) */}
+          <div className="md:hidden divide-y divide-border/20">
+            {(observations as any[]).map((obs: any) => {
               const signalValues = (obs.signals as any[]).filter((s: any) => s.valueKey);
               const phase = obs.phase as string;
               const phaseBadge = PHASE_BADGE[phase] ?? PHASE_BADGE.UNKNOWN;
-              const isLast = idx === (observations as any[]).length - 1;
+
+              const scaleCounts: Record<string, number> = {};
+              for (const s of signalValues) {
+                const k = s.valueKey as string;
+                scaleCounts[k] = (scaleCounts[k] ?? 0) + 1;
+              }
 
               return (
                 <Link
                   key={obs.id}
                   href={`/observe/${obs.id}`}
-                  className={`group grid items-center gap-4 px-5 py-3.5 calm-transition hover:bg-white/50 ${!isLast ? "border-b border-border/20" : ""} ${
-                    user.role !== "TEACHER" ? "grid-cols-[1fr_1fr_1fr_80px_100px_80px_40px]" : "grid-cols-[1fr_1fr_80px_100px_80px_40px]"
-                  }`}
+                  className="group block px-4 py-3.5 calm-transition hover:bg-white/50"
                 >
-                  {/* Teacher */}
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-bold text-accent sm:flex">
-                      {(obs.observedTeacher?.fullName ?? "?").split(" ").slice(0, 2).map((n: string) => n[0]).join("")}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 shrink-0 flex items-center justify-center rounded-full bg-accent/10 text-[10px] font-bold text-accent">
+                          {(obs.observedTeacher?.fullName ?? "?").split(" ").slice(0, 2).map((n: string) => n[0]).join("")}
+                        </div>
+                        <span className="truncate text-[0.875rem] font-semibold text-text">
+                          {obs.observedTeacher?.fullName ?? "—"}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] text-muted">
+                        <span>{obs.subject} · Y{obs.yearGroup}</span>
+                        <span className="tabular-nums">
+                          {new Date(obs.observedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </span>
+                        {user.role !== "TEACHER" && obs.observer?.fullName && (
+                          <span>by {obs.observer.fullName}</span>
+                        )}
+                      </div>
                     </div>
-                    <span className="truncate text-[0.875rem] font-semibold text-text">
-                      {obs.observedTeacher?.fullName ?? "—"}
+                    <svg className="mt-1 h-4 w-4 shrink-0 text-border calm-transition group-hover:text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.6875rem] font-semibold ${phaseBadge}`}>
+                      {formatPhaseLabel(phase)}
                     </span>
+                    {signalValues.length > 0 && (
+                      <>
+                        {(["STRONG", "CONSISTENT", "SOME", "LIMITED"] as const).map((level) => {
+                          const count = scaleCounts[level];
+                          if (!count) return null;
+                          return (
+                            <span
+                              key={level}
+                              className={`inline-flex items-center gap-0.5 rounded-md border px-1.5 py-0.5 text-[0.6875rem] font-medium ${SCALE_BADGE[level]}`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${SCALE_COLORS[level]}`} />
+                              {count}
+                            </span>
+                          );
+                        })}
+                      </>
+                    )}
                   </div>
-
-                  {/* Observer */}
-                  {user.role !== "TEACHER" && (
-                    <span className="truncate text-[0.8125rem] text-muted">
-                      {obs.observer?.fullName ?? "—"}
-                    </span>
-                  )}
-
-                  {/* Subject + Year */}
-                  <div className="min-w-0">
-                    <span className="truncate text-[0.8125rem] text-text">{obs.subject}</span>
-                    <span className="block text-[0.75rem] text-muted">Year {obs.yearGroup}</span>
-                  </div>
-
-                  {/* Date */}
-                  <span className="text-[0.8125rem] tabular-nums text-muted">
-                    {new Date(obs.observedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                  </span>
-
-                  {/* Phase */}
-                  <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.6875rem] font-semibold ${phaseBadge}`}>
-                    {formatPhaseLabel(phase)}
-                  </span>
-
-                  {/* Signal dots */}
-                  <div className="flex items-center gap-0.5">
-                    {signalValues.slice(0, 8).map((s: any) => (
-                      <span
-                        key={s.id}
-                        className={`h-2 w-2 rounded-full ${SCALE_COLORS[s.valueKey] ?? "bg-slate-300"}`}
-                      />
-                    ))}
-                  </div>
-
-                  <svg className="h-3.5 w-3.5 text-border calm-transition group-hover:text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
                 </Link>
               );
             })}
