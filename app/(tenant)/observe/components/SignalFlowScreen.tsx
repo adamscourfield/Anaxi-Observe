@@ -119,22 +119,7 @@ export function SignalFlowScreen({
   const title = override?.displayName || currentSignal.displayNameDefault;
   const description = override?.description || currentSignal.descriptionDefault;
 
-  const scaleRows = GLOBAL_SCALE.map((scale) => ({
-    label: scale.label,
-    guidance: currentSignal.scaleGuidance[scale.key],
-  }));
-
-  const scaleOptions = GLOBAL_SCALE.map((scale) => ({
-    key: scale.key,
-    label: scale.label,
-    guidance: currentSignal.scaleGuidance[scale.key] || scale.description,
-  }));
-
-  // Count answered signals for the "finish early" hint
-  const answeredCount = orderedSignals.filter((s) => {
-    const st = draft.signalState[s.key];
-    return st?.valueKey || st?.notObserved;
-  }).length;
+  const scaleRows = GLOBAL_SCALE.map((scale) => ({ label: scale.label, guidance: currentSignal.scaleGuidance[scale.key] }));
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] w-full max-w-2xl flex-col gap-0 pt-2 pb-8">
@@ -153,31 +138,36 @@ export function SignalFlowScreen({
         }}
       />
 
-      {/* Context strip */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {[
-          draft.context.subject,
-          `Year ${draft.context.yearGroup}`,
-          draft.context.phase !== "UNKNOWN"
-            ? draft.context.phase.replace("_", " ").toLowerCase()
-            : null,
-        ]
-          .filter(Boolean)
-          .map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-border/50 bg-white/60 px-2.5 py-0.5 text-[0.6875rem] font-medium text-muted"
-            >
-              {tag}
-            </span>
-          ))}
-      </div>
+      <Card className="space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <H2>{title}</H2>
+          <Button type="button" variant="secondary" className="shrink-0 px-3 py-1.5 text-xs" onClick={() => setHelpOpen(true)}>
+            <svg viewBox="0 0 16 16" fill="none" className="mr-1 h-3.5 w-3.5"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" /><path d="M6.5 6.5a1.5 1.5 0 1 1 1.5 1.5v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><circle cx="8" cy="11.5" r="0.5" fill="currentColor" /></svg>
+            Info
+          </Button>
+        </div>
+        <BodyText className="line-clamp-2 text-muted">{description}</BodyText>
+      </Card>
 
-      {/* Signal header */}
-      <div className="mt-5 mb-1">
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="text-[1.5rem] font-bold leading-snug tracking-tight text-text">{title}</h2>
-          <button
+      <div className="space-y-3">
+          <SignalTileGroup
+            options={GLOBAL_SCALE.map((scale) => ({ key: scale.key, label: currentSignal.scaleGuidance[scale.key] || scale.label }))}
+            selected={pendingValue}
+            onSelect={(value) => {
+              setPendingValue(value as ScaleKey);
+              setPendingNotObserved(false);
+            }}
+          />
+          <NotObservedButton
+            onClick={() => {
+              setPendingValue(null);
+              setPendingNotObserved(true);
+            }}
+            active={pendingNotObserved}
+          />
+          <BodyText className="text-center text-xs text-muted">Use &ldquo;Skip for now&rdquo; if there wasn&rsquo;t enough evidence &mdash; you can revisit any signal in review.</BodyText>
+
+          <Button
             type="button"
             onClick={() => setHelpOpen(true)}
             className="mt-0.5 flex shrink-0 items-center gap-1.5 rounded-lg border border-border/60 bg-white/70 px-2.5 py-1.5 text-[0.75rem] font-medium text-muted calm-transition hover:border-accent/30 hover:text-accent"
@@ -230,29 +220,6 @@ export function SignalFlowScreen({
           )}
         </button>
 
-        {/* Next / Review */}
-        <button
-          type="button"
-          disabled={!hasSelection}
-          onClick={confirmAndAdvance}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3.5 text-[0.9375rem] font-bold text-white shadow-sm calm-transition hover:bg-accentHover disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {isLastSignal ? "Review observation" : "Next signal"}
-          <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">
-            <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-
-        {/* Finish early */}
-        {!isLastSignal && answeredCount > 0 && (
-          <button
-            type="button"
-            onClick={finishEarly}
-            className="w-full text-center text-[0.75rem] text-muted calm-transition hover:text-text"
-          >
-            Skip remaining & go to review →
-          </button>
-        )}
       </div>
 
       {/* Help sheet */}

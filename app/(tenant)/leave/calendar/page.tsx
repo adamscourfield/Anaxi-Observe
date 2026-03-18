@@ -122,7 +122,7 @@ export default async function LeaveCalendarPage() {
             });
 
             return (
-              <div
+              <Link
                 key={key}
                 className={`group relative min-h-[110px] border-b border-r border-border/20 p-2 transition-colors duration-150 ${
                   isToday
@@ -174,7 +174,7 @@ export default async function LeaveCalendarPage() {
                     </Link>
                   ))}
                 </div>
-              </div>
+              </Link>
             );
           })}
 
