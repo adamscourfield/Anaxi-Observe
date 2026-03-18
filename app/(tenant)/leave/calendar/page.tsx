@@ -35,7 +35,7 @@ export default async function LeaveCalendarPage() {
       startDate: { lte: end },
       endDate: { gte: start },
     },
-    include: { requester: true },
+    include: { requester: true, reason: true },
     orderBy: { startDate: "asc" },
   });
 
