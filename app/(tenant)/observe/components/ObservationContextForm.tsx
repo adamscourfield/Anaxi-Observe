@@ -171,19 +171,19 @@ export function ObservationContextForm({
                   key={phase.key}
                   type="button"
                   onClick={() => setContext((c) => ({ ...c, phase: phase.key }))}
-                  className={`flex items-center justify-between gap-2 rounded-xl border p-3.5 text-left calm-transition ${
+                  className={`flex items-center gap-3 rounded-xl border p-3.5 text-left calm-transition ${
                     selected
                       ? "border-accent bg-accent/[0.06] text-accent ring-1 ring-accent/20"
                       : "border-border bg-white/70 text-text hover:border-accent/30 hover:bg-white/90"
                   }`}
                 >
+                  <span className={selected ? "text-accent" : "text-muted"}>{phase.icon}</span>
                   <span>
                     <span className="block text-[0.8125rem] font-semibold leading-tight">{phase.label}</span>
                     <span className={`block text-[0.75rem] leading-tight ${selected ? "text-accent/70" : "text-muted"}`}>
                       {phase.description}
                     </span>
                   </span>
-                  <span className={`shrink-0 ${selected ? "text-accent" : "text-muted"}`}>{phase.icon}</span>
                 </button>
               );
             })}
