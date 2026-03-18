@@ -14,7 +14,7 @@ interface SegmentedTabsProps {
 
 export function SegmentedTabs({ tabs, activeKey, onChange }: SegmentedTabsProps) {
   return (
-    <div className="inline-flex rounded-xl border border-border/80 bg-[#f3f4f6] p-1">
+    <div className="inline-flex rounded-xl border border-border/80 bg-divider p-1">
       {tabs.map((tab) => {
         const active = tab.key === activeKey;
         return (

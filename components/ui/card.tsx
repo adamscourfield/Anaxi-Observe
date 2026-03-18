@@ -5,7 +5,7 @@ type CardTone = "default" | "subtle" | "inset" | "interactive";
 const toneClasses: Record<CardTone, string> = {
   default: "border border-border/80 bg-white shadow-sm",
   subtle: "border border-border/50 bg-white shadow-sm",
-  inset: "border border-border/50 bg-[#f9fafb]",
+  inset: "border border-border/50 bg-bg",
   interactive:
     "border border-border/80 bg-white shadow-sm calm-transition hover:border-accent/25 hover:shadow-md cursor-pointer",
 };

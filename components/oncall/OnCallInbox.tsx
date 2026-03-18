@@ -38,10 +38,10 @@ function timeAgo(dateVal: Date | string): string {
 }
 
 const STATUS_HOVER_BG: Record<Status, string> = {
-  OPEN: "hover:bg-[rgba(254,159,159,0.06)] hover:border-error/40",
-  ACKNOWLEDGED: "hover:bg-[rgba(253,198,131,0.06)] hover:border-warning/40",
+  OPEN: "hover:bg-coral-10 hover:border-error/40",
+  ACKNOWLEDGED: "hover:bg-amber-15 hover:border-warning/40",
   RESOLVED: "hover:bg-[rgba(5,150,105,0.04)] hover:border-success/30",
-  CANCELLED: "hover:bg-[#f8f8f8] hover:border-border",
+  CANCELLED: "hover:bg-bg hover:border-border",
 };
 
 function InboxCard({ r, canAcknowledge, canResolve }: { r: InboxRequest; canAcknowledge?: boolean; canResolve?: boolean }) {

@@ -33,9 +33,9 @@ export function SchoolSwitcher({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-lg px-2 py-1.5 calm-transition hover:bg-[#f4f6f9]"
+        className="flex items-center gap-2 rounded-lg px-2 py-1.5 calm-transition hover:bg-bg"
       >
-        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-[10px] font-bold text-accent">
+        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accentSurface text-[10px] font-bold text-accent">
           {initial}
         </span>
         <span className="text-[13px] font-medium text-text">{currentTenantName}</span>
@@ -54,11 +54,11 @@ export function SchoolSwitcher({
                 disabled={t.isCurrent}
                 className={`flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] calm-transition ${
                   t.isCurrent
-                    ? "bg-indigo-50/60 font-medium text-accent"
-                    : "text-text hover:bg-[#f4f6f9]"
+                    ? "bg-accentSurface/60 font-medium text-accent"
+                    : "text-text hover:bg-bg"
                 }`}
               >
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[9px] font-bold bg-indigo-50 text-accent">
+                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[9px] font-bold bg-accentSurface text-accent">
                   {t.tenantName.charAt(0).toUpperCase()}
                 </span>
                 {t.tenantName}
