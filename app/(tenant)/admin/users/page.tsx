@@ -320,13 +320,21 @@ export default async function AdminUsersPage() {
                           })}
                           <form action={addScopedLoaApprover} className="inline-flex items-center gap-1.5">
                             <input type="hidden" name="approverId" value={u.id} />
-                            <select name="targetUserId" className="h-7 min-w-0 max-w-[130px] rounded-full border border-dashed border-border bg-transparent px-2 text-[11px] text-muted focus:border-accent focus:ring-1 focus:ring-accent/30">
+                            <select name="targetUserId" className="h-7 min-w-0 max-w-[130px] rounded-full border border-dashed border-border bg-transparent px-2 text-[11px] text-text focus:border-accent focus:ring-1 focus:ring-accent/30">
                               <option value="">+ Add…</option>
                               {allUsers
                                 .filter((staff: any) => staff.id !== u.id && !scoped.includes(staff.id))
                                 .map((staff: any) => <option key={staff.id} value={staff.id}>{staff.fullName}</option>)}
                             </select>
-                            <button type="submit" className="hidden" />
+                            <button
+                              type="submit"
+                              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-muted calm-transition hover:bg-accent/10 hover:text-accent"
+                              title="Add scoped approval"
+                            >
+                              <svg viewBox="0 0 16 16" fill="none" className="h-3 w-3" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                              </svg>
+                            </button>
                           </form>
                         </div>
                       </td>
