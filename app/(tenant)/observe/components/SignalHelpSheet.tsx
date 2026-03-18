@@ -1,8 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { H3, MetaText } from "@/components/ui/typography";
+const SCALE_COLORS: Record<string, { border: string; label: string; dot: string }> = {
+  "Limited evidence": { border: "border-rose-200", label: "text-rose-700", dot: "bg-rose-500" },
+  "Some evidence":    { border: "border-amber-200", label: "text-amber-700", dot: "bg-amber-500" },
+  "Consistent":       { border: "border-blue-200",  label: "text-blue-700",  dot: "bg-blue-600" },
+  "Strong & embedded":{ border: "border-emerald-200", label: "text-emerald-700", dot: "bg-emerald-600" },
+};
 
 export function SignalHelpSheet({
   open,
@@ -18,29 +21,78 @@ export function SignalHelpSheet({
   scaleRows: { label: string; guidance: string }[];
 }) {
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-[var(--overlay)] p-4 pt-24" onClick={onClose}>
-      <Card className="w-full max-w-xl space-y-4" onClick={(event) => event.stopPropagation()}>
-        <p className="text-sm leading-relaxed text-muted">{description}</p>
-        {lookFors?.length ? (
-          <div>
-            <H3 className="mb-1.5 text-xs">Look-fors</H3>
-            <ul className="list-disc space-y-0.5 pl-4 text-sm text-muted">
-              {lookFors.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-          </div>
-        ) : null}
-        <div className="space-y-2">
-          <H3 className="text-xs">Scale guidance</H3>
-          {scaleRows.map((row) => (
-            <div key={row.label} className="rounded-xl border border-border/50 bg-bg/30 p-3">
-              <p className="text-sm font-semibold text-text">{row.label}</p>
-              <MetaText className="mt-0.5 leading-relaxed">{row.guidance}</MetaText>
-            </div>
-          ))}
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg overflow-hidden rounded-t-2xl border border-white/60 bg-white/95 shadow-2xl backdrop-blur-xl sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Handle bar (mobile) */}
+        <div className="flex justify-center pb-0 pt-3 sm:hidden">
+          <div className="h-1 w-10 rounded-full bg-border" />
         </div>
-        <Button type="button" variant="secondary" onClick={onClose} className="w-full">Close</Button>
-      </Card>
+
+        <div className="max-h-[80vh] overflow-y-auto p-6">
+          {/* Description */}
+          <div className="mb-5">
+            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">About this signal</p>
+            <p className="mt-2 text-[0.9375rem] leading-relaxed text-text">{description}</p>
+          </div>
+
+          {/* Look-fors */}
+          {lookFors && lookFors.length > 0 && (
+            <div className="mb-5">
+              <p className="mb-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">What to look for</p>
+              <ul className="space-y-1.5">
+                {lookFors.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-[0.875rem] text-text">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Scale guidance */}
+          <div>
+            <p className="mb-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Rating guidance</p>
+            <div className="space-y-2">
+              {scaleRows.map((row, idx) => {
+                const color = SCALE_COLORS[row.label] ?? { border: "border-border", label: "text-text", dot: "bg-slate-400" };
+                return (
+                  <div
+                    key={row.label}
+                    className={`rounded-xl border p-3.5 ${color.border}`}
+                  >
+                    <div className="mb-1 flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${color.dot}`} />
+                      <span className={`text-[0.8125rem] font-semibold ${color.label}`}>
+                        {idx + 1} — {row.label}
+                      </span>
+                    </div>
+                    <p className="text-[0.8125rem] leading-relaxed text-muted">{row.guidance}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-border/30 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full rounded-xl bg-accent py-2.5 text-[0.875rem] font-semibold text-white calm-transition hover:bg-accentHover"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
