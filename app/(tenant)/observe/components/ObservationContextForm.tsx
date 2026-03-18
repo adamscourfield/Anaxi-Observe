@@ -100,7 +100,7 @@ export function ObservationContextForm({
         </div>
         <button
           type="button"
-          onClick={() => router.push("/observe")}
+          onClick={() => router.push("/home")}
           className="flex h-8 w-8 items-center justify-center rounded-lg text-muted calm-transition hover:bg-white/60 hover:text-text"
         >
           <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">
