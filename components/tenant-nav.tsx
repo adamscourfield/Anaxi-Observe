@@ -175,11 +175,11 @@ export function TenantNav({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-30 flex h-screen flex-col calm-transition ${sidebarWidth}`}
+      className={`fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-border/60 bg-white calm-transition ${sidebarWidth}`}
       aria-label="Sidebar menu"
     >
       {/* Logo area */}
-      <div className={`flex items-center ${collapsed ? "justify-center px-2" : "px-5"} h-16 shrink-0`}>
+      <div className={`flex items-center ${collapsed ? "justify-center px-2" : "px-5"} h-14 shrink-0 border-b border-border/60`}>
         <Link href="/home" className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} group`}>
           <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
             <Image src="/anaxi-logo.png" alt="Anaxi" width={22} height={22} priority className="h-[22px] w-[22px] object-contain" />
@@ -191,16 +191,16 @@ export function TenantNav({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-5">
-        <div className="space-y-7">
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <div className="space-y-6">
           {sections.map((section) => (
             <div key={section.label}>
               {!collapsed && (
-                <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#b0bec9]">
+                <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted/50">
                   {section.label}
                 </div>
               )}
-              <ul className="space-y-1">
+              <ul className="space-y-0.5">
                 {section.items.map((item) => {
                   const active = item.href === "/home" || item.href === "/my-actions"
                     ? pathname === item.href
@@ -216,10 +216,10 @@ export function TenantNav({
                       <Link
                         href={item.href}
                         title={collapsed ? item.label : undefined}
-                        className={`group flex items-center ${collapsed ? "justify-center px-2" : "justify-between pl-5 pr-3"} rounded-lg py-2 calm-transition ${
+                        className={`group flex items-center ${collapsed ? "justify-center px-2" : "justify-between pl-5 pr-3"} rounded-xl py-2 calm-transition ${
                           active
-                            ? "bg-white/60 text-accent font-semibold shadow-sm"
-                            : "text-[#6b7a8d] hover:bg-white/40 hover:text-[#1e293b]"
+                            ? "bg-accent/[0.06] text-accent font-semibold"
+                            : "text-muted hover:bg-[#f3f4f6] hover:text-text"
                         }`}
                       >
                         <span className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5"} min-w-0`}>
@@ -248,13 +248,13 @@ export function TenantNav({
       </nav>
 
       {/* Bottom: sign out + collapse */}
-      <div className="px-3 py-3">
+      <div className="border-t border-border/60 px-3 py-3">
         <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"}`}>
           <form action="/api/auth/signout" method="post" className={collapsed ? "" : "flex-1"}>
             <button
               type="submit"
               title={collapsed ? "Log out" : undefined}
-              className={`group flex items-center ${collapsed ? "justify-center px-2" : "gap-2.5 pl-5 pr-3"} w-full rounded-lg py-2 text-[#6b7a8d] calm-transition hover:bg-white/40 hover:text-[#1e293b]`}
+              className={`group flex items-center ${collapsed ? "justify-center px-2" : "gap-2.5 pl-5 pr-3"} w-full rounded-xl py-2 text-muted calm-transition hover:bg-[#f3f4f6] hover:text-text`}
             >
               <NavIcon name="logout" active={false} />
               {!collapsed && <span className="text-[13px]">Log out</span>}
@@ -263,7 +263,7 @@ export function TenantNav({
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#b0bec9] calm-transition hover:bg-white/40 hover:text-[#1e293b]"
+              className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted/60 calm-transition hover:bg-[#f3f4f6] hover:text-text"
               type="button"
               title="Collapse navigation"
             >

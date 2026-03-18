@@ -21,7 +21,7 @@ export function CollapsibleCard({
 }) {
   return (
     <details
-      className={`h-full overflow-hidden rounded-xl border border-border bg-white shadow-md ${className}`}
+      className={`h-full overflow-hidden rounded-2xl border border-border/80 bg-white shadow-sm ${className}`}
       open={defaultOpen}
     >
       <summary className="group flex cursor-pointer list-none items-center justify-between px-5 py-4 text-[14px] font-semibold tracking-[-0.01em] text-text [&::-webkit-details-marker]:hidden">

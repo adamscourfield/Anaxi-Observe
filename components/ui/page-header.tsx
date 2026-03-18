@@ -16,13 +16,13 @@ export function PageHeader({
   return (
     <div className="mb-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 space-y-1">
+        <div className="min-w-0 space-y-1.5">
           {eyebrow ? (
-            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted/70">{eyebrow}</div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted/60">{eyebrow}</div>
           ) : null}
-          <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-[#0f172a]">{title}</h1>
+          <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-text">{title}</h1>
           {subtitle ? (
-            <p className="max-w-2xl text-[13px] leading-relaxed text-[#64748b]">{subtitle}</p>
+            <p className="max-w-2xl text-[13px] leading-relaxed text-muted">{subtitle}</p>
           ) : null}
           {meta ? <div className="flex flex-wrap items-center gap-2 pt-1">{meta}</div> : null}
         </div>
