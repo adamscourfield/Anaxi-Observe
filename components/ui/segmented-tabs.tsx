@@ -14,7 +14,7 @@ interface SegmentedTabsProps {
 
 export function SegmentedTabs({ tabs, activeKey, onChange }: SegmentedTabsProps) {
   return (
-    <div className="inline-flex rounded-lg border border-border bg-[#f4f7fb] p-0.5">
+    <div className="inline-flex rounded-xl border border-border/80 bg-[#f3f4f6] p-1">
       {tabs.map((tab) => {
         const active = tab.key === activeKey;
         return (
@@ -23,7 +23,7 @@ export function SegmentedTabs({ tabs, activeKey, onChange }: SegmentedTabsProps)
             type="button"
             aria-pressed={active}
             onClick={() => onChange(tab.key)}
-            className={`rounded-md px-3.5 py-1.5 text-sm font-medium calm-transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+            className={`rounded-lg px-3.5 py-1.5 text-sm font-medium calm-transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 ${
               active
                 ? "bg-white text-text shadow-sm"
                 : "text-muted hover:text-text"
@@ -34,8 +34,8 @@ export function SegmentedTabs({ tabs, activeKey, onChange }: SegmentedTabsProps)
               <span
                 className={`ml-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] font-semibold leading-[18px] ${
                   active
-                    ? "bg-accent/10 text-accent"
-                    : "bg-border/60 text-muted"
+                    ? "bg-accent/8 text-accent"
+                    : "bg-border/50 text-muted"
                 }`}
               >
                 {tab.count}
