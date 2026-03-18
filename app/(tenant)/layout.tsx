@@ -64,7 +64,7 @@ export default async function TenantLayout({ children }: { children: React.React
       <div className="ml-[var(--sidebar-width)] flex min-h-screen flex-col calm-transition" id="tenant-content">
         <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-border/60 bg-white/80 px-8 backdrop-blur-xl lg:px-10">
           <SchoolSwitcher currentTenantName={tenantName} tenants={tenantOptions} />
-          <Link href="/profile" className="flex items-center gap-3 rounded-xl px-2.5 py-1.5 calm-transition hover:bg-[#f3f4f6]">
+          <Link href="/profile" className="flex items-center gap-3 rounded-xl px-2.5 py-1.5 calm-transition hover:bg-divider">
             <span className="hidden text-[13px] text-muted sm:block">{user.fullName || user.email}</span>
             <span
               className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-white"

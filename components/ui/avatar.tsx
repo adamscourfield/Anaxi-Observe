@@ -1,12 +1,12 @@
 const COLORS = [
-  "bg-indigo-100 text-indigo-700",
-  "bg-emerald-100 text-emerald-700",
-  "bg-amber-100 text-amber-700",
-  "bg-rose-100 text-rose-700",
-  "bg-sky-100 text-sky-700",
-  "bg-violet-100 text-violet-700",
-  "bg-teal-100 text-teal-700",
-  "bg-orange-100 text-orange-700",
+  "bg-[var(--cat-indigo-bg)] text-[var(--cat-indigo-text)]",
+  "bg-[var(--scale-strong-light)] text-[var(--scale-strong-text)]",
+  "bg-[var(--scale-some-light)] text-[var(--scale-some-text)]",
+  "bg-[var(--scale-limited-light)] text-[var(--scale-limited-text)]",
+  "bg-[var(--cat-blue-bg)] text-[var(--cat-blue-text)]",
+  "bg-[var(--cat-violet-bg)] text-[var(--cat-violet-text)]",
+  "bg-[var(--status-approved-light)] text-[var(--status-approved-text)]",
+  "bg-[var(--scale-some-border)] text-[var(--scale-some-text)]",
 ];
 
 function hashName(name: string): number {

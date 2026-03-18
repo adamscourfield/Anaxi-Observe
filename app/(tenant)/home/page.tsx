@@ -194,7 +194,7 @@ function LeadershipHome({
             <ul className="space-y-1">
               {topCpd.map((row) => (
                 <li key={row.signalKey}>
-                  <Link href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`} className="block rounded-lg p-3 hover:bg-[#fe9f9f]/10 calm-transition">
+                  <Link href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`} className="block rounded-lg p-3 hover:bg-coral-10 calm-transition">
                     <p className="text-sm font-medium text-text">{row.label}</p>
                     <div className="mt-1.5 flex items-center gap-3">
                       <span className="text-xs text-muted">{Math.round(row.driftRate * 100)}% drift rate</span>
@@ -203,8 +203,8 @@ function LeadershipHome({
                       )}
                       <span className="text-xs text-muted">{row.teachersCovered} covered</span>
                     </div>
-                    <div className="mt-2 h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
-                      <div className="h-full rounded-full bg-[#fe9f9f]" style={{ width: `${Math.min(Math.round(row.driftRate * 100), 100)}%` }} />
+                    <div className="mt-2 h-1.5 w-full rounded-full bg-divider overflow-hidden">
+                      <div className="h-full rounded-full bg-coral" style={{ width: `${Math.min(Math.round(row.driftRate * 100), 100)}%` }} />
                     </div>
                   </Link>
                 </li>
@@ -224,7 +224,7 @@ function LeadershipHome({
             <ul className="space-y-1">
               {topTeachers.map((row) => (
                 <li key={row.teacherMembershipId}>
-                  <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="flex items-center justify-between gap-3 rounded-lg p-3 hover:bg-[#fe9f9f]/10 calm-transition">
+                  <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="flex items-center justify-between gap-3 rounded-lg p-3 hover:bg-coral-10 calm-transition">
                     <div className="flex items-center gap-3 min-w-0">
                       <Avatar name={row.teacherName} />
                       <div className="min-w-0">
@@ -234,7 +234,7 @@ function LeadershipHome({
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {row.normalizedIDS !== 0 && (
-                        <span className={`text-xs tabular-nums ${row.normalizedIDS > 0 ? "text-green-600" : "text-[#fe9f9f]"}`}>
+                        <span className={`text-xs tabular-nums ${row.normalizedIDS > 0 ? "text-positive" : "text-negative"}`}>
                           {row.normalizedIDS > 0 ? "+" : ""}{row.normalizedIDS.toFixed(1)}
                         </span>
                       )}
@@ -284,15 +284,15 @@ function LeadershipHome({
                         </Link>
                       </td>
                       <td className="px-3 py-2.5 text-right tabular-nums text-text">{row.attendanceMean !== null ? `${row.attendanceMean.toFixed(1)}` : "—"}</td>
-                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.attendanceDelta !== null ? (row.attendanceDelta < 0 ? "text-[var(--error-text)]" : "text-green-600") : "text-muted"}`}>
+                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.attendanceDelta !== null ? (row.attendanceDelta < 0 ? "text-[var(--error-text)]" : "text-positive") : "text-muted"}`}>
                         {row.attendanceDelta !== null ? `${row.attendanceDelta > 0 ? "+" : ""}${row.attendanceDelta.toFixed(1)}` : "—"}
                       </td>
                       <td className="px-3 py-2.5 text-right tabular-nums text-text">{row.detentionsMean !== null ? row.detentionsMean.toFixed(1) : "—"}</td>
-                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.detentionsDelta !== null ? (row.detentionsDelta > 0 ? "text-[var(--error-text)]" : "text-green-600") : "text-muted"}`}>
+                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.detentionsDelta !== null ? (row.detentionsDelta > 0 ? "text-[var(--error-text)]" : "text-positive") : "text-muted"}`}>
                         {row.detentionsDelta !== null ? `${row.detentionsDelta > 0 ? "+" : ""}${row.detentionsDelta.toFixed(1)}` : "—"}
                       </td>
                       <td className="px-3 py-2.5 text-right tabular-nums text-text">{row.onCallsMean !== null ? row.onCallsMean.toFixed(1) : "—"}</td>
-                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.onCallsDelta !== null ? (row.onCallsDelta > 0 ? "text-[var(--error-text)]" : "text-green-600") : "text-muted"}`}>
+                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.onCallsDelta !== null ? (row.onCallsDelta > 0 ? "text-[var(--error-text)]" : "text-positive") : "text-muted"}`}>
                         {row.onCallsDelta !== null ? `${row.onCallsDelta > 0 ? "+" : ""}${row.onCallsDelta.toFixed(1)}` : "—"}
                       </td>
                     </tr>
@@ -314,7 +314,7 @@ function LeadershipHome({
             <ul className="space-y-1">
               {displayUrgentStudents.map((row) => (
                 <li key={row.studentId}>
-                  <Link href={`/analysis/students/${row.studentId}?window=${windowDays}`} className="block rounded-lg p-3 hover:bg-[#fe9f9f]/10 calm-transition">
+                  <Link href={`/analysis/students/${row.studentId}?window=${windowDays}`} className="block rounded-lg p-3 hover:bg-coral-10 calm-transition">
                     <div className="flex items-center justify-between gap-2">
                       <p className="min-w-0 text-sm font-medium text-text truncate">
                         {row.studentName}{row.yearGroup ? <span className="ml-1 font-normal text-muted">· {row.yearGroup}</span> : null}
@@ -326,7 +326,7 @@ function LeadershipHome({
                         <span>
                           Attendance: {row.attendancePct.toFixed(1)}%
                           {row.attendanceDelta !== null && (
-                            <span className={`ml-1 ${row.attendanceDelta < 0 ? "text-[#fe9f9f]" : "text-green-600"}`}>
+                            <span className={`ml-1 ${row.attendanceDelta < 0 ? "text-negative" : "text-positive"}`}>
                               ({row.attendanceDelta > 0 ? "+" : ""}{row.attendanceDelta.toFixed(1)})
                             </span>
                           )}
@@ -334,12 +334,12 @@ function LeadershipHome({
                       )}
                       {row.onCallsDelta !== null && (
                         <span>
-                          On calls: <span className={row.onCallsDelta > 0 ? "text-[#fe9f9f]" : "text-green-600"}>{row.onCallsDelta > 0 ? "+" : ""}{row.onCallsDelta}</span>
+                          On calls: <span className={row.onCallsDelta > 0 ? "text-negative" : "text-positive"}>{row.onCallsDelta > 0 ? "+" : ""}{row.onCallsDelta}</span>
                         </span>
                       )}
                       {row.detentionsDelta !== null && (
                         <span>
-                          Detentions: <span className={row.detentionsDelta > 0 ? "text-[#fe9f9f]" : "text-green-600"}>{row.detentionsDelta > 0 ? "+" : ""}{row.detentionsDelta}</span>
+                          Detentions: <span className={row.detentionsDelta > 0 ? "text-negative" : "text-positive"}>{row.detentionsDelta > 0 ? "+" : ""}{row.detentionsDelta}</span>
                         </span>
                       )}
                     </div>

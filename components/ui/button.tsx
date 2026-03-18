@@ -9,11 +9,11 @@ const variantClasses: Record<Variant, string> = {
   primary:
     "py-2.5 bg-[var(--primary-btn)] text-white shadow-sm hover:bg-[var(--primary-btn-hover)] hover:shadow-md active:scale-[0.98] active:bg-[var(--primary-btn-active)]",
   secondary:
-    "py-2.5 border border-border bg-white text-text shadow-sm hover:border-[#d1d5db] hover:bg-[#f9fafb] active:scale-[0.98]",
+    "py-2.5 border border-border bg-white text-text shadow-sm hover:border-borderHover hover:bg-bg active:scale-[0.98]",
   ghost:
-    "py-2.5 border border-transparent bg-transparent text-muted hover:bg-[#f3f4f6] hover:text-text active:scale-[0.98]",
+    "py-2.5 border border-transparent bg-transparent text-muted hover:bg-divider hover:text-text active:scale-[0.98]",
   danger:
-    "py-2.5 bg-red-500 text-white shadow-sm hover:bg-red-600 hover:shadow-md active:scale-[0.98]",
+    "py-2.5 bg-[var(--danger-btn)] text-white shadow-sm hover:bg-[var(--danger-btn-hover)] hover:shadow-md active:scale-[0.98] active:bg-[var(--danger-btn-active)]",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }>(
