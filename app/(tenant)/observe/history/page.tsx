@@ -25,6 +25,12 @@ const PHASE_BADGE: Record<string, string> = {
   UNKNOWN:               "bg-slate-50 text-slate-600 border-slate-200",
 };
 
+const SCALE_LEVELS = ["STRONG", "CONSISTENT", "SOME", "LIMITED"] as const;
+
+function formatShortDate(date: Date | string): string {
+  return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
 export default async function ObservationHistoryPage({
   searchParams,
 }: {
@@ -261,7 +267,7 @@ export default async function ObservationHistoryPage({
                       </td>
 
                       <td className="px-4 py-3 tabular-nums text-muted whitespace-nowrap">
-                        {new Date(obs.observedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        {formatShortDate(obs.observedAt)}
                       </td>
 
                       <td className="px-4 py-3">
@@ -275,7 +281,7 @@ export default async function ObservationHistoryPage({
                           <span className="text-xs text-muted">—</span>
                         ) : (
                           <div className="flex items-center gap-1">
-                            {(["STRONG", "CONSISTENT", "SOME", "LIMITED"] as const).map((level) => {
+                            {SCALE_LEVELS.map((level) => {
                               const count = scaleCounts[level];
                               if (!count) return null;
                               return (
@@ -339,7 +345,7 @@ export default async function ObservationHistoryPage({
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] text-muted">
                         <span>{obs.subject} · Y{obs.yearGroup}</span>
                         <span className="tabular-nums">
-                          {new Date(obs.observedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                          {formatShortDate(obs.observedAt)}
                         </span>
                         {user.role !== "TEACHER" && obs.observer?.fullName && (
                           <span>by {obs.observer.fullName}</span>
@@ -357,7 +363,7 @@ export default async function ObservationHistoryPage({
                     </span>
                     {signalValues.length > 0 && (
                       <>
-                        {(["STRONG", "CONSISTENT", "SOME", "LIMITED"] as const).map((level) => {
+                        {SCALE_LEVELS.map((level) => {
                           const count = scaleCounts[level];
                           if (!count) return null;
                           return (

@@ -93,6 +93,19 @@ function fmtDelta(val: number | null, decimals = 2): string {
 /** Visual threshold for signal-cell accent treatment */
 const VISUAL_THRESHOLD = 0.15;
 
+/** Returns Tailwind background class for a signal mean score */
+function meanToBgColor(mean: number): string {
+  if (mean >= 3.5) return "bg-emerald-500";
+  if (mean >= 2.5) return "bg-blue-500";
+  if (mean >= 1.5) return "bg-amber-400";
+  return "bg-rose-400";
+}
+
+/** Truncates a label for chip display */
+function truncateLabel(label: string, max = 14): string {
+  return label.length > max ? label.slice(0, max - 2) + "…" : label;
+}
+
 function pivotCellClass(delta: number | null, density: "comfortable" | "compact"): string {
   const pad = density === "compact" ? "px-2 py-1.5" : "px-3 py-3";
   if (delta !== null && delta < -VISUAL_THRESHOLD) {
@@ -564,7 +577,6 @@ export default async function ExplorerPage({
                 }));
                 const driftingDown = signalEntries.filter((s) => s.delta !== null && s.delta < 0).sort((a, b) => (a.delta as number) - (b.delta as number));
                 const improving = signalEntries.filter((s) => s.delta !== null && s.delta > 0).sort((a, b) => (b.delta as number) - (a.delta as number));
-                const stable = signalEntries.filter((s) => s.delta !== null && s.delta === 0);
                 const noData = signalEntries.filter((s) => s.currentMean === null);
 
                 return (
@@ -604,16 +616,11 @@ export default async function ExplorerPage({
                         .sort((a, b) => (b.currentMean ?? 0) - (a.currentMean ?? 0))
                         .map((s) => {
                           const mean = s.currentMean as number;
-                          let bg = "bg-slate-200";
-                          if (mean >= 3.5) bg = "bg-emerald-500";
-                          else if (mean >= 2.5) bg = "bg-blue-500";
-                          else if (mean >= 1.5) bg = "bg-amber-400";
-                          else bg = "bg-rose-400";
                           const deltaStr = s.delta !== null ? ` Δ${s.delta > 0 ? "+" : ""}${s.delta.toFixed(1)}` : "";
                           return (
                             <span
                               key={s.key}
-                              className={`h-3 w-3 rounded-sm ${bg} calm-transition`}
+                              className={`h-3 w-3 rounded-sm ${meanToBgColor(mean)} calm-transition`}
                               title={`${s.label}: ${mean.toFixed(1)}${deltaStr}`}
                             />
                           );
@@ -633,14 +640,14 @@ export default async function ExplorerPage({
                       <div className="mt-2.5 flex flex-wrap gap-1.5">
                         {driftingDown.slice(0, 4).map((s) => (
                           <span key={s.key} className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50/60 px-2 py-0.5 text-xs text-amber-800" title={`${s.label}: ${s.currentMean?.toFixed(1)} (Δ${(s.delta as number).toFixed(1)})`}>
-                            <span className="font-medium">{s.label.length > 14 ? s.label.slice(0, 12) + "…" : s.label}</span>
+                            <span className="font-medium">{truncateLabel(s.label)}</span>
                             <span className="tabular-nums">{s.currentMean?.toFixed(1)}</span>
                             <span className="tabular-nums text-amber-600">↓{Math.abs(s.delta as number).toFixed(1)}</span>
                           </span>
                         ))}
                         {improving.slice(0, 2).map((s) => (
                           <span key={s.key} className="inline-flex items-center gap-1 rounded-md border border-green-200 bg-green-50/60 px-2 py-0.5 text-xs text-green-800" title={`${s.label}: ${s.currentMean?.toFixed(1)} (Δ+${(s.delta as number).toFixed(1)})`}>
-                            <span className="font-medium">{s.label.length > 14 ? s.label.slice(0, 12) + "…" : s.label}</span>
+                            <span className="font-medium">{truncateLabel(s.label)}</span>
                             <span className="tabular-nums">{s.currentMean?.toFixed(1)}</span>
                             <span className="tabular-nums text-green-600">↑{(s.delta as number).toFixed(1)}</span>
                           </span>
@@ -707,16 +714,11 @@ export default async function ExplorerPage({
                         .sort((a, b) => (b.currentMean ?? 0) - (a.currentMean ?? 0))
                         .map((s) => {
                           const mean = s.currentMean as number;
-                          let bg = "bg-slate-200";
-                          if (mean >= 3.5) bg = "bg-emerald-500";
-                          else if (mean >= 2.5) bg = "bg-blue-500";
-                          else if (mean >= 1.5) bg = "bg-amber-400";
-                          else bg = "bg-rose-400";
                           const deltaStr = s.delta !== null ? ` Δ${s.delta > 0 ? "+" : ""}${s.delta.toFixed(1)}` : "";
                           return (
                             <span
                               key={s.key}
-                              className={`h-3 w-3 rounded-sm ${bg} calm-transition`}
+                              className={`h-3 w-3 rounded-sm ${meanToBgColor(mean)} calm-transition`}
                               title={`${s.label}: ${mean.toFixed(1)}${deltaStr}`}
                             />
                           );
@@ -736,14 +738,14 @@ export default async function ExplorerPage({
                       <div className="mt-2.5 flex flex-wrap gap-1.5">
                         {driftingDown.slice(0, 4).map((s) => (
                           <span key={s.key} className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50/60 px-2 py-0.5 text-xs text-amber-800" title={`${s.label}: ${s.currentMean?.toFixed(1)} (Δ${(s.delta as number).toFixed(1)})`}>
-                            <span className="font-medium">{s.label.length > 14 ? s.label.slice(0, 12) + "…" : s.label}</span>
+                            <span className="font-medium">{truncateLabel(s.label)}</span>
                             <span className="tabular-nums">{s.currentMean?.toFixed(1)}</span>
                             <span className="tabular-nums text-amber-600">↓{Math.abs(s.delta as number).toFixed(1)}</span>
                           </span>
                         ))}
                         {improving.slice(0, 2).map((s) => (
                           <span key={s.key} className="inline-flex items-center gap-1 rounded-md border border-green-200 bg-green-50/60 px-2 py-0.5 text-xs text-green-800" title={`${s.label}: ${s.currentMean?.toFixed(1)} (Δ+${(s.delta as number).toFixed(1)})`}>
-                            <span className="font-medium">{s.label.length > 14 ? s.label.slice(0, 12) + "…" : s.label}</span>
+                            <span className="font-medium">{truncateLabel(s.label)}</span>
                             <span className="tabular-nums">{s.currentMean?.toFixed(1)}</span>
                             <span className="tabular-nums text-green-600">↑{(s.delta as number).toFixed(1)}</span>
                           </span>
