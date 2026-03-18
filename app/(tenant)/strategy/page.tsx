@@ -25,18 +25,24 @@ export default async function StrategyPage() {
 
   if (!canViewStrategy(user.role)) notFound();
 
-  const areas = await (prisma as any).strategyArea.findMany({
-    where:   { tenantId: user.tenantId },
-    include: {
-      notes: {
-        orderBy: { createdAt: "desc" },
+  let areas: any[] = [];
+  let dbError: string | null = null;
+  try {
+    areas = await (prisma as any).strategyArea.findMany({
+      where:   { tenantId: user.tenantId },
+      include: {
+        notes: {
+          orderBy: { createdAt: "desc" },
+        },
       },
-    },
-    orderBy: [
-      { completed: "asc" },
-      { createdAt: "desc" },
-    ],
-  });
+      orderBy: [
+        { completed: "asc" },
+        { createdAt: "desc" },
+      ],
+    });
+  } catch (err: any) {
+    dbError = err?.message ?? "Database error";
+  }
 
   const totalAreas     = areas.length;
   const activeAreas    = areas.filter((a: any) => !a.completed).length;
@@ -87,11 +93,28 @@ export default async function StrategyPage() {
         </div>
       </Card>
 
+      {/* DB error — table may need to be created via prisma db push */}
+      {dbError && (
+        <Card className="border-error/30 bg-error/5 p-4 text-sm">
+          <p className="font-semibold text-error">Database setup required</p>
+          <p className="mt-1 text-muted">
+            The Strategy Board tables are not yet in the database. Run{" "}
+            <code className="rounded bg-bg px-1 py-0.5 font-mono text-xs">npx prisma db push</code>{" "}
+            to create them, then reload this page.
+          </p>
+          {process.env.NODE_ENV === "development" && (
+            <p className="mt-2 break-all font-mono text-[11px] text-muted">{dbError}</p>
+          )}
+        </Card>
+      )}
+
       {/* Board — client component handles interactivity */}
-      <StrategyBoardClient
-        areas={areas}
-        canManage={canManage}
-      />
+      {!dbError && (
+        <StrategyBoardClient
+          areas={areas}
+          canManage={canManage}
+        />
+      )}
     </div>
   );
 }
