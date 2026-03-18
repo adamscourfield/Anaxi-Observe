@@ -175,7 +175,7 @@ export function TenantNav({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-30 flex h-screen flex-col bg-bg calm-transition ${sidebarWidth}`}
+      className={`fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-white/40 bg-white/40 backdrop-blur-xl calm-transition ${sidebarWidth}`}
       aria-label="Sidebar menu"
     >
       {/* Logo area */}
@@ -218,8 +218,8 @@ export function TenantNav({
                         title={collapsed ? item.label : undefined}
                         className={`group flex items-center ${collapsed ? "justify-center px-2" : "justify-between pl-5 pr-3"} rounded-lg py-2 calm-transition ${
                           active
-                            ? "bg-[#eef2ff] text-accent font-semibold"
-                            : "text-[#6b7a8d] hover:bg-[#f4f6f9] hover:text-[#1e293b]"
+                            ? "bg-accent/[0.08] text-accent font-semibold"
+                            : "text-[#6b7a8d] hover:bg-white/50 hover:text-[#1e293b]"
                         }`}
                       >
                         <span className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5"} min-w-0`}>
@@ -254,7 +254,7 @@ export function TenantNav({
             <button
               type="submit"
               title={collapsed ? "Log out" : undefined}
-              className={`group flex items-center ${collapsed ? "justify-center px-2" : "gap-2.5 pl-5 pr-3"} w-full rounded-lg py-2 text-[#6b7a8d] calm-transition hover:bg-[#f4f6f9] hover:text-[#1e293b]`}
+              className={`group flex items-center ${collapsed ? "justify-center px-2" : "gap-2.5 pl-5 pr-3"} w-full rounded-lg py-2 text-[#6b7a8d] calm-transition hover:bg-white/50 hover:text-[#1e293b]`}
             >
               <NavIcon name="logout" active={false} />
               {!collapsed && <span className="text-[13px]">Log out</span>}
@@ -263,7 +263,7 @@ export function TenantNav({
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#b0bec9] calm-transition hover:bg-[#f4f6f9] hover:text-[#1e293b]"
+              className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#b0bec9] calm-transition hover:bg-white/50 hover:text-[#1e293b]"
               type="button"
               title="Collapse navigation"
             >
@@ -276,7 +276,7 @@ export function TenantNav({
       {collapsed && (
         <button
           onClick={() => setCollapsed(false)}
-          className="absolute -right-3.5 top-20 z-40 inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-bg text-muted shadow-md calm-transition hover:text-accent"
+          className="absolute -right-3.5 top-20 z-40 inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/60 bg-white/70 text-muted shadow-md backdrop-blur-md calm-transition hover:text-accent"
           type="button"
           title="Expand navigation"
         >
