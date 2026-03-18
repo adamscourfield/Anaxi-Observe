@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { ActionCard } from "./ActionCard";
-import { EmptyState } from "@/components/ui/empty-state";
 
 type Status = "OPEN" | "BLOCKED" | "DONE";
 
@@ -32,6 +31,13 @@ interface MyActionsGroupedProps {
 const TABS = ["All", "Open", "Blocked", "Done"] as const;
 type Tab = (typeof TABS)[number];
 
+const TAB_DOT: Record<Tab, string> = {
+  All: "",
+  Open: "bg-accent",
+  Blocked: "bg-amber-400",
+  Done: "bg-emerald-500",
+};
+
 export function MyActionsGrouped({ grouped: initial, currentUserId }: MyActionsGroupedProps) {
   const [grouped, setGrouped] = useState(initial);
   const [activeTab, setActiveTab] = useState<Tab>("All");
@@ -40,11 +46,10 @@ export function MyActionsGrouped({ grouped: initial, currentUserId }: MyActionsG
     setGrouped((prev) => {
       const action = prev.OPEN.find((a) => a.id === actionId) ?? prev.BLOCKED.find((a) => a.id === actionId);
       if (!action) return prev;
-      const updated = { ...action, status: "DONE" as Status };
       return {
         OPEN: prev.OPEN.filter((a) => a.id !== actionId),
         BLOCKED: prev.BLOCKED.filter((a) => a.id !== actionId),
-        DONE: [updated, ...prev.DONE],
+        DONE: [{ ...action, status: "DONE" as Status }, ...prev.DONE],
       };
     });
   }, []);
@@ -52,6 +57,7 @@ export function MyActionsGrouped({ grouped: initial, currentUserId }: MyActionsG
   const openCount = grouped.OPEN.length;
   const blockedCount = grouped.BLOCKED.length;
   const doneCount = grouped.DONE.length;
+  const totalCount = openCount + blockedCount + doneCount;
 
   function actionsForTab(): Action[] {
     if (activeTab === "Open") return grouped.OPEN;
@@ -61,37 +67,51 @@ export function MyActionsGrouped({ grouped: initial, currentUserId }: MyActionsG
   }
 
   const tabActions = actionsForTab();
+  const countForTab = (tab: Tab) =>
+    tab === "All" ? totalCount : tab === "Open" ? openCount : tab === "Blocked" ? blockedCount : doneCount;
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-1.5 rounded-xl border border-border/60 bg-surface/60 p-1.5">
+      {/* Tab bar */}
+      <div className="flex items-center gap-1 rounded-lg border border-border bg-white p-1 shadow-sm">
         {TABS.map((tab) => {
-          const count = tab === "All" ? openCount + blockedCount + doneCount
-            : tab === "Open" ? openCount
-            : tab === "Blocked" ? blockedCount
-            : doneCount;
+          const count = countForTab(tab);
+          const isActive = activeTab === tab;
           return (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`calm-transition rounded-lg px-3.5 py-2 text-sm font-medium ${
-                activeTab === tab
-                  ? "bg-[var(--accent-tint)] text-text shadow-sm"
-                  : "text-muted hover:bg-divider/50 hover:text-text"
+              className={`calm-transition flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-[0.8125rem] font-medium ${
+                isActive
+                  ? "bg-[var(--accent-tint)] text-accent shadow-sm"
+                  : "text-muted hover:text-text"
               }`}
             >
+              {tab !== "All" && (
+                <span className={`h-1.5 w-1.5 rounded-full ${isActive ? TAB_DOT[tab] : "bg-border"}`} />
+              )}
               {tab}
-              <span className="ml-1.5 text-xs opacity-70">({count})</span>
+              <span className={`text-[0.6875rem] tabular-nums ${isActive ? "text-accent/70" : "text-muted/70"}`}>
+                {count}
+              </span>
             </button>
           );
         })}
       </div>
 
+      {/* Actions list */}
       {tabActions.length === 0 ? (
-        <EmptyState
-          title={activeTab === "All" ? "No actions assigned to you" : `No ${activeTab.toLowerCase()} actions`}
-          description="Actions created in meetings will appear here."
-        />
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-14">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-accent/10">
+            <svg className="h-5 w-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <p className="text-[0.875rem] font-semibold text-text">
+            {activeTab === "All" ? "No actions assigned to you" : `No ${activeTab.toLowerCase()} actions`}
+          </p>
+          <p className="mt-1 text-[0.8125rem] text-muted">Actions created in meetings will appear here.</p>
+        </div>
       ) : (
         <div className="space-y-2">
           {tabActions.map((action) => (
