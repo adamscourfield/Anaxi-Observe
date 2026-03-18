@@ -58,10 +58,22 @@
   --shadow-lg:  0 4px 16px -4px rgba(0,0,0,0.08), 0 8px 32px -8px rgba(0,0,0,0.05);
   --shadow-xl:  0 8px 30px -6px rgba(0,0,0,0.10), 0 16px 50px -12px rgba(0,0,0,0.06);
 
+  /* ── Border states ────────────────────────────────────────────── */
+  --border-hover:       #d1d5db;
+
+  /* ── Accent surface — very faint indigo tint ────────────────── */
+  --accent-surface:     #eef2ff;
+
+  /* ── Icon muted — softer than text-muted, for inactive icons ── */
+  --icon-muted:         #9ca3af;
+
   /* ── Button aliases ────────────────────────────────────────────── */
   --primary-btn:        #6366f1;
   --primary-btn-hover:  #5558e6;
   --primary-btn-active: #4f46e5;
+  --danger-btn:         #fe9f9f;
+  --danger-btn-hover:   #fd8a8a;
+  --danger-btn-active:  #fc7575;
   --overlay:            rgba(0,0,0,0.25);
 
   /* ── Status pills ──────────────────────────────────────────────── */
@@ -88,6 +100,108 @@
   --pill-accent-bg:     rgba(99,102,241,0.06);
   --pill-accent-text:   #5558e6;
   --pill-accent-ring:   rgba(99,102,241,0.18);
+
+  /* ── Positive / Negative indicators ─────────────────────────── */
+  --positive:           #059669;
+  --negative:           #fe9f9f;
+
+  /* ── Scale: 4-level quality ratings (observe, explorer) ─────── */
+  --scale-limited:        #f43f5e;
+  --scale-limited-bg:     #fff1f2;
+  --scale-limited-text:   #be123c;
+  --scale-limited-border: #fecdd3;
+  --scale-limited-light:  #ffe4e6;
+  --scale-limited-bar:    #fb7185;
+
+  --scale-some:           #f59e0b;
+  --scale-some-bg:        #fffbeb;
+  --scale-some-text:      #b45309;
+  --scale-some-border:    #fde68a;
+  --scale-some-light:     #fef3c7;
+  --scale-some-bar:       #fbbf24;
+
+  --scale-consistent:     #3b82f6;
+  --scale-consistent-bg:  #eff6ff;
+  --scale-consistent-text:#1d4ed8;
+  --scale-consistent-border:#bfdbfe;
+  --scale-consistent-light:#dbeafe;
+  --scale-consistent-bar: #3b82f6;
+
+  --scale-strong:         #059669;
+  --scale-strong-bg:      #ecfdf5;
+  --scale-strong-text:    #047857;
+  --scale-strong-border:  #a7f3d0;
+  --scale-strong-light:   #d1fae5;
+  --scale-strong-bar:     #10b981;
+
+  /* ── Status: pending/approved/denied (leave, on-call) ──────── */
+  --status-pending:       #f59e0b;
+  --status-pending-bg:    #fffbeb;
+  --status-pending-text:  #b45309;
+  --status-pending-border:#fde68a;
+  --status-pending-light: #fef3c7;
+
+  --status-approved:      #059669;
+  --status-approved-bg:   #ecfdf5;
+  --status-approved-text: #065f46;
+  --status-approved-border:#a7f3d0;
+  --status-approved-light:#d1fae5;
+
+  --status-denied:        #f43f5e;
+  --status-denied-bg:     #fff1f2;
+  --status-denied-text:   #be123c;
+  --status-denied-border: #fecdd3;
+  --status-denied-light:  #ffe4e6;
+
+  /* ── Risk tiers: urgent/priority/watch/stable ──────────────── */
+  --risk-urgent-bg:       #fee2e2;
+  --risk-urgent-text:     #b91c1c;
+  --risk-priority-bg:     #fef3c7;
+  --risk-priority-text:   #b45309;
+  --risk-watch-bg:        #fef9c3;
+  --risk-watch-text:      #a16207;
+  --risk-stable-bg:       #d1fae5;
+  --risk-stable-text:     #047857;
+
+  /* ── Severity: low/medium/high/critical ────────────────────── */
+  --severity-low-bg:      #f1f5f9;
+  --severity-low-text:    #64748b;
+  --severity-medium-bg:   #d1fae5;
+  --severity-medium-text: #059669;
+  --severity-medium-dot:  #059669;
+  --severity-high-bg:     #fef3c7;
+  --severity-high-text:   #d97706;
+  --severity-high-dot:    #f59e0b;
+  --severity-critical-bg: #fee2e2;
+  --severity-critical-text:#dc2626;
+  --severity-critical-dot:#ef4444;
+
+  /* ── Lesson phases ─────────────────────────────────────────── */
+  --phase-instruction-bg:     rgba(99,102,241,0.06);
+  --phase-instruction-text:   #4338ca;
+  --phase-instruction-border: #c7d2fe;
+  --phase-guided-bg:          #ecfdf5;
+  --phase-guided-text:        #047857;
+  --phase-guided-border:      #a7f3d0;
+  --phase-independent-bg:     #f5f3ff;
+  --phase-independent-text:   #6d28d9;
+  --phase-independent-border: #ddd6fe;
+  --phase-unknown-bg:         #f8fafc;
+  --phase-unknown-text:       #475569;
+  --phase-unknown-border:     #e2e8f0;
+
+  /* ── Category pills (leave types, flags) ───────────────────── */
+  --cat-purple-bg:  #f3e8ff;
+  --cat-purple-text:#7c3aed;
+  --cat-blue-bg:    #dbeafe;
+  --cat-blue-text:  #1d4ed8;
+  --cat-violet-bg:  #ede9fe;
+  --cat-violet-text:#6d28d9;
+  --cat-indigo-bg:  rgba(99,102,241,0.08);
+  --cat-indigo-text:#4338ca;
+
+  /* ── Toggle ────────────────────────────────────────────────── */
+  --toggle-off:     #e2e8f0;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────── */
@@ -115,7 +229,7 @@ html, body {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #f9fafb;
+  background: var(--bg);
   background-attachment: fixed;
   color: var(--text);
 }
@@ -142,7 +256,7 @@ textarea {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--surface);
   color: var(--text);
   font-size: 0.875rem;
   line-height: 1.5;
@@ -192,7 +306,7 @@ textarea:focus-visible {
 .panel {
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--surface);
   box-shadow: var(--shadow-md);
 }
 
@@ -202,7 +316,7 @@ textarea:focus-visible {
   width: 100%;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--surface);
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -215,11 +329,11 @@ textarea:focus-visible {
   opacity: 0.5;
 }
 
-.field:hover { border-color: #d1d5db; }
+.field:hover { border-color: var(--border-hover); }
 
 .field:focus-visible {
   outline: none;
-  background: #ffffff;
+  background: var(--surface);
   box-shadow: 0 0 0 3px var(--brand-blue-glow);
   border-color: var(--brand-blue);
 }
@@ -238,7 +352,7 @@ textarea:focus-visible {
   overflow: hidden;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--surface);
   box-shadow: var(--shadow-md);
 }
 
@@ -275,7 +389,7 @@ textarea:focus-visible {
   position: sticky;
   left: 0;
   z-index: 1;
-  background: #ffffff;
+  background: var(--surface);
   box-shadow: 1px 0 0 var(--border);
 }
 
