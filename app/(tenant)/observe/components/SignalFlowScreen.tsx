@@ -2,12 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { H2, BodyText } from "@/components/ui/typography";
 import { GLOBAL_SCALE } from "@/modules/observations/signalDefinitions";
 import { clearDraft, loadDraft, persistDraft, ScaleKey } from "./observationDraft";
-import { NotObservedButton } from "./NotObservedButton";
 import { ProgressHeader } from "./ProgressHeader";
 import { SignalHelpSheet } from "./SignalHelpSheet";
 import { SignalTileGroup } from "./SignalTileGroup";
@@ -25,7 +21,15 @@ type Signal = {
 
 type LabelMap = Record<string, { displayName: string; description?: string }>;
 
-export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: string; signals: Signal[]; labelMap: LabelMap }) {
+export function SignalFlowScreen({
+  draftKey,
+  signals,
+  labelMap,
+}: {
+  draftKey: string;
+  signals: Signal[];
+  labelMap: LabelMap;
+}) {
   const router = useRouter();
   const params = useSearchParams();
   const [pendingValue, setPendingValue] = useState<ScaleKey | null>(null);
@@ -33,22 +37,22 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
   const [helpOpen, setHelpOpen] = useState(false);
 
   const orderedByOrder = useMemo(() => [...signals].sort((a, b) => a.order - b.order), [signals]);
-  const signalKeys = useMemo(() => orderedByOrder.map((signal) => signal.key), [orderedByOrder]);
+  const signalKeys = useMemo(() => orderedByOrder.map((s) => s.key), [orderedByOrder]);
   const [draft, setDraft] = useState(() => loadDraft(draftKey, signalKeys));
 
   const hasContext = Boolean(draft.context.teacherId && draft.context.yearGroup && draft.context.subject);
 
   const orderedSignals = useMemo(() => {
-    const phaseRelevant = orderedByOrder.filter((signal) => signal.phaseRelevance.includes(draft.context.phase));
-    const included = new Set(phaseRelevant.map((signal) => signal.key));
-    const universal = orderedByOrder.filter((signal) => signal.isUniversal && !included.has(signal.key));
+    const phaseRelevant = orderedByOrder.filter((s) => s.phaseRelevance.includes(draft.context.phase));
+    const included = new Set(phaseRelevant.map((s) => s.key));
+    const universal = orderedByOrder.filter((s) => s.isUniversal && !included.has(s.key));
     const list = [...phaseRelevant, ...universal];
-    return { list, keyCount: list.length };
+    return list;
   }, [draft.context.phase, orderedByOrder]);
 
-  const total = orderedSignals.list.length;
+  const total = orderedSignals.length;
   const currentIndex = Math.max(0, Math.min(Number(params.get("index") || "0"), Math.max(total - 1, 0)));
-  const currentSignal = orderedSignals.list[currentIndex];
+  const currentSignal = orderedSignals[currentIndex];
 
   useEffect(() => {
     const saved = draft.signalState[currentSignal?.key];
@@ -69,20 +73,20 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
     return null;
   }
 
-  const goToIndex = (index: number) => router.push(`/observe/new/signals?index=${Math.max(0, Math.min(index, total - 1))}`);
+  const goToIndex = (index: number) =>
+    router.push(`/observe/new/signals?index=${Math.max(0, Math.min(index, total - 1))}`);
 
   const advance = () => {
-    const nextIndex = currentIndex + 1;
-    if (nextIndex >= total) {
+    if (currentIndex + 1 >= total) {
       router.push("/observe/new/review");
-      return;
+    } else {
+      goToIndex(currentIndex + 1);
     }
-    goToIndex(nextIndex);
   };
 
   const finishEarly = () => {
     const next = { ...draft, signalState: { ...draft.signalState } };
-    for (const signal of orderedSignals.list.slice(currentIndex + 1)) {
+    for (const signal of orderedSignals.slice(currentIndex + 1)) {
       const state = next.signalState[signal.key];
       if (!state?.valueKey && !state?.notObserved) {
         next.signalState[signal.key] = { valueKey: null, notObserved: true };
@@ -101,14 +105,10 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
     const entry = pendingNotObserved
       ? { valueKey: null, notObserved: true }
       : { valueKey: pendingValue, notObserved: false };
-    const next = {
+    updateDraft({
       ...draft,
-      signalState: {
-        ...draft.signalState,
-        [currentSignal.key]: entry,
-      },
-    };
-    updateDraft(next);
+      signalState: { ...draft.signalState, [currentSignal.key]: entry },
+    });
     advance();
   };
 
@@ -122,16 +122,18 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
   const scaleRows = GLOBAL_SCALE.map((scale) => ({ label: scale.label, guidance: currentSignal.scaleGuidance[scale.key] }));
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-4 bg-bg p-4">
+    <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] w-full max-w-2xl flex-col gap-0 pt-2 pb-8">
+      {/* Progress */}
       <ProgressHeader
         current={currentIndex + 1}
         total={total}
+        signalTitle={title}
         canBack={currentIndex > 0}
         onBack={() => goToIndex(currentIndex - 1)}
         onExit={() => {
-          if (window.confirm("Discard observation?")) {
+          if (window.confirm("Exit this observation? Your progress will be lost.")) {
             clearDraft(draftKey);
-            router.push("/observe/history");
+            router.push("/observe");
           }
         }}
       />
@@ -167,25 +169,60 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
 
           <Button
             type="button"
-            disabled={!hasSelection}
-            onClick={confirmAndAdvance}
-            className="w-full"
+            onClick={() => setHelpOpen(true)}
+            className="mt-0.5 flex shrink-0 items-center gap-1.5 rounded-lg border border-border/60 bg-white/70 px-2.5 py-1.5 text-[0.75rem] font-medium text-muted calm-transition hover:border-accent/30 hover:text-accent"
           >
-            {isLastSignal ? "Review observation →" : "Next →"}
-          </Button>
-          {!isLastSignal && (
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={finishEarly}
-              className="w-full text-xs"
-            >
-              Complete &amp; review now →
-            </Button>
+            <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" />
+              <path d="M6.5 6.5a1.5 1.5 0 1 1 1.5 1.5v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              <circle cx="8" cy="11.5" r="0.5" fill="currentColor" />
+            </svg>
+            Guide
+          </button>
+        </div>
+        <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-muted">{description}</p>
+      </div>
+
+      {/* Scale tiles */}
+      <div className="mt-5 flex-1">
+        <SignalTileGroup
+          options={scaleOptions}
+          selected={pendingValue}
+          onSelect={(value) => {
+            setPendingValue(value as ScaleKey);
+            setPendingNotObserved(false);
+          }}
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="mt-5 space-y-3">
+        {/* Skip */}
+        <button
+          type="button"
+          onClick={() => {
+            setPendingValue(null);
+            setPendingNotObserved(true);
+          }}
+          className={`flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-[0.8125rem] font-medium calm-transition ${
+            pendingNotObserved
+              ? "border-accent/40 bg-accent/5 text-accent"
+              : "border-dashed border-border bg-transparent text-muted hover:border-muted hover:text-text"
+          }`}
+        >
+          {pendingNotObserved ? (
+            <>
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+              Skipped — tap a rating above to change
+            </>
+          ) : (
+            "Skip this signal"
           )}
+        </button>
 
       </div>
 
+      {/* Help sheet */}
       <SignalHelpSheet
         open={helpOpen}
         onClose={() => setHelpOpen(false)}
@@ -193,7 +230,6 @@ export function SignalFlowScreen({ draftKey, signals, labelMap }: { draftKey: st
         lookFors={currentSignal.lookFors}
         scaleRows={scaleRows}
       />
-
     </div>
   );
 }
