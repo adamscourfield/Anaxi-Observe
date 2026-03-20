@@ -186,8 +186,8 @@ export function TenantNav({
           </span>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="text-[14px] font-bold tracking-[-0.02em] text-[var(--on-surface)]">Anaxi</span>
-              <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[var(--outline)]">Academic Ledger</span>
+              <span className="text-[13px] font-bold tracking-[0.04em] uppercase text-[var(--on-surface)]">Anaxi</span>
+              <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[var(--outline)]">Future Education</span>
             </div>
           )}
         </Link>
@@ -203,7 +203,7 @@ export function TenantNav({
                   {section.label}
                 </div>
               )}
-              <ul className="space-y-0.5">
+              <ul className="space-y-1">
                 {section.items.map((item) => {
                   const active = item.href === "/home" || item.href === "/my-actions"
                     ? pathname === item.href
@@ -230,13 +230,7 @@ export function TenantNav({
                           {!collapsed && <span className="truncate text-[13px] leading-tight">{item.label}</span>}
                         </span>
                         {!collapsed && showBadge && (
-                          <span className={`ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold ${
-                            active
-                              ? "bg-[var(--surface-container-high)] text-[var(--on-surface)]"
-                              : (item.badgeCount ?? 0) >= 5
-                                ? "bg-[var(--scale-some-light)] text-[var(--scale-some-text)]"
-                                : "bg-[var(--surface-container)] text-[var(--on-surface-variant)]"
-                          }`}>
+                          <span className="ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold bg-[var(--surface-container-highest)] text-[var(--on-surface)]">
                             {item.badgeCount}
                           </span>
                         )}
