@@ -189,14 +189,19 @@ export default async function DepartmentsPage({
   /* ---------------------------------------------------------------- */
 
   return (
-    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+    <>
       {/* Back link */}
-      <Link
-        href="/explorer"
-        className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-800"
-      >
-        ← Explorer
-      </Link>
+      <div className="mb-4">
+        <Link
+          href="/explorer"
+          className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-accent"
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back to Explorer
+        </Link>
+      </div>
 
       {/* Header */}
       <PageHeader
@@ -206,26 +211,11 @@ export default async function DepartmentsPage({
       />
 
       {/* Controls row */}
-      <div className="flex flex-wrap items-end gap-4">
-        {/* Window selector */}
-        <fieldset className="flex gap-1 rounded-md border border-zinc-200 p-1">
-          {WINDOW_OPTIONS.map((w) => (
-            <Link
-              key={w}
-              href={buildUrl({ windowDays: String(w) })}
-              className={`rounded px-3 py-1 text-sm font-medium ${
-                windowDays === w
-                  ? "bg-zinc-900 text-white"
-                  : "text-zinc-600 hover:bg-zinc-100"
-              }`}
-            >
-              {w}d
-            </Link>
-          ))}
-        </fieldset>
-
-        {/* Department filter */}
-        <form className="flex items-end gap-2">
+      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="border-b border-border/30 px-5 py-3">
+          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
+        </div>
+        <form className="flex flex-wrap items-end gap-3 p-4">
           <input type="hidden" name="windowDays" value={windowDays} />
           {sortSignal && (
             <input type="hidden" name="sortSignal" value={sortSignal} />
@@ -234,12 +224,25 @@ export default async function DepartmentsPage({
             <input type="hidden" name="sortDir" value={sortDir} />
           )}
 
-          <label className="flex flex-col text-xs font-medium text-zinc-600">
-            Department
+          {/* Window selector */}
+          <label className="flex flex-col gap-1">
+            <span className="text-[0.6875rem] font-medium text-muted">Window</span>
+            <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
+              {WINDOW_OPTIONS.map((w) => (
+                <option key={w} value={String(w)}>
+                  {w} days
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {/* Department filter */}
+          <label className="flex flex-col gap-1">
+            <span className="text-[0.6875rem] font-medium text-muted">Department</span>
             <select
               name="departmentId"
               defaultValue={rawDeptId ?? ""}
-              className="mt-1 rounded border border-zinc-300 px-2 py-1.5 text-sm"
+              className="field min-w-[160px]"
             >
               <option value="">All departments</option>
               {selectableDepts.map((d) => (
@@ -250,147 +253,157 @@ export default async function DepartmentsPage({
             </select>
           </label>
 
-          <button
-            type="submit"
-            className="rounded bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700"
-          >
-            Apply
-          </button>
-          <Link
-            href={buildUrl({ departmentId: undefined })}
-            className="rounded border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
-          >
-            Clear
-          </Link>
-        </form>
-
-        {/* Export */}
-        {showExport && (
-          <form action="/api/explorer/export" method="POST" className="ml-auto">
-            <input type="hidden" name="view" value="INSTRUCTION_DEPARTMENTS_PIVOT" />
-            <input type="hidden" name="windowDays" value={String(windowDays)} />
-            {rawDeptId && (
-              <input type="hidden" name="departmentId" value={rawDeptId} />
-            )}
+          {/* Buttons */}
+          <div className="flex items-end gap-2">
             <button
               type="submit"
-              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
             >
-              Export CSV
+              Apply
             </button>
-          </form>
-        )}
+            <Link
+              href={buildUrl({ departmentId: undefined })}
+              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+            >
+              Clear
+            </Link>
+            {showExport && (
+              <form action="/api/explorer/export" method="POST" className="inline">
+                <input type="hidden" name="view" value="INSTRUCTION_DEPARTMENTS_PIVOT" />
+                <input type="hidden" name="windowDays" value={String(windowDays)} />
+                {rawDeptId && (
+                  <input type="hidden" name="departmentId" value={rawDeptId} />
+                )}
+                <button
+                  type="submit"
+                  className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+                >
+                  Export CSV
+                </button>
+              </form>
+            )}
+          </div>
+        </form>
       </div>
 
       {/* Signal column headers (scrollable) */}
-      <div className="overflow-x-auto rounded-lg border border-zinc-200">
-        <table className="w-full min-w-[900px] text-sm">
-          <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">
-              <th className="px-4 py-3">Department</th>
-              <th className="px-3 py-3 text-right">Teachers</th>
-              <th className="px-3 py-3 text-right">Obs.</th>
-              {SIGNAL_DEFINITIONS.map((s) => {
-                const isActive = sortSignal === s.key;
-                const nextDir =
-                  isActive && sortDir === "desc" ? "asc" : "desc";
-                return (
-                  <th key={s.key} className="px-1 py-3 text-center">
-                    <Link
-                      href={buildUrl({
-                        sortSignal: s.key,
-                        sortDir: nextDir,
-                      })}
-                      className="hover:text-zinc-900"
-                      title={s.displayNameDefault}
-                    >
-                      {truncateLabel(s.displayNameDefault)}
-                      {isActive && (sortDir === "desc" ? " ↓" : " ↑")}
-                    </Link>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100">
-            {sortedRows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={3 + SIGNAL_DEFINITIONS.length}
-                  className="px-4 py-12 text-center text-zinc-400"
-                >
-                  No department data found for this window.
-                </td>
-              </tr>
-            )}
-
-            {sortedRows.map((row) => {
-              const { drifting, improving } = chipSets(row);
-              return (
-                <tr key={row.departmentId} className="hover:bg-zinc-50/60">
-                  {/* Department name + chips */}
-                  <td className="space-y-1 px-4 py-3">
-                    <Link href="#" className="font-semibold text-zinc-900 hover:underline">
-                      {row.departmentName}
-                    </Link>
-
-                    {/* Chips row */}
-                    <div className="flex flex-wrap gap-1">
-                      {drifting.map((c) => (
-                        <span
-                          key={c.key}
-                          className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800"
-                          title={`${c.label}: ${c.delta > 0 ? "+" : ""}${c.delta.toFixed(2)}`}
-                        >
-                          {truncateLabel(c.label, 12)}
-                        </span>
-                      ))}
-                      {improving.map((c) => (
-                        <span
-                          key={c.key}
-                          className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800"
-                          title={`${c.label}: +${c.delta.toFixed(2)}`}
-                        >
-                          {truncateLabel(c.label, 12)}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-
-                  {/* Stats */}
-                  <td className="px-3 py-3 text-right tabular-nums text-zinc-600">
-                    {row.teacherCount}
-                  </td>
-                  <td className="px-3 py-3 text-right tabular-nums text-zinc-600">
-                    {row.observationCount}
-                  </td>
-
-                  {/* Signal heatmap cells */}
+      {sortedRows.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
+            <svg className="h-6 w-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16.5 16.5 3 3" strokeLinecap="round" />
+            </svg>
+          </div>
+          <p className="text-[0.875rem] font-semibold text-text">No department data</p>
+          <p className="mt-1 text-[0.8125rem] text-muted">Try widening the window period or adjusting filters.</p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] text-sm">
+              <thead>
+                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                  <th className="px-5 py-3">Department</th>
+                  <th className="px-4 py-3 text-right">Teachers</th>
+                  <th className="px-4 py-3 text-right">Obs.</th>
                   {SIGNAL_DEFINITIONS.map((s) => {
-                    const cell = row.signalData[s.key];
-                    const mean = cell?.currentMean;
-                    if (mean === null || mean === undefined) {
-                      return (
-                        <td key={s.key} className="px-1 py-3 text-center">
-                          <span className="inline-block h-5 w-5 rounded bg-zinc-200" />
-                        </td>
-                      );
-                    }
+                    const isActive = sortSignal === s.key;
+                    const nextDir =
+                      isActive && sortDir === "desc" ? "asc" : "desc";
                     return (
-                      <td key={s.key} className="px-1 py-3 text-center">
-                        <span
-                          className={`inline-block h-5 w-5 rounded ${meanToBgColor(mean)}`}
-                          title={`${s.displayNameDefault}: ${mean.toFixed(2)}${cell?.delta != null ? ` (Δ ${cell.delta > 0 ? "+" : ""}${cell.delta.toFixed(2)})` : ""}`}
-                        />
-                      </td>
+                      <th key={s.key} className="px-1 py-3 text-center">
+                        <Link
+                          href={buildUrl({
+                            sortSignal: s.key,
+                            sortDir: nextDir,
+                          })}
+                          className="calm-transition hover:text-text"
+                          title={s.displayNameDefault}
+                        >
+                          {truncateLabel(s.displayNameDefault)}
+                          {isActive && (sortDir === "desc" ? " ↓" : " ↑")}
+                        </Link>
+                      </th>
                     );
                   })}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </main>
+              </thead>
+              <tbody>
+                {sortedRows.map((row) => {
+                  const { drifting, improving } = chipSets(row);
+                  return (
+                    <tr key={row.departmentId} className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50">
+                      {/* Department name + chips */}
+                      <td className="space-y-1 px-5 py-3">
+                        <span className="font-semibold text-text">
+                          {row.departmentName}
+                        </span>
+
+                        {/* Chips row */}
+                        <div className="flex flex-wrap gap-1">
+                          {drifting.map((c) => (
+                            <span
+                              key={c.key}
+                              className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800"
+                              title={`${c.label}: ${c.delta > 0 ? "+" : ""}${c.delta.toFixed(2)}`}
+                            >
+                              {truncateLabel(c.label, 12)}
+                            </span>
+                          ))}
+                          {improving.map((c) => (
+                            <span
+                              key={c.key}
+                              className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800"
+                              title={`${c.label}: +${c.delta.toFixed(2)}`}
+                            >
+                              {truncateLabel(c.label, 12)}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+
+                      {/* Stats */}
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                        {row.teacherCount}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                        {row.observationCount}
+                      </td>
+
+                      {/* Signal heatmap cells */}
+                      {SIGNAL_DEFINITIONS.map((s) => {
+                        const cell = row.signalData[s.key];
+                        const mean = cell?.currentMean;
+                        if (mean === null || mean === undefined) {
+                          return (
+                            <td key={s.key} className="px-1 py-3 text-center">
+                              <span className="inline-block h-5 w-5 rounded bg-border" />
+                            </td>
+                          );
+                        }
+                        return (
+                          <td key={s.key} className="px-1 py-3 text-center">
+                            <span
+                              className={`inline-block h-5 w-5 rounded ${meanToBgColor(mean)}`}
+                              title={`${s.displayNameDefault}: ${mean.toFixed(2)}${cell?.delta != null ? ` (Δ ${cell.delta > 0 ? "+" : ""}${cell.delta.toFixed(2)})` : ""}`}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Footer ──────────────────────────────────────────────── */}
+      <p className="mt-8 text-[0.75rem] text-muted">
+        Explorer · Departments · {windowDays}d window
+      </p>
+    </>
   );
 }

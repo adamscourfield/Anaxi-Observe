@@ -128,20 +128,25 @@ export default async function SignalsPage({
 
   // ── render ──────────────────────────────────────────────────────
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+    <>
       {/* Back link */}
-      <Link
-        href="/explorer"
-        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-      >
-        ← Explorer
-      </Link>
+      <div className="mb-4">
+        <Link
+          href="/explorer"
+          className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-accent"
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back to Explorer
+        </Link>
+      </div>
 
       <PageHeader
         title="Signals"
         subtitle="CPD priority signals ranked by how commonly they are weakening across teachers."
         meta={
-          <span className="text-xs text-zinc-400">
+          <span className="text-xs text-muted">
             {windowDays}d window · {sortedRows.length} signal
             {sortedRows.length !== 1 ? "s" : ""}
           </span>
@@ -149,33 +154,30 @@ export default async function SignalsPage({
       />
 
       {/* ── Controls bar ────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-end gap-4">
-        {/* Window selector */}
-        <div className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800">
-          {VALID_WINDOWS.map((w) => (
-            <Link
-              key={w}
-              href={buildUrl({ windowDays: String(w) })}
-              className={`rounded-md px-3 py-1 text-sm font-medium transition ${
-                w === windowDays
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
-              }`}
-            >
-              {w}d
-            </Link>
-          ))}
+      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="border-b border-border/30 px-5 py-3">
+          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
         </div>
+        <form className="flex flex-wrap items-end gap-3 p-4">
+          {/* Window selector */}
+          <label className="flex flex-col gap-1">
+            <span className="text-[0.6875rem] font-medium text-muted">Window</span>
+            <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
+              {VALID_WINDOWS.map((w) => (
+                <option key={w} value={String(w)}>
+                  {w} days
+                </option>
+              ))}
+            </select>
+          </label>
 
-        {/* Department filter */}
-        <form className="flex items-end gap-2">
-          <input type="hidden" name="windowDays" value={windowDays} />
-          <label className="flex flex-col text-xs font-medium text-zinc-600 dark:text-zinc-300">
-            Department
+          {/* Department filter */}
+          <label className="flex flex-col gap-1">
+            <span className="text-[0.6875rem] font-medium text-muted">Department</span>
             <select
               name="departmentId"
               defaultValue={rawDeptId ?? ""}
-              className="mt-1 rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
+              className="field min-w-[160px]"
             >
               <option value="">All departments</option>
               {selectableDepts.map((d: any) => (
@@ -185,134 +187,137 @@ export default async function SignalsPage({
               ))}
             </select>
           </label>
-          <button
-            type="submit"
-            className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-          >
-            Apply
-          </button>
-          {departmentId && (
-            <Link
-              href={buildUrl({ departmentId: undefined })}
-              className="text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-            >
-              Clear
-            </Link>
-          )}
-        </form>
 
-        {/* Export */}
-        {showExport && (
-          <form
-            action="/api/explorer/export"
-            method="POST"
-            className="ml-auto"
-          >
-            <input type="hidden" name="view" value="CPD_SIGNAL_PRIORITIES" />
-            <input
-              type="hidden"
-              name="windowDays"
-              value={String(windowDays)}
-            />
-            {departmentId && (
-              <input type="hidden" name="departmentId" value={departmentId} />
-            )}
+          {/* Buttons */}
+          <div className="flex items-end gap-2">
             <button
               type="submit"
-              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
             >
-              Export CSV
+              Apply
             </button>
-          </form>
-        )}
+            {departmentId && (
+              <Link
+                href={buildUrl({ departmentId: undefined })}
+                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              >
+                Clear
+              </Link>
+            )}
+            {showExport && (
+              <form action="/api/explorer/export" method="POST" className="inline">
+                <input type="hidden" name="view" value="CPD_SIGNAL_PRIORITIES" />
+                <input type="hidden" name="windowDays" value={String(windowDays)} />
+                {departmentId && (
+                  <input type="hidden" name="departmentId" value={departmentId} />
+                )}
+                <button
+                  type="submit"
+                  className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+                >
+                  Export CSV
+                </button>
+              </form>
+            )}
+          </div>
+        </form>
       </div>
 
+      {/* ── Result count ────────────────────────────────────────── */}
+      <p className="mt-4 text-[0.8125rem] text-muted">
+        {sortedRows.length > 0
+          ? `${sortedRows.length} signal${sortedRows.length !== 1 ? "s" : ""} in the ${windowDays}-day window`
+          : "No signal data for this window"}
+      </p>
+
       {/* ── Priority signals table ──────────────────────────────── */}
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
-              <th className="px-4 py-3">Signal</th>
-              <th className="px-4 py-3 text-right">Teachers</th>
-              <th className="px-4 py-3 text-right">Drifting</th>
-              <th className="px-4 py-3 text-right">Drift rate</th>
-              <th className="px-4 py-3 text-right">Avg drift</th>
-              <th className="px-4 py-3 text-right">Priority</th>
-              <th className="px-4 py-3 text-right">Improving</th>
-              <th className="px-4 py-3 text-right">Improve rate</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {sortedRows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={8}
-                  className="px-4 py-8 text-center text-zinc-400"
-                >
-                  No signal data for this window.
-                </td>
-              </tr>
-            )}
-            {sortedRows.map((row) => {
-              const highlight = row.priorityScore > 0.1;
-              return (
-                <tr
-                  key={row.signalKey}
-                  className={
-                    highlight
-                      ? "bg-amber-50/50 dark:bg-amber-950/20"
-                      : undefined
-                  }
-                >
-                  <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">
-                    <Link
-                      href={`/analysis/cpd/${encodeURIComponent(row.signalKey)}`}
-                      className="hover:underline"
-                    >
-                      {row.label}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                    {row.teachersCovered}
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                    {row.teachersDriftingDown}
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                    {pct(row.driftRate)}
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                    {delta(row.avgNegDeltaAbs ? -row.avgNegDeltaAbs : null)}
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
-                    {row.priorityScore.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-emerald-700 dark:text-emerald-400">
-                    {row.teachersImproving}
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-emerald-700 dark:text-emerald-400">
-                    {pct(row.improvingRate)}
-                  </td>
+      {sortedRows.length === 0 ? (
+        <div className="mt-4 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
+            <svg className="h-6 w-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+            </svg>
+          </div>
+          <p className="text-[0.875rem] font-semibold text-text">No signals found</p>
+          <p className="mt-1 text-[0.8125rem] text-muted">Try adjusting your window or department filter.</p>
+        </div>
+      ) : (
+        <div className="mt-4 overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                  <th className="px-5 py-3">Signal</th>
+                  <th className="px-4 py-3 text-right">Teachers</th>
+                  <th className="px-4 py-3 text-right">Drifting</th>
+                  <th className="px-4 py-3 text-right">Drift rate</th>
+                  <th className="px-4 py-3 text-right">Avg drift</th>
+                  <th className="px-4 py-3 text-right">Priority</th>
+                  <th className="px-4 py-3 text-right">Improving</th>
+                  <th className="px-4 py-3 text-right">Improve rate</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {sortedRows.map((row) => {
+                  const highlight = row.priorityScore > 0.1;
+                  return (
+                    <tr
+                      key={row.signalKey}
+                      className={`group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50 ${
+                        highlight ? "bg-amber-50/30" : ""
+                      }`}
+                    >
+                      <td className="px-5 py-3 font-medium text-text">
+                        <Link
+                          href={`/analysis/cpd/${encodeURIComponent(row.signalKey)}`}
+                          className="calm-transition group-hover:text-accent hover:underline"
+                        >
+                          {row.label}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                        {row.teachersCovered}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                        {row.teachersDriftingDown}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                        {pct(row.driftRate)}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                        {delta(row.avgNegDeltaAbs ? -row.avgNegDeltaAbs : null)}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums font-semibold text-text">
+                        {row.priorityScore.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-success">
+                        {row.teachersImproving}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-success">
+                        {pct(row.improvingRate)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* ── Positive momentum section ───────────────────────────── */}
       {improving.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        <section className="mt-6 space-y-3">
+          <h2 className="text-lg font-semibold text-text">
             Positive momentum
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {improving.map((row) => (
               <div
                 key={row.signalKey}
-                className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-800 dark:bg-emerald-950/30"
+                className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4"
               >
-                <h3 className="font-semibold text-emerald-900 dark:text-emerald-300">
+                <h3 className="font-semibold text-emerald-900">
                   <Link
                     href={`/analysis/cpd/${encodeURIComponent(row.signalKey)}`}
                     className="hover:underline"
@@ -320,7 +325,7 @@ export default async function SignalsPage({
                     {row.label}
                   </Link>
                 </h3>
-                <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-emerald-800 dark:text-emerald-400">
+                <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-emerald-800">
                   <span>
                     <span className="font-medium">{row.teachersImproving}</span>{" "}
                     teacher{row.teachersImproving !== 1 ? "s" : ""} improving
@@ -343,6 +348,11 @@ export default async function SignalsPage({
           </div>
         </section>
       )}
-    </div>
+
+      {/* ── Footer ──────────────────────────────────────────────── */}
+      <p className="mt-8 text-[0.75rem] text-muted">
+        Explorer · Signals · {windowDays}d window
+      </p>
+    </>
   );
 }
