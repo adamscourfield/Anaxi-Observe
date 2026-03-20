@@ -20,7 +20,7 @@ type NavSection = {
 };
 
 function NavIcon({ name, active }: { name: string; active: boolean }) {
-  const stroke = active ? "currentColor" : "var(--icon-muted)";
+  const stroke = active ? "var(--on-surface)" : "var(--outline)";
   const common = { viewBox: "0 0 20 20", fill: "none", className: "h-[18px] w-[18px] shrink-0", xmlns: "http://www.w3.org/2000/svg" };
 
   switch (name) {
@@ -124,7 +124,7 @@ export function TenantNav({
   const canAccessAdminUsers = hasPermission(role, "admin:users");
   const canAccessAdminSettings = hasPermission(role, "admin:settings");
   const canSeeAnalysis = hasAnyPermission(role, ["analysis:view", "analysis:export"]);
-  void canSeeAnalysis; // Explorer covers all analytics views; Analytics page removed from nav
+  void canSeeAnalysis;
   const canViewStrategy = role === "SUPER_ADMIN" || role === "ADMIN" || role === "SLT";
 
   const navItem = (label: string, href: string, badgeCount?: number): NavItem => ({
@@ -175,17 +175,20 @@ export function TenantNav({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-border/60 bg-white calm-transition ${sidebarWidth}`}
+      className={`fixed left-0 top-0 z-30 flex h-screen flex-col calm-transition glass-surface ${sidebarWidth}`}
       aria-label="Sidebar menu"
     >
       {/* Logo area */}
-      <div className={`flex items-center ${collapsed ? "justify-center px-2" : "px-5"} h-14 shrink-0 border-b border-border/60`}>
+      <div className={`flex items-center ${collapsed ? "justify-center px-2" : "px-5"} h-14 shrink-0`}>
         <Link href="/home" className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} group`}>
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accentSurface">
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.75rem] bg-[var(--surface-container-high)]">
             <Image src="/anaxi-logo.png" alt="Anaxi" width={22} height={22} priority className="h-[22px] w-[22px] object-contain" />
           </span>
           {!collapsed && (
-            <span className="text-[15px] font-bold tracking-[-0.02em] text-text">Anaxi</span>
+            <div className="flex flex-col">
+              <span className="text-[14px] font-bold tracking-[-0.02em] text-[var(--on-surface)]">Anaxi</span>
+              <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[var(--outline)]">Academic Ledger</span>
+            </div>
           )}
         </Link>
       </div>
@@ -196,7 +199,7 @@ export function TenantNav({
           {sections.map((section) => (
             <div key={section.label}>
               {!collapsed && (
-                <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted/50">
+                <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--outline)]">
                   {section.label}
                 </div>
               )}
@@ -211,15 +214,15 @@ export function TenantNav({
                   return (
                     <li key={item.href} className="relative">
                       {active && !collapsed && (
-                        <span className="pointer-events-none absolute inset-y-[3px] left-0 w-[3px] rounded-r-full bg-accent" />
+                        <span className="pointer-events-none absolute inset-y-[3px] left-0 w-[3px] rounded-r-full bg-[var(--on-surface)]" />
                       )}
                       <Link
                         href={item.href}
                         title={collapsed ? item.label : undefined}
-                        className={`group flex items-center ${collapsed ? "justify-center px-2" : "justify-between pl-5 pr-3"} rounded-xl py-2 calm-transition ${
+                        className={`group flex items-center ${collapsed ? "justify-center px-2" : "justify-between pl-5 pr-3"} rounded-[0.75rem] py-2 calm-transition ${
                           active
-                            ? "bg-accent/[0.06] text-accent font-semibold"
-                            : "text-muted hover:bg-divider hover:text-text"
+                            ? "bg-[var(--surface-container)] text-[var(--on-surface)] font-semibold"
+                            : "text-[var(--on-surface-variant)] hover:bg-[var(--surface-container-low)] hover:text-[var(--on-surface)]"
                         }`}
                       >
                         <span className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5"} min-w-0`}>
@@ -229,10 +232,10 @@ export function TenantNav({
                         {!collapsed && showBadge && (
                           <span className={`ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold ${
                             active
-                              ? "bg-accent/10 text-accent"
+                              ? "bg-[var(--surface-container-high)] text-[var(--on-surface)]"
                               : (item.badgeCount ?? 0) >= 5
                                 ? "bg-[var(--scale-some-light)] text-[var(--scale-some-text)]"
-                                : "bg-divider text-muted"
+                                : "bg-[var(--surface-container)] text-[var(--on-surface-variant)]"
                           }`}>
                             {item.badgeCount}
                           </span>
@@ -248,13 +251,13 @@ export function TenantNav({
       </nav>
 
       {/* Bottom: sign out + collapse */}
-      <div className="border-t border-border/60 px-3 py-3">
+      <div className="px-3 py-3">
         <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"}`}>
           <form action="/api/auth/signout" method="post" className={collapsed ? "" : "flex-1"}>
             <button
               type="submit"
               title={collapsed ? "Log out" : undefined}
-              className={`group flex items-center ${collapsed ? "justify-center px-2" : "gap-2.5 pl-5 pr-3"} w-full rounded-xl py-2 text-muted calm-transition hover:bg-divider hover:text-text`}
+              className={`group flex items-center ${collapsed ? "justify-center px-2" : "gap-2.5 pl-5 pr-3"} w-full rounded-[0.75rem] py-2 text-[var(--on-surface-variant)] calm-transition hover:bg-[var(--surface-container-low)] hover:text-[var(--on-surface)]`}
             >
               <NavIcon name="logout" active={false} />
               {!collapsed && <span className="text-[13px]">Log out</span>}
@@ -263,7 +266,7 @@ export function TenantNav({
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted/60 calm-transition hover:bg-divider hover:text-text"
+              className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.75rem] text-[var(--outline)] calm-transition hover:bg-[var(--surface-container-low)] hover:text-[var(--on-surface)]"
               type="button"
               title="Collapse navigation"
             >
@@ -276,7 +279,7 @@ export function TenantNav({
       {collapsed && (
         <button
           onClick={() => setCollapsed(false)}
-          className="absolute -right-3.5 top-20 z-40 inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/60 bg-white/50 text-muted shadow-sm backdrop-blur-sm calm-transition hover:text-accent"
+          className="absolute -right-3.5 top-20 z-40 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--surface-container-lowest)] text-[var(--on-surface-variant)] shadow-ambient backdrop-blur-sm calm-transition hover:text-[var(--on-surface)]"
           type="button"
           title="Expand navigation"
         >

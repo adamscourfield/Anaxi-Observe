@@ -1,5 +1,5 @@
 import "./globals.css";
-import { Inter } from "next/font/google";
+import { Inter, Newsreader } from "next/font/google";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -7,10 +7,17 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-newsreader",
+});
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${inter.className}`}>
-      <body className="bg-bg text-text">{children}</body>
+    <html lang="en" className={`${inter.variable} ${newsreader.variable} ${inter.className}`}>
+      <body className="bg-[var(--surface-bright)] text-[var(--on-surface)]">{children}</body>
     </html>
   );
 }
