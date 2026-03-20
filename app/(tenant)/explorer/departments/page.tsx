@@ -217,7 +217,6 @@ export default async function DepartmentsPage({
         </div>
         <div className="flex flex-wrap items-end gap-3 p-4">
           <form className="flex flex-wrap items-end gap-3">
-            <input type="hidden" name="windowDays" value={windowDays} />
             {sortSignal && (
               <input type="hidden" name="sortSignal" value={sortSignal} />
             )}
