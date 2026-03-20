@@ -325,9 +325,9 @@ function LeadershipHome({
       )}
 
       {/* ═══ Hero Section 3: Signal Analysis ═══ */}
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-12">
         {/* CPD Priorities (dark box) */}
-        <Card className="space-y-4 !bg-[var(--primary)] !text-white !shadow-lg">
+        <Card className="space-y-4 !bg-[var(--primary)] !text-white !shadow-lg lg:col-span-5">
           <div className="flex items-center gap-2">
             <span className="text-lg">✦</span>
             <h2 className="text-[1rem] font-bold tracking-[-0.01em]">CPD Priorities</h2>
@@ -360,7 +360,7 @@ function LeadershipHome({
         </Card>
 
         {/* Staff Needing Intervention */}
-        <Card className="space-y-4">
+        <Card className="space-y-4 lg:col-span-4">
           <div className="flex items-center gap-2">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface-container)] text-sm">⚡</span>
             <div>
@@ -391,7 +391,7 @@ function LeadershipHome({
         </Card>
 
         {/* Least Observed Teachers */}
-        <Card className="space-y-4">
+        <Card tone="inset" className="space-y-4 lg:col-span-3">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-[1rem] font-bold tracking-[-0.01em] text-text">Observation Coverage</h2>
