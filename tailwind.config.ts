@@ -6,16 +6,67 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
+        newsreader: ['var(--font-newsreader)', 'Georgia', 'Times New Roman', 'serif'],
+        serif: ['var(--font-newsreader)', 'Georgia', 'Times New Roman', 'serif'],
       },
       colors: {
-        // ── CSS variable aliases (existing pattern preserved) ──────
-        bg:           "var(--bg)",
-        surface:      "var(--surface)",
-        text:         "var(--text)",
-        muted:        "var(--text-muted)",
-        border:       "var(--border)",
-        divider:      "var(--divider)",
-        accent:       "var(--accent)",
+        // ── Design System: The Modern Academic Ledger ──────────────
+        // Primary
+        primary:              "var(--primary)",
+        "primary-container":  "var(--primary-container)",
+        "on-primary":         "var(--on-primary)",
+        "on-primary-container": "var(--on-primary-container)",
+        "primary-fixed":      "var(--primary-fixed)",
+        "primary-fixed-dim":  "var(--primary-fixed-dim)",
+        "inverse-primary":    "var(--inverse-primary)",
+
+        // Secondary
+        secondary:            "var(--secondary)",
+        "secondary-container":"var(--secondary-container)",
+        "on-secondary":       "var(--on-secondary)",
+        "on-secondary-container": "var(--on-secondary-container)",
+
+        // Tertiary / Coral
+        tertiary:             "var(--tertiary)",
+        "tertiary-container": "var(--tertiary-container)",
+        "on-tertiary":        "var(--on-tertiary)",
+        "on-tertiary-container": "var(--on-tertiary-container)",
+        "tertiary-fixed":     "var(--tertiary-fixed)",
+        "tertiary-fixed-dim": "var(--tertiary-fixed-dim)",
+
+        // Surfaces
+        background:           "var(--background)",
+        "surface-bright":     "var(--surface-bright)",
+        "surface-dim":        "var(--surface-dim)",
+        "surface-container-lowest": "var(--surface-container-lowest)",
+        "surface-container-low":    "var(--surface-container-low)",
+        "surface-container":        "var(--surface-container)",
+        "surface-container-high":   "var(--surface-container-high)",
+        "surface-container-highest":"var(--surface-container-highest)",
+        "surface-variant":    "var(--surface-variant)",
+        "inverse-surface":    "var(--inverse-surface)",
+        "inverse-on-surface": "var(--inverse-on-surface)",
+
+        // On-surface
+        "on-surface":         "var(--on-surface)",
+        "on-surface-variant": "var(--on-surface-variant)",
+        "on-background":      "var(--on-background)",
+        outline:              "var(--outline)",
+        "outline-variant":    "var(--outline-variant)",
+
+        // Error
+        "error-container":    "var(--error-container)",
+        "on-error":           "var(--on-error)",
+        "on-error-container": "var(--on-error-container)",
+
+        // ── CSS variable aliases (legacy pattern preserved) ──────────
+        bg:           "var(--surface-bright)",
+        surface:      "var(--surface-container-lowest)",
+        text:         "var(--on-surface)",
+        muted:        "var(--on-surface-variant)",
+        border:       "var(--outline-variant)",
+        divider:      "var(--surface-container-low)",
+        accent:       "var(--primary)",
         accentHover:  "var(--accent-hover)",
         accentActive: "var(--accent-active)",
         success:      "var(--success)",
@@ -25,8 +76,8 @@ const config: Config = {
         primaryBtnHover:  "var(--primary-btn-hover)",
         primaryBtnActive: "var(--primary-btn-active)",
         borderHover:      "var(--border-hover)",
-        accentSurface:    "var(--accent-surface)",
-        iconMuted:        "var(--icon-muted)",
+        accentSurface:    "var(--surface-container)",
+        iconMuted:        "var(--on-surface-variant)",
         dangerBtn:        "var(--danger-btn)",
         dangerBtnHover:   "var(--danger-btn-hover)",
         dangerBtnActive:  "var(--danger-btn-active)",
@@ -39,7 +90,7 @@ const config: Config = {
         blue:   "#6366f1",
         amber:  "#fdc683",
 
-        // ── Extended tints — for hover states, backgrounds ─────────
+        // ── Extended tints ─────────────────────────────────────────
         "coral-10":  "rgba(254,159,159,0.10)",
         "coral-12":  "rgba(254,159,159,0.12)",
         "blue-5":    "rgba(99,102,241,0.05)",
@@ -138,14 +189,17 @@ const config: Config = {
         "cat-indigo-text":"var(--cat-indigo-text)",
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "var(--radius-sm)",
+        lg: "var(--radius-lg)",
+        md: "var(--radius-md)",
+        xl: "1.5rem",
       },
       boxShadow: {
-        sm: "var(--shadow-sm)",
-        md: "var(--shadow-md)",
-        lg: "var(--shadow-lg)",
-        xl: "var(--shadow-xl)",
+        sm:      "var(--shadow-sm)",
+        md:      "var(--shadow-md)",
+        lg:      "var(--shadow-lg)",
+        xl:      "var(--shadow-xl)",
+        ambient: "var(--shadow-ambient)",
+        float:   "var(--shadow-float)",
       },
       transitionTimingFunction: {
         calm: "cubic-bezier(0,0,0.2,1)",
@@ -163,6 +217,8 @@ const config: Config = {
         "lg":  ["1.125rem",  { lineHeight: "1.5",  letterSpacing: "-0.01em" }],
         "xl":  ["1.25rem",   { lineHeight: "1.4",  letterSpacing: "-0.015em" }],
         "2xl": ["1.5rem",    { lineHeight: "1.3",  letterSpacing: "-0.02em" }],
+        "3xl": ["1.875rem",  { lineHeight: "1.2",  letterSpacing: "-0.025em" }],
+        "4xl": ["2.25rem",   { lineHeight: "1.1",  letterSpacing: "-0.03em" }],
       },
     }
   },

@@ -4,8 +4,6 @@ import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { MetaText } from "@/components/ui/typography";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,91 +36,189 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left brand panel */}
-      <div className="hidden lg:flex lg:w-[46%] lg:flex-col lg:justify-between bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 p-14 text-white relative overflow-hidden">
-        {/* Decorative gradient orbs */}
-        <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-white/[0.06] blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-violet-400/[0.10] blur-3xl" />
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-300/[0.06] blur-2xl" />
-
-        <div className="relative flex items-center gap-3">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.12] backdrop-blur-md ring-1 ring-white/[0.08]">
-            <Image src="/anaxi-logo.png" alt="Anaxi" width={24} height={24} priority className="h-6 w-6 object-contain brightness-0 invert" />
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "var(--surface-bright)", color: "var(--on-surface)" }}
+    >
+      {/* Top navigation — brand anchor only */}
+      <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-20 glass-surface">
+        <div className="flex items-center gap-3">
+          <Image src="/anaxi-logo.png" alt="Anaxi" width={32} height={32} priority className="h-8 w-8 object-contain" />
+          <div className="h-4 w-px mx-2" style={{ background: "rgba(198,198,205,0.30)" }} />
+          <span className="text-[11px] font-semibold tracking-[0.12em] uppercase" style={{ color: "var(--on-surface-variant)" }}>
+            Academic Ledger
           </span>
-          <span className="text-[18px] font-bold tracking-[-0.02em]">Anaxi</span>
         </div>
+      </nav>
 
-        <div className="relative max-w-lg">
-          <h2 className="text-[40px] font-bold leading-[1.1] tracking-[-0.03em]">
-            School operations,<br />simplified.
-          </h2>
-          <p className="mt-5 text-[15px] leading-relaxed text-white/60">
-            Observations, behaviour, leave, meetings, and analytics — all in one place. Built for school leadership teams that move fast.
-          </p>
-          <div className="mt-8 flex items-center gap-4">
-            <div className="flex -space-x-2">
-              {["E", "S", "M", "K"].map((letter, i) => (
-                <span key={i} className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-indigo-500 bg-white/[0.15] text-[11px] font-semibold text-white backdrop-blur-sm">
-                  {letter}
+      {/* Main: centered auth container */}
+      <main className="flex-grow flex items-center justify-center px-6 py-24">
+        <div className="w-full max-w-[440px] flex flex-col">
+
+          {/* Header */}
+          <div className="mb-10 text-center md:text-left">
+            <h1
+              className="text-4xl font-bold mb-3"
+              style={{ color: "var(--on-surface)", fontFamily: "var(--font-newsreader), Georgia, serif" }}
+            >
+              Sign in
+            </h1>
+            <p className="text-base leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+              {switchTo
+                ? "Switching institution. Enter your credentials to continue."
+                : "Access your institutional dashboard and intelligence tools."}
+            </p>
+          </div>
+
+          {/* Focus surface — glassmorphism card */}
+          <div
+            className="p-1 rounded-[1.5rem]"
+            style={{
+              background: "rgba(255,255,255,0.80)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              boxShadow: "0 32px 64px -16px rgba(25,28,30,0.04)",
+            }}
+          >
+            <div
+              className="p-8 rounded-[1.375rem]"
+              style={{
+                background: "var(--surface-container-lowest)",
+                border: "1px solid rgba(198,198,205,0.10)",
+              }}
+            >
+              <form onSubmit={onSubmit} className="space-y-5">
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-[11px] font-bold tracking-widest uppercase ml-1"
+                    style={{ color: "var(--on-surface-variant)" }}
+                  >
+                    Official Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="you@school.edu"
+                    className="field"
+                    required
+                    autoComplete="email"
+                    defaultValue={prefillEmail}
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="password"
+                    className="block text-[11px] font-bold tracking-widest uppercase ml-1"
+                    style={{ color: "var(--on-surface-variant)" }}
+                  >
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    className="field"
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                <input type="hidden" name="tenantId" value={switchTo} />
+
+                <div className="flex items-center justify-end">
+                  <a
+                    className="calm-transition text-[13px] hover:opacity-70"
+                    style={{ color: "var(--on-surface-variant)" }}
+                    href="#"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+
+                {error && (
+                  <div
+                    className="px-4 py-3 rounded-[0.75rem]"
+                    style={{
+                      background: "var(--pill-error-bg)",
+                      border: "1px solid rgba(254,159,159,0.20)",
+                    }}
+                  >
+                    <p className="text-[13px]" style={{ color: "var(--pill-error-text)" }}>{error}</p>
+                  </div>
+                )}
+
+                {/* CTA — gradient per "Glass & Gradient" rule */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-[0.75rem] text-sm font-semibold tracking-[0.01em] calm-transition disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2"
+                  style={{
+                    background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)",
+                    color: "var(--on-primary)",
+                  }}
+                >
+                  {loading ? "Signing in…" : "Continue to Ledger"}
+                  {!loading && (
+                    <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M3.5 8h9M9 4.5 12.5 8 9 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+              </form>
+
+              {/* Divider */}
+              <div className="my-6 flex items-center gap-3">
+                <div className="flex-1 h-px" style={{ background: "var(--surface-container-high)" }} />
+                <span className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: "var(--outline)" }}>
+                  Secure Gateway
                 </span>
-              ))}
-            </div>
-            <p className="text-[13px] text-white/50">Trusted by school leaders everywhere</p>
-          </div>
-        </div>
-
-        <p className="relative text-[12px] text-white/30">&copy; 2026 Anaxi. All rights reserved.</p>
-      </div>
-
-      {/* Right form panel */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-white px-6 py-12">
-        <div className="w-full max-w-[400px]">
-          <div className="mb-10 text-center lg:text-left">
-            <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 lg:hidden">
-              <Image src="/anaxi-logo.png" alt="Anaxi" width={28} height={28} priority className="h-7 w-7 object-contain" />
-            </div>
-            <h1 className="text-[28px] font-bold tracking-[-0.03em] text-text">Welcome back</h1>
-            <p className="mt-1.5 text-[14px] text-muted">Sign in to your Anaxi account</p>
-          </div>
-
-          {switchTo && (
-            <div className="mb-5 rounded-xl border border-accent/15 bg-[var(--pill-accent-bg)] px-4 py-3">
-              <p className="text-[13px] text-[var(--pill-accent-text)]">Switching school. Enter your password to continue.</p>
-            </div>
-          )}
-
-          <form onSubmit={onSubmit} className="space-y-5">
-            <div>
-              <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-text">Email</label>
-              <input id="email" name="email" type="email" placeholder="you@school.edu" className="field" required autoComplete="email" defaultValue={prefillEmail} />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="mb-1.5 block text-[13px] font-medium text-text">Password</label>
-              <input id="password" name="password" type="password" placeholder="Enter your password" className="field" required autoComplete="current-password" />
-            </div>
-
-            <input type="hidden" name="tenantId" value={switchTo} />
-
-            <div className="flex items-center justify-end">
-              <a className="calm-transition text-[13px] text-muted hover:text-accent" href="#">Forgot password?</a>
-            </div>
-
-            {error ? (
-              <div className="rounded-xl border border-error/15 bg-[var(--pill-error-bg)] px-4 py-3">
-                <p className="text-[13px] text-[var(--pill-error-text)]">{error}</p>
+                <div className="flex-1 h-px" style={{ background: "var(--surface-container-high)" }} />
               </div>
-            ) : null}
 
-            <Button type="submit" className="w-full py-3" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
-            </Button>
-          </form>
+              {/* SSO */}
+              <button
+                type="button"
+                className="w-full py-3 rounded-[0.75rem] text-sm font-medium calm-transition flex items-center justify-center gap-2 hover:opacity-80"
+                style={{
+                  background: "var(--secondary-container)",
+                  color: "var(--on-surface)",
+                }}
+              >
+                <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3.5" y="7.5" width="13" height="9" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M7 7.5V6a3 3 0 0 1 6 0v1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <circle cx="10" cy="12" r="1.5" fill="currentColor" />
+                </svg>
+                Single Sign-On
+              </button>
+            </div>
+          </div>
 
-          <p className="mt-8 text-center text-[12px] text-muted/60 lg:hidden">&copy; 2026 Anaxi. All rights reserved.</p>
+          {/* Footer links */}
+          <div className="mt-8 flex items-center justify-center gap-5">
+            <a href="#" className="text-[12px] calm-transition hover:opacity-70" style={{ color: "var(--outline)" }}>Privacy</a>
+            <a href="#" className="text-[12px] calm-transition hover:opacity-70" style={{ color: "var(--outline)" }}>Terms</a>
+            <a href="#" className="text-[12px] calm-transition hover:opacity-70" style={{ color: "var(--outline)" }}>Support</a>
+          </div>
+
+          {/* Security badge */}
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 2 13 4v3.8c0 2.5-1.8 4.2-5 5-3.2-.8-5-3-5-5V4L8 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" style={{ color: "var(--outline)" }} />
+            </svg>
+            <span className="text-[11px]" style={{ color: "var(--outline)" }}>
+              End-to-end encrypted session
+            </span>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
