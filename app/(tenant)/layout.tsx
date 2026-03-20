@@ -23,6 +23,20 @@ function userInitials(name: string): string {
     .toUpperCase();
 }
 
+function formatRole(role: string): string {
+  const map: Record<string, string> = {
+    SUPER_ADMIN: "Super Admin",
+    ADMIN:       "Admin",
+    SLT:         "Senior Leader",
+    HOD:         "Head of Dept",
+    LEADER:      "Leader",
+    TEACHER:     "Teacher",
+    HR:          "HR",
+    ON_CALL:     "On Call",
+  };
+  return map[role] ?? role;
+}
+
 export default async function TenantLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUserOrThrow();
   const [features, tenant, otherMemberships] = await Promise.all([
@@ -65,7 +79,10 @@ export default async function TenantLayout({ children }: { children: React.React
         <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between px-8 glass-surface lg:px-10">
           <SchoolSwitcher currentTenantName={tenantName} tenants={tenantOptions} />
           <Link href="/profile" className="flex items-center gap-3 rounded-[0.75rem] px-2.5 py-1.5 calm-transition hover:bg-[var(--surface-container-low)]">
-            <span className="hidden text-[13px] text-[var(--on-surface-variant)] sm:block">{user.fullName || user.email}</span>
+            <div className="hidden flex-col items-end sm:flex">
+              <span className="text-[13px] font-bold leading-tight tracking-[-0.01em] text-[var(--on-surface)]">{user.fullName || user.email}</span>
+              <span className="text-[10px] font-semibold tracking-[0.08em] uppercase text-[var(--outline)]">{formatRole(user.role)}</span>
+            </div>
             <span
               className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--on-surface)] text-[11px] font-semibold text-[var(--on-primary)]"
               title={user.fullName || user.email}

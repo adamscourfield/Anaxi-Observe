@@ -33,7 +33,8 @@ export function SchoolSwitcher({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-lg px-2 py-1.5 calm-transition hover:bg-bg"
+        className="flex items-center gap-2 rounded-[0.75rem] px-3 py-1.5 calm-transition hover:bg-[var(--surface-container-low)]"
+        style={{ border: "1px solid rgba(198,198,205,0.35)" }}
       >
         <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accentSurface text-[10px] font-bold text-accent">
           {initial}
