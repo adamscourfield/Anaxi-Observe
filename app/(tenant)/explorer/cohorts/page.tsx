@@ -149,20 +149,25 @@ export default async function CohortsPage({
 
   // ── render ──────────────────────────────────────────────────────
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+    <>
       {/* Back link */}
-      <Link
-        href="/explorer"
-        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-      >
-        ← Explorer
-      </Link>
+      <div className="mb-4">
+        <Link
+          href="/explorer"
+          className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-accent"
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back to Explorer
+        </Link>
+      </div>
 
       <PageHeader
         title="Cohorts"
         subtitle="Year group behaviour metrics — attendance, incidents and welfare indicators aggregated by cohort."
         meta={
-          <span className="text-xs text-zinc-400">
+          <span className="text-xs text-muted">
             {windowDays}d window · {allRows.length} cohort
             {allRows.length !== 1 ? "s" : ""} · Updated{" "}
             {computedAt.toLocaleDateString("en-GB")}
@@ -171,225 +176,227 @@ export default async function CohortsPage({
       />
 
       {/* ── Controls bar ────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-end gap-4">
-        {/* Window selector */}
-        <div className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800">
-          {VALID_WINDOWS.map((w) => (
-            <Link
-              key={w}
-              href={buildUrl({ windowDays: String(w) })}
-              className={`rounded-md px-3 py-1 text-sm font-medium transition ${
-                w === windowDays
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
-              }`}
-            >
-              {w}d
-            </Link>
-          ))}
+      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="border-b border-border/30 px-5 py-3">
+          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
         </div>
+        <div className="flex flex-wrap items-end gap-3 p-4">
+          <form className="flex flex-wrap items-end gap-3">
+            {/* Window selector */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Window</span>
+              <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
+                {VALID_WINDOWS.map((w) => (
+                  <option key={w} value={String(w)}>
+                    {w} days
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        {/* Year group filter */}
-        <form className="flex flex-wrap items-end gap-2">
-          <input type="hidden" name="windowDays" value={windowDays} />
+            {/* Year group filter */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Year group</span>
+              <select
+                name="yearGroup"
+                defaultValue={yearGroupFilter}
+                className="field min-w-[120px]"
+              >
+                <option value="">All years</option>
+                {yearGroups.map((yg) => (
+                  <option key={yg} value={yg}>
+                    {yg}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="flex flex-col text-xs font-medium text-zinc-600 dark:text-zinc-300">
-            Year group
-            <select
-              name="yearGroup"
-              defaultValue={yearGroupFilter}
-              className="mt-1 rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
+            <button
+              type="submit"
+              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
             >
-              <option value="">All years</option>
-              {yearGroups.map((yg) => (
-                <option key={yg} value={yg}>
-                  {yg}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button
-            type="submit"
-            className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-          >
-            Apply
-          </button>
+              Apply
+            </button>
+          </form>
 
           {hasActiveFilters && (
             <Link
               href={buildUrl({ yearGroup: undefined })}
-              className="text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
             >
               Clear
             </Link>
           )}
-        </form>
-
-        {/* Export */}
-        {showExport && (
-          <form
-            action="/api/explorer/export"
-            method="POST"
-            className="ml-auto"
-          >
-            <input type="hidden" name="view" value="COHORT_PIVOT" />
-            <input
-              type="hidden"
-              name="windowDays"
-              value={String(windowDays)}
-            />
-            <button
-              type="submit"
-              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-            >
-              Export CSV
-            </button>
-          </form>
-        )}
+          {showExport && (
+            <form action="/api/explorer/export" method="POST" className="inline">
+              <input type="hidden" name="view" value="COHORT_PIVOT" />
+              <input type="hidden" name="windowDays" value={String(windowDays)} />
+              <button
+                type="submit"
+                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              >
+                Export CSV
+              </button>
+            </form>
+          )}
+        </div>
       </div>
 
       {/* ── Summary row ─────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-sm font-medium text-muted">
             Total students
           </p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+          <p className="mt-1 text-2xl font-bold tabular-nums text-text">
             {totalStudents}
           </p>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-sm font-medium text-muted">
             Avg attendance
           </p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+          <p className="mt-1 text-2xl font-bold tabular-nums text-text">
             {avgAttendance !== null ? `${avgAttendance.toFixed(1)}%` : "—"}
           </p>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-sm font-medium text-muted">
             Cohorts
           </p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+          <p className="mt-1 text-2xl font-bold tabular-nums text-text">
             {rows.length}
           </p>
         </div>
       </div>
 
       {/* ── Cohort pivot table ──────────────────────────────────── */}
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
-              <th className="px-4 py-3">Year Group</th>
-              <th className="px-4 py-3 text-right">Students</th>
-              <th className="px-4 py-3 text-right">Attendance</th>
-              <th className="px-4 py-3 text-right">Detentions</th>
-              <th className="px-4 py-3 text-right">On Calls</th>
-              <th className="px-4 py-3 text-right">Lateness</th>
-              <th className="px-4 py-3 text-right">Suspensions</th>
-              <th className="px-4 py-3 text-right">Exclusions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {rows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={8}
-                  className="px-4 py-12 text-center text-zinc-400"
-                >
-                  {allRows.length === 0
-                    ? "No cohort data available for this window."
-                    : "No cohorts match the current filter."}
-                </td>
-              </tr>
-            )}
-            {rows.map((row) => (
-              <tr
-                key={row.yearGroup}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-              >
-                {/* Year Group (linked) */}
-                <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">
-                  <Link
-                    href={`/analysis/students?yearGroup=${encodeURIComponent(row.yearGroup)}&window=${windowDays}`}
-                    className="hover:underline"
+      {rows.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
+            <svg className="h-6 w-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16.5 16.5 3 3" strokeLinecap="round" />
+            </svg>
+          </div>
+          <p className="text-[0.875rem] font-semibold text-text">
+            {allRows.length === 0 ? "No cohort data" : "No matches"}
+          </p>
+          <p className="mt-1 text-[0.8125rem] text-muted">
+            {allRows.length === 0
+              ? "Try widening the window period."
+              : "Try adjusting your filter."}
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                  <th className="px-5 py-3">Year Group</th>
+                  <th className="px-4 py-3 text-right">Students</th>
+                  <th className="px-4 py-3 text-right">Attendance</th>
+                  <th className="px-4 py-3 text-right">Detentions</th>
+                  <th className="px-4 py-3 text-right">On Calls</th>
+                  <th className="px-4 py-3 text-right">Lateness</th>
+                  <th className="px-4 py-3 text-right">Suspensions</th>
+                  <th className="px-4 py-3 text-right">Exclusions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr
+                    key={row.yearGroup}
+                    className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50"
                   >
-                    {row.yearGroup}
-                  </Link>
-                </td>
+                    {/* Year Group (linked) */}
+                    <td className="px-5 py-3 font-medium text-text">
+                      <Link
+                        href={`/analysis/students?yearGroup=${encodeURIComponent(row.yearGroup)}&window=${windowDays}`}
+                        className="calm-transition group-hover:text-accent hover:underline"
+                      >
+                        {row.yearGroup}
+                      </Link>
+                    </td>
 
-                {/* Students */}
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {row.studentsCovered}
-                </td>
+                    {/* Students */}
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {row.studentsCovered}
+                    </td>
 
-                {/* Attendance — positive delta = improving (good) */}
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {fmtNum(row.attendanceMean, 1)}%{" "}
-                  <span className={deltaClass(row.attendanceDelta)}>
-                    ({fmtDelta(row.attendanceDelta, 1)})
-                  </span>
-                </td>
+                    {/* Attendance — positive delta = improving (good) */}
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {fmtNum(row.attendanceMean, 1)}%{" "}
+                      <span className={deltaClass(row.attendanceDelta)}>
+                        ({fmtDelta(row.attendanceDelta, 1)})
+                      </span>
+                    </td>
 
-                {/* Detentions — positive delta = worsening (inverted) */}
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {fmtNum(row.detentionsMean)}{" "}
-                  <span
-                    className={deltaClass(row.detentionsDelta, true)}
-                  >
-                    ({fmtDelta(row.detentionsDelta)})
-                  </span>
-                </td>
+                    {/* Detentions — positive delta = worsening (inverted) */}
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {fmtNum(row.detentionsMean)}{" "}
+                      <span
+                        className={deltaClass(row.detentionsDelta, true)}
+                      >
+                        ({fmtDelta(row.detentionsDelta)})
+                      </span>
+                    </td>
 
-                {/* On Calls — positive delta = worsening (inverted) */}
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {fmtNum(row.onCallsMean)}{" "}
-                  <span
-                    className={deltaClass(row.onCallsDelta, true)}
-                  >
-                    ({fmtDelta(row.onCallsDelta)})
-                  </span>
-                </td>
+                    {/* On Calls — positive delta = worsening (inverted) */}
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {fmtNum(row.onCallsMean)}{" "}
+                      <span
+                        className={deltaClass(row.onCallsDelta, true)}
+                      >
+                        ({fmtDelta(row.onCallsDelta)})
+                      </span>
+                    </td>
 
-                {/* Lateness — positive delta = worsening (inverted) */}
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {fmtNum(row.latenessMean)}{" "}
-                  <span
-                    className={deltaClass(row.latenessDelta, true)}
-                  >
-                    ({fmtDelta(row.latenessDelta)})
-                  </span>
-                </td>
+                    {/* Lateness — positive delta = worsening (inverted) */}
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {fmtNum(row.latenessMean)}{" "}
+                      <span
+                        className={deltaClass(row.latenessDelta, true)}
+                      >
+                        ({fmtDelta(row.latenessDelta)})
+                      </span>
+                    </td>
 
-                {/* Suspensions — positive delta = worsening (inverted) */}
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {row.suspensionsCount}{" "}
-                  <span
-                    className={deltaClass(row.suspensionsDelta, true)}
-                  >
-                    ({fmtDelta(row.suspensionsDelta, 0)})
-                  </span>
-                </td>
+                    {/* Suspensions — positive delta = worsening (inverted) */}
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {row.suspensionsCount}{" "}
+                      <span
+                        className={deltaClass(row.suspensionsDelta, true)}
+                      >
+                        ({fmtDelta(row.suspensionsDelta, 0)})
+                      </span>
+                    </td>
 
-                {/* Internal Exclusions — positive delta = worsening (inverted) */}
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {row.internalExclusionsCount}{" "}
-                  <span
-                    className={deltaClass(
-                      row.internalExclusionsDelta,
-                      true,
-                    )}
-                  >
-                    ({fmtDelta(row.internalExclusionsDelta, 0)})
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                    {/* Internal Exclusions — positive delta = worsening (inverted) */}
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {row.internalExclusionsCount}{" "}
+                      <span
+                        className={deltaClass(
+                          row.internalExclusionsDelta,
+                          true,
+                        )}
+                      >
+                        ({fmtDelta(row.internalExclusionsDelta, 0)})
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Footer ──────────────────────────────────────────────── */}
+      <p className="mt-8 text-[0.75rem] text-muted">
+        Explorer · Cohorts · {windowDays}d window
+      </p>
+    </>
   );
 }

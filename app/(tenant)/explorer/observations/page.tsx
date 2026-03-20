@@ -222,23 +222,23 @@ export default async function ExplorerObservationsPage({
                 Clear
               </Link>
             )}
-            {showExport && (
-              <form action="/api/explorer/export" method="POST" className="inline">
-                <input type="hidden" name="view" value="observations" />
-                <input type="hidden" name="windowDays" value={String(windowDays)} />
-                {departmentId && <input type="hidden" name="departmentId" value={departmentId} />}
-                {yearGroup && <input type="hidden" name="yearGroup" value={yearGroup} />}
-                {subject && <input type="hidden" name="subject" value={subject} />}
-                <button
-                  type="submit"
-                  className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-                >
-                  Export CSV
-                </button>
-              </form>
-            )}
           </div>
         </form>
+        {showExport && (
+          <form action="/api/explorer/export" method="POST" className="inline px-4 pb-4">
+            <input type="hidden" name="view" value="observations" />
+            <input type="hidden" name="windowDays" value={String(windowDays)} />
+            {departmentId && <input type="hidden" name="departmentId" value={departmentId} />}
+            {yearGroup && <input type="hidden" name="yearGroup" value={yearGroup} />}
+            {subject && <input type="hidden" name="subject" value={subject} />}
+            <button
+              type="submit"
+              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+            >
+              Export CSV
+            </button>
+          </form>
+        )}
       </div>
 
       {/* ── Result count ───────────────────────────────────────────────────── */}

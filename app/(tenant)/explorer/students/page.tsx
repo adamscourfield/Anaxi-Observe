@@ -38,21 +38,17 @@ const BAND_VARIANT: Record<RiskBand, PillVariant> = {
 };
 
 const BAND_CARD_STYLES: Record<RiskBand, string> = {
-  URGENT:
-    "border-rose-200 bg-rose-50/60 dark:border-rose-800 dark:bg-rose-950/30",
-  PRIORITY:
-    "border-amber-200 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-950/30",
-  WATCH:
-    "border-blue-200 bg-blue-50/60 dark:border-blue-800 dark:bg-blue-950/30",
-  STABLE:
-    "border-emerald-200 bg-emerald-50/60 dark:border-emerald-800 dark:bg-emerald-950/30",
+  URGENT:   "border-rose-200 bg-rose-50/60",
+  PRIORITY: "border-amber-200 bg-amber-50/60",
+  WATCH:    "border-blue-200 bg-blue-50/60",
+  STABLE:   "border-emerald-200 bg-emerald-50/60",
 };
 
 const BAND_CARD_TEXT: Record<RiskBand, string> = {
-  URGENT: "text-rose-900 dark:text-rose-300",
-  PRIORITY: "text-amber-900 dark:text-amber-300",
-  WATCH: "text-blue-900 dark:text-blue-300",
-  STABLE: "text-emerald-900 dark:text-emerald-300",
+  URGENT:   "text-rose-900",
+  PRIORITY: "text-amber-900",
+  WATCH:    "text-blue-900",
+  STABLE:   "text-emerald-900",
 };
 
 /* ─── Helpers ──────────────────────────────────────────────────────────────── */
@@ -193,20 +189,25 @@ export default async function StudentsPage({
 
   // ── render ──────────────────────────────────────────────────────
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+    <>
       {/* Back link */}
-      <Link
-        href="/explorer"
-        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-      >
-        ← Explorer
-      </Link>
+      <div className="mb-4">
+        <Link
+          href="/explorer"
+          className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-accent"
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back to Explorer
+        </Link>
+      </div>
 
       <PageHeader
         title="Students"
         subtitle="Student risk analysis based on attendance, behaviour incidents and welfare signals."
         meta={
-          <span className="text-xs text-zinc-400">
+          <span className="text-xs text-muted">
             {windowDays}d window · {allRows.length} student
             {allRows.length !== 1 ? "s" : ""} · Updated{" "}
             {computedAt.toLocaleDateString("en-GB")}
@@ -219,7 +220,7 @@ export default async function StudentsPage({
         {BAND_ORDER.map((band) => (
           <div
             key={band}
-            className={`rounded-lg border p-4 ${BAND_CARD_STYLES[band]}`}
+            className={`rounded-2xl border p-4 ${BAND_CARD_STYLES[band]}`}
           >
             <p
               className={`text-sm font-medium ${BAND_CARD_TEXT[band]}`}
@@ -236,80 +237,77 @@ export default async function StudentsPage({
       </div>
 
       {/* ── Controls bar ────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-end gap-4">
-        {/* Window selector */}
-        <div className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800">
-          {VALID_WINDOWS.map((w) => (
-            <Link
-              key={w}
-              href={buildUrl({ windowDays: String(w) })}
-              className={`rounded-md px-3 py-1 text-sm font-medium transition ${
-                w === windowDays
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
-              }`}
-            >
-              {w}d
-            </Link>
-          ))}
+      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="border-b border-border/30 px-5 py-3">
+          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
         </div>
+        <div className="flex flex-wrap items-end gap-3 p-4">
+          <form className="flex flex-wrap items-end gap-3">
+            {/* Window selector */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Window</span>
+              <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
+                {VALID_WINDOWS.map((w) => (
+                  <option key={w} value={String(w)}>
+                    {w} days
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        {/* Filters */}
-        <form className="flex flex-wrap items-end gap-2">
-          <input type="hidden" name="windowDays" value={windowDays} />
+            {/* Year group dropdown */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Year group</span>
+              <select
+                name="yearGroup"
+                defaultValue={yearGroupFilter}
+                className="field min-w-[120px]"
+              >
+                <option value="">All years</option>
+                {yearGroups.map((yg) => (
+                  <option key={yg} value={yg}>
+                    {yg}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          {/* Year group dropdown */}
-          <label className="flex flex-col text-xs font-medium text-zinc-600 dark:text-zinc-300">
-            Year group
-            <select
-              name="yearGroup"
-              defaultValue={yearGroupFilter}
-              className="mt-1 rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
+            {/* Student search */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Student</span>
+              <input
+                type="text"
+                name="studentSearch"
+                defaultValue={studentSearch}
+                placeholder="Search by name…"
+                className="field min-w-[160px]"
+              />
+            </label>
+
+            {/* Band filter dropdown */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Risk band</span>
+              <select
+                name="band"
+                defaultValue={bandFilter}
+                className="field min-w-[120px]"
+              >
+                <option value="">All bands</option>
+                {BAND_ORDER.map((b) => (
+                  <option key={b} value={b}>
+                    {BAND_LABELS[b]}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="submit"
+              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
             >
-              <option value="">All years</option>
-              {yearGroups.map((yg) => (
-                <option key={yg} value={yg}>
-                  {yg}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {/* Student search */}
-          <label className="flex flex-col text-xs font-medium text-zinc-600 dark:text-zinc-300">
-            Student
-            <input
-              type="text"
-              name="studentSearch"
-              defaultValue={studentSearch}
-              placeholder="Search by name…"
-              className="mt-1 rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
-            />
-          </label>
-
-          {/* Band filter dropdown */}
-          <label className="flex flex-col text-xs font-medium text-zinc-600 dark:text-zinc-300">
-            Risk band
-            <select
-              name="band"
-              defaultValue={bandFilter}
-              className="mt-1 rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
-            >
-              <option value="">All bands</option>
-              {BAND_ORDER.map((b) => (
-                <option key={b} value={b}>
-                  {BAND_LABELS[b]}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button
-            type="submit"
-            className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-          >
-            Apply
-          </button>
+              Apply
+            </button>
+          </form>
 
           {hasActiveFilters && (
             <Link
@@ -318,132 +316,145 @@ export default async function StudentsPage({
                 studentSearch: undefined,
                 band: undefined,
               })}
-              className="text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
             >
               Clear
             </Link>
           )}
-        </form>
-
-        {/* Export */}
-        {showExport && (
-          <form
-            action="/api/explorer/export"
-            method="POST"
-            className="ml-auto"
-          >
-            <input type="hidden" name="view" value="STUDENT_RISK" />
-            <input
-              type="hidden"
-              name="windowDays"
-              value={String(windowDays)}
-            />
-            <button
-              type="submit"
-              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-            >
-              Export CSV
-            </button>
-          </form>
-        )}
+          {showExport && (
+            <form action="/api/explorer/export" method="POST" className="inline">
+              <input type="hidden" name="view" value="STUDENT_RISK" />
+              <input type="hidden" name="windowDays" value={String(windowDays)} />
+              <button
+                type="submit"
+                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              >
+                Export CSV
+              </button>
+            </form>
+          )}
+        </div>
       </div>
+
+      {/* ── Result count ────────────────────────────────────────── */}
+      <p className="mt-4 text-[0.8125rem] text-muted">
+        {rows.length > 0
+          ? `${rows.length} student${rows.length !== 1 ? "s" : ""} in the ${windowDays}-day window`
+          : allRows.length === 0
+            ? "No student risk data available for this window"
+            : "No students match the current filters"}
+      </p>
 
       {/* ── Student risk table ──────────────────────────────────── */}
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
-              <th className="px-4 py-3">Student</th>
-              <th className="px-4 py-3">Year</th>
-              <th className="px-4 py-3">Band</th>
-              <th className="px-4 py-3">Drivers</th>
-              <th className="px-4 py-3 text-right">Attendance %</th>
-              <th className="px-4 py-3 text-right">Detentions Δ</th>
-              <th className="px-4 py-3 text-right">On Calls Δ</th>
-              <th className="px-4 py-3 text-right">Lateness Δ</th>
-              <th className="px-4 py-3">Flags</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {rows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={9}
-                  className="px-4 py-12 text-center text-zinc-400"
-                >
-                  {allRows.length === 0
-                    ? "No student risk data available for this window."
-                    : "No students match the current filters."}
-                </td>
-              </tr>
-            )}
-            {rows.map((row) => (
-              <tr key={row.studentId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">
-                  <Link
-                    href={`/analysis/students/${row.studentId}?window=${windowDays}`}
-                    className="hover:underline"
-                  >
-                    {row.studentName}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                  {row.yearGroup ?? "—"}
-                </td>
-                <td className="px-4 py-3">
-                  <StatusPill variant={BAND_VARIANT[row.band]} size="sm">
-                    {BAND_LABELS[row.band]}
-                  </StatusPill>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-1">
-                    {row.drivers.map((d) => (
-                      <span
-                        key={d.metric}
-                        className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+      {rows.length === 0 ? (
+        <div className="mt-4 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
+            <svg className="h-6 w-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16.5 16.5 3 3" strokeLinecap="round" />
+            </svg>
+          </div>
+          <p className="text-[0.875rem] font-semibold text-text">
+            {allRows.length === 0 ? "No student data" : "No matches"}
+          </p>
+          <p className="mt-1 text-[0.8125rem] text-muted">
+            {allRows.length === 0
+              ? "Try widening the window period."
+              : "Try adjusting your filters."}
+          </p>
+        </div>
+      ) : (
+        <div className="mt-4 overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                  <th className="px-5 py-3">Student</th>
+                  <th className="px-4 py-3">Year</th>
+                  <th className="px-4 py-3">Band</th>
+                  <th className="px-4 py-3">Drivers</th>
+                  <th className="px-4 py-3 text-right">Attendance %</th>
+                  <th className="px-4 py-3 text-right">Detentions Δ</th>
+                  <th className="px-4 py-3 text-right">On Calls Δ</th>
+                  <th className="px-4 py-3 text-right">Lateness Δ</th>
+                  <th className="px-4 py-3">Flags</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.studentId} className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50">
+                    <td className="px-5 py-3 font-medium text-text">
+                      <Link
+                        href={`/analysis/students/${row.studentId}?window=${windowDays}`}
+                        className="calm-transition group-hover:text-accent hover:underline"
                       >
-                        {d.direction === "up" ? "↑" : "↓"} {d.label}
-                      </span>
-                    ))}
-                    {row.drivers.length === 0 && (
-                      <span className="text-xs text-zinc-400">—</span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {fmtPct(row.attendancePct)}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {fmtDelta(row.detentionsDelta)}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {fmtDelta(row.onCallsDelta)}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
-                  {fmtDelta(row.latenessDelta)}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-1">
-                    {row.sendFlag && (
-                      <StatusPill variant="accent" size="sm">
-                        SEND
+                        {row.studentName}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-muted">
+                      {row.yearGroup ?? "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusPill variant={BAND_VARIANT[row.band]} size="sm">
+                        {BAND_LABELS[row.band]}
                       </StatusPill>
-                    )}
-                    {row.ppFlag && (
-                      <StatusPill variant="info" size="sm">
-                        PP
-                      </StatusPill>
-                    )}
-                    {!row.sendFlag && !row.ppFlag && (
-                      <span className="text-xs text-zinc-400">—</span>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {row.drivers.map((d) => (
+                          <span
+                            key={d.metric}
+                            className="inline-flex items-center rounded-full bg-bg px-2 py-0.5 text-xs font-medium text-text"
+                          >
+                            {d.direction === "up" ? "↑" : "↓"} {d.label}
+                          </span>
+                        ))}
+                        {row.drivers.length === 0 && (
+                          <span className="text-xs text-muted">—</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {fmtPct(row.attendancePct)}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {fmtDelta(row.detentionsDelta)}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {fmtDelta(row.onCallsDelta)}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      {fmtDelta(row.latenessDelta)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        {row.sendFlag && (
+                          <StatusPill variant="accent" size="sm">
+                            SEND
+                          </StatusPill>
+                        )}
+                        {row.ppFlag && (
+                          <StatusPill variant="info" size="sm">
+                            PP
+                          </StatusPill>
+                        )}
+                        {!row.sendFlag && !row.ppFlag && (
+                          <span className="text-xs text-muted">—</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Footer ──────────────────────────────────────────────── */}
+      <p className="mt-8 text-[0.75rem] text-muted">
+        Explorer · Students · {windowDays}d window
+      </p>
+    </>
   );
 }
