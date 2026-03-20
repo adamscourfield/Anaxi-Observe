@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
 import { BodyText, MetaText } from "@/components/ui/typography";
 import { StatusPill, PillVariant } from "@/components/ui/status-pill";
-import { DriverChips } from "@/components/ui/driver-chips";
 import { StatCard } from "@/components/ui/stat-card";
 import { Avatar } from "@/components/ui/avatar";
 import { CpdPriorityRow } from "@/modules/analysis/cpdPriorities";
@@ -21,7 +20,10 @@ import {
   hydrateLeadershipHomeData,
   hydrateHodHomeData,
   hydrateTeacherHomeData,
+  PendingLeaveDetail,
+  OnCallDetail,
 } from "@/modules/home/hydration";
+import { QuickActionButton } from "@/components/dashboard/QuickActionButton";
 
 const DEFAULT_WINDOW_DAYS = 21;
 const ALLOWED_WINDOW_DAYS = [7, 14, 21, 28];
@@ -44,15 +46,6 @@ type MeetingActionSummary = { id: string; description: string; dueDate: string |
 type LoaSummary = { startDate: string; endDate: string; status: string };
 type OnCallSummary = { id: string; createdAt: string; status: string };
 
-function formatComputedAt(date: Date): string {
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 function roleVariant(role: UserRole): "leadership" | "hod" | "teacher" {
   if (role === "ADMIN" || role === "SLT") return "leadership";
@@ -82,28 +75,20 @@ function WindowSelector({ windowDays }: { windowDays: number }) {
 
 function PageTitle({
   windowDays,
-  computedAt,
-  userName,
+  quickActionItems,
 }: {
   windowDays: number;
-  computedAt: Date;
-  userName: string;
+  quickActionItems: { label: string; href: string; icon: string }[];
 }) {
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const firstName = userName.split(" ")[0];
-
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h1 className="text-[26px] font-bold tracking-[-0.03em] text-text">
-          {greeting}, {firstName}
-        </h1>
-        <p className="mt-0.5 text-[13px] text-muted">
-          Your personalised overview · Updated {formatComputedAt(computedAt)}
-        </p>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <h1 className="text-[28px] font-bold tracking-[-0.03em] text-text">
+        Institutional Pulse
+      </h1>
+      <div className="flex items-center gap-3">
+        <WindowSelector windowDays={windowDays} />
+        <QuickActionButton items={quickActionItems} />
       </div>
-      <WindowSelector windowDays={windowDays} />
     </div>
   );
 }
@@ -117,6 +102,10 @@ function LeadershipHome({
   hasLeaveFeature,
   pendingLeaveCount,
   openOnCallCount,
+  pendingLeaveDetails,
+  onCallDetails,
+  weekObsCount,
+  weekObsTeachers,
 }: {
   windowDays: number;
   cpdRows: CpdPriorityRow[];
@@ -126,224 +115,310 @@ function LeadershipHome({
   hasLeaveFeature: boolean;
   pendingLeaveCount: number;
   openOnCallCount: number;
+  pendingLeaveDetails: PendingLeaveDetail[];
+  onCallDetails: OnCallDetail[];
+  weekObsCount: number;
+  weekObsTeachers: { id: string; name: string }[];
 }) {
   const allDriftingCpd = cpdRows.filter((r) => r.teachersDriftingDown > 0);
   const topCpd = allDriftingCpd.slice(0, 3);
-  const topTeachers = teacherRows.slice(0, 5);
-  const allUrgentStudents = studentRows.filter((r) => r.band === "URGENT" || r.band === "PRIORITY");
-  const displayUrgentStudents = allUrgentStudents.slice(0, 8);
-  const hasBehaviourData = cohortRows.length > 0 || studentRows.length > 0;
-
-  const sortedCohorts = [...cohortRows].sort((a, b) => {
-    const aNum = parseInt(a.yearGroup?.replace(/\D/g, "") ?? "0");
-    const bNum = parseInt(b.yearGroup?.replace(/\D/g, "") ?? "0");
-    return aNum - bNum;
-  });
-
+  const topTeachers = teacherRows.slice(0, 3);
   const totalObs = teacherRows.reduce((sum, r) => sum + r.teacherCoverage, 0);
-  const urgentCount = allUrgentStudents.length;
-  const cpdDriftCount = allDriftingCpd.length;
-  const operationalCount = pendingLeaveCount + openOnCallCount;
+
+  // Attendance: compute school-wide average from cohort data
+  const cohortWithAttendance = cohortRows.filter((r) => r.attendanceMean !== null);
+  const attendancePct =
+    cohortWithAttendance.length > 0
+      ? cohortWithAttendance.reduce((sum, r) => sum + (r.attendanceMean ?? 0), 0) / cohortWithAttendance.length
+      : null;
+  const attendanceDelta =
+    cohortWithAttendance.length > 0
+      ? cohortWithAttendance.reduce((sum, r) => sum + (r.attendanceDelta ?? 0), 0) / cohortWithAttendance.length
+      : null;
+
+  // Least observed teachers (sorted ascending by coverage)
+  const leastObserved = [...teacherRows]
+    .sort((a, b) => a.teacherCoverage - b.teacherCoverage)
+    .slice(0, 3);
+
+  // Staff needing intervention (SIGNIFICANT_DRIFT or EMERGING_DRIFT)
+  const interventionStaff = teacherRows
+    .filter((r) => r.status === "SIGNIFICANT_DRIFT" || r.status === "EMERGING_DRIFT")
+    .slice(0, 3);
+
+  // On-call: separate open vs resolved
+  const openOnCalls = onCallDetails.filter((r) => r.status === "OPEN" || r.status === "ACKNOWLEDGED");
+  const resolvedOnCalls = onCallDetails.filter((r) => r.status === "RESOLVED");
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Observations"
-          value={totalObs}
-          context={`${windowDays}d window · ${teacherRows.length} teachers`}
-          accent="accent"
-          href={`/analytics?tab=teachers&window=${windowDays}`}
-        />
-        <StatCard
-          label="Urgent students"
-          value={urgentCount}
-          context={urgentCount > 0 ? "Require immediate attention" : "No urgent cases"}
-          accent={urgentCount > 0 ? "error" : "success"}
-          href={`/analytics?tab=students&window=${windowDays}`}
-        />
-        <StatCard
-          label="CPD drift signals"
-          value={cpdDriftCount}
-          context={cpdDriftCount > 0 ? `${cpdDriftCount} signal${cpdDriftCount !== 1 ? "s" : ""} weakening` : "All signals stable"}
-          accent={cpdDriftCount > 0 ? "warning" : "success"}
-          href={`/analytics?tab=cpd&window=${windowDays}`}
-        />
-        <StatCard
-          label={hasLeaveFeature && openOnCallCount > 0 ? "Pending leave / on-call" : hasLeaveFeature ? "Pending leave" : "Open on-call"}
-          value={operationalCount}
-          context={
-            operationalCount > 0
-              ? [pendingLeaveCount > 0 ? `${pendingLeaveCount} leave` : null, openOnCallCount > 0 ? `${openOnCallCount} on-call` : null].filter(Boolean).join(" · ")
-              : "No pending requests"
-          }
-          accent={operationalCount > 0 ? "warning" : "success"}
-          href={pendingLeaveCount > 0 ? "/leave/pending" : "/on-call"}
-        />
-      </div>
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        <Card className="space-y-3">
+      {/* ═══ Hero Section 1: On-Call Status + Attendance + Observations ═══ */}
+      <section className="grid gap-4 lg:grid-cols-[1fr_340px]">
+        {/* On-Call Live Status (main box) */}
+        <Card className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">CPD priorities</h2>
-            <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">View all →</Link>
+            <div className="flex items-center gap-3">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--tertiary-container)] text-white text-lg">🔔</span>
+              <h2 className="text-[1rem] font-bold tracking-[-0.01em] text-text">Anaxi Core: On-Call Status</h2>
+            </div>
+            {openOnCalls.length > 0 && (
+              <StatusPill variant="error" size="sm">LIVE RESPONSE</StatusPill>
+            )}
           </div>
-          {topCpd.length === 0 ? (
-            <MetaText>No weakening signals detected in this window.</MetaText>
+          {onCallDetails.length === 0 ? (
+            <div className="rounded-xl bg-[var(--surface-container-low)] p-4">
+              <MetaText>No recent on-call requests.</MetaText>
+            </div>
           ) : (
-            <ul className="space-y-1">
-              {topCpd.map((row) => (
-                <li key={row.signalKey}>
-                  <Link href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`} className="block rounded-lg p-3 hover:bg-coral-10 calm-transition">
-                    <p className="text-sm font-medium text-text">{row.label}</p>
-                    <div className="mt-1.5 flex items-center gap-3">
-                      <span className="text-xs text-muted">{Math.round(row.driftRate * 100)}% drift rate</span>
-                      {row.avgNegDeltaAbs !== null && (
-                        <span className="text-xs text-muted">Avg Δ −{row.avgNegDeltaAbs.toFixed(2)}</span>
-                      )}
-                      <span className="text-xs text-muted">{row.teachersCovered} covered</span>
+            <div className="space-y-2">
+              {onCallDetails.slice(0, 3).map((oc) => (
+                <div
+                  key={oc.id}
+                  className={`flex items-center justify-between rounded-xl p-4 ${
+                    oc.status === "OPEN" || oc.status === "ACKNOWLEDGED"
+                      ? "bg-[var(--surface-container-low)]"
+                      : "bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar name={oc.requesterName} size="md" />
+                    <div>
+                      <p className="text-sm font-medium text-text">{oc.requesterName}</p>
+                      <p className="text-xs text-muted">{oc.location}</p>
                     </div>
-                    <div className="mt-2 h-1.5 w-full rounded-full bg-divider overflow-hidden">
-                      <div className="h-full rounded-full bg-coral" style={{ width: `${Math.min(Math.round(row.driftRate * 100), 100)}%` }} />
-                    </div>
-                  </Link>
-                </li>
+                  </div>
+                  <div className="flex items-center gap-3 text-right">
+                    {(oc.status === "OPEN" || oc.status === "ACKNOWLEDGED") ? (
+                      <>
+                        <span className="text-xs font-medium text-[var(--error)]">Immediate Support Needed</span>
+                        <span className="text-xs text-muted">
+                          {(() => {
+                            const mins = Math.round((Date.now() - new Date(oc.createdAt).getTime()) / 60000);
+                            return mins < 60 ? `Triggered ${mins}m ago` : `Triggered ${Math.round(mins / 60)}h ago`;
+                          })()}
+                        </span>
+                        <Link href={`/on-call`} className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-white">→</Link>
+                      </>
+                    ) : (
+                      <span className="text-xs text-muted">
+                        RESOLVED · {new Date(oc.resolvedAt ?? oc.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    )}
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </Card>
 
-        <Card className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Teacher support priorities</h2>
-            <Link href={`/analytics?tab=teachers&window=${windowDays}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">View all →</Link>
+        {/* Right column: Attendance + Observations */}
+        <div className="grid gap-4 grid-rows-2">
+          {/* Attendance box */}
+          <Card className="flex flex-col justify-between">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Attendance Mastery</p>
+            <div>
+              <p className="mt-1 text-[36px] font-bold leading-none tracking-[-0.02em] text-text">
+                {attendancePct !== null ? `${attendancePct.toFixed(1)}%` : "—"}
+              </p>
+              <div className="mt-2 h-1.5 w-full rounded-full bg-[var(--surface-container)]">
+                <div
+                  className="h-full rounded-full bg-[var(--primary)]"
+                  style={{ width: `${Math.min(attendancePct ?? 0, 100)}%` }}
+                />
+              </div>
+              {attendanceDelta !== null && (
+                <p className="mt-2 flex items-center gap-1 text-xs text-muted">
+                  <span className={attendanceDelta >= 0 ? "text-positive" : "text-negative"}>📈</span>
+                  <span className={attendanceDelta >= 0 ? "text-positive" : "text-negative"}>
+                    {attendanceDelta >= 0 ? "+" : ""}{attendanceDelta.toFixed(1)}%
+                  </span>{" "}
+                  from last week
+                </p>
+              )}
+            </div>
+          </Card>
+
+          {/* Observations this week box */}
+          <Card className="flex flex-col justify-between">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Observations This Week</p>
+            <div>
+              <p className="mt-1 text-[36px] font-bold leading-none tracking-[-0.02em] text-text">
+                {weekObsCount}
+              </p>
+              <div className="mt-3 flex items-center gap-1">
+                {weekObsTeachers.slice(0, 3).map((t) => (
+                  <Avatar key={t.id} name={t.name} size="sm" />
+                ))}
+                {weekObsTeachers.length > 3 && (
+                  <span className="inline-flex h-7 w-auto min-w-[28px] items-center justify-center rounded-full bg-[var(--primary)] px-1.5 text-[10px] font-semibold text-white">
+                    +{weekObsTeachers.length - 3}
+                  </span>
+                )}
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* ═══ Hero Section 2: Leave Governance ═══ */}
+      {hasLeaveFeature && (
+        <section>
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-[1.1rem] font-bold tracking-[-0.01em] text-text">Leave Governance</h2>
+                <p className="mt-0.5 text-[13px] text-muted">Pending administrative approvals</p>
+              </div>
+              <Link href="/leave/pending" className="text-[0.8rem] font-medium text-text underline decoration-text/30 underline-offset-2 calm-transition hover:decoration-text">View All Requests →</Link>
+            </div>
+            {pendingLeaveDetails.length === 0 ? (
+              <MetaText>No pending leave requests.</MetaText>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {pendingLeaveDetails.map((leave) => {
+                  const reasonUpper = (leave.reasonLabel ?? "PERSONAL").toUpperCase();
+                  const isEmergency = reasonUpper.includes("EMERGENCY") || reasonUpper.includes("URGENT");
+                  const isCpd = reasonUpper.includes("CPD") || reasonUpper.includes("TRAINING");
+                  const pillVariant: PillVariant = isEmergency ? "error" : isCpd ? "accent" : "neutral";
+                  return (
+                    <div
+                      key={leave.id}
+                      className={`rounded-2xl border p-4 ${isEmergency ? "border-[var(--pill-error-ring)]" : "border-border/60"}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <StatusPill variant={pillVariant} size="sm">
+                          {leave.reasonLabel?.toUpperCase() ?? "PERSONAL"}
+                        </StatusPill>
+                        <span className="text-[11px] text-muted">
+                          Sub: {new Date(leave.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm font-semibold text-text">{leave.requesterName}</p>
+                      {leave.notes && (
+                        <p className="mt-0.5 text-xs italic text-muted">&ldquo;{leave.notes}&rdquo;</p>
+                      )}
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs text-muted">
+                          <span>📅</span>
+                          {new Date(leave.startDate).toLocaleDateString("en-GB", { month: "short", day: "numeric" })}
+                          {" – "}
+                          {new Date(leave.endDate).toLocaleDateString("en-GB", { month: "short", day: "numeric" })}
+                        </div>
+                        {isEmergency ? (
+                          <Link href="/leave/pending" className="rounded-lg border border-text bg-white px-3 py-1 text-[11px] font-semibold text-text calm-transition hover:bg-[var(--surface-container-low)]">
+                            APPROVE NOW
+                          </Link>
+                        ) : (
+                          <div className="flex gap-2">
+                            <span className="cursor-pointer text-[var(--error)] calm-transition hover:opacity-70">✕</span>
+                            <span className="cursor-pointer text-positive calm-transition hover:opacity-70">✓</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+        </section>
+      )}
+
+      {/* ═══ Hero Section 3: Signal Analysis ═══ */}
+      <section className="grid gap-4 lg:grid-cols-3">
+        {/* CPD Priorities (dark box) */}
+        <Card className="space-y-4 !bg-[var(--primary)] !text-white !shadow-lg">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">✦</span>
+            <h2 className="text-[1rem] font-bold tracking-[-0.01em]">CPD Priorities</h2>
           </div>
-          {topTeachers.length === 0 ? (
-            <MetaText>No observation data available in this window.</MetaText>
+          {topCpd.length === 0 ? (
+            <p className="text-sm text-white/60">No weakening signals detected in this window.</p>
           ) : (
-            <ul className="space-y-1">
-              {topTeachers.map((row) => (
+            <>
+              <p className="text-sm text-white/70">
+                {topCpd.length} signal{topCpd.length !== 1 ? "s" : ""} weakening across {teacherRows.length} teachers in the {windowDays}-day window.
+              </p>
+              <div className="space-y-3">
+                {topCpd.map((row) => (
+                  <div key={row.signalKey}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{row.label}</span>
+                      <span className="text-sm font-bold">{Math.round(row.driftRate * 100)}%</span>
+                    </div>
+                    <div className="mt-1 h-1.5 w-full rounded-full bg-white/20 overflow-hidden">
+                      <div className="h-full rounded-full bg-white/80" style={{ width: `${Math.min(Math.round(row.driftRate * 100), 100)}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="mt-2 inline-block text-[0.75rem] font-semibold uppercase tracking-[0.05em] text-white/80 calm-transition hover:text-white">
+                Explore CPD Data ↗
+              </Link>
+            </>
+          )}
+        </Card>
+
+        {/* Staff Needing Intervention */}
+        <Card className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface-container)] text-sm">⚡</span>
+            <div>
+              <h2 className="text-[1rem] font-bold tracking-[-0.01em] text-text">Staff Intervention</h2>
+              <p className="text-xs text-muted">{interventionStaff.length} staff needing support</p>
+            </div>
+          </div>
+          {interventionStaff.length === 0 ? (
+            <MetaText>All staff stable — no intervention needed.</MetaText>
+          ) : (
+            <ul className="space-y-2">
+              {interventionStaff.map((row) => (
                 <li key={row.teacherMembershipId}>
-                  <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="flex items-center justify-between gap-3 rounded-lg p-3 hover:bg-coral-10 calm-transition">
-                    <div className="flex items-center gap-3 min-w-0">
+                  <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="flex items-center justify-between gap-2 rounded-xl p-2 hover:bg-[var(--surface-container-low)] calm-transition">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       <Avatar name={row.teacherName} />
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-text truncate">{row.teacherName}</p>
-                        <MetaText>{[row.departmentNames.length > 0 ? row.departmentNames.join(", ") : null, `${row.teacherCoverage} obs`].filter(Boolean).join(" · ")}</MetaText>
+                        <p className="text-[11px] text-muted">{row.departmentNames.join(", ") || "No dept"}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {row.normalizedIDS !== 0 && (
-                        <span className={`text-xs tabular-nums ${row.normalizedIDS > 0 ? "text-positive" : "text-negative"}`}>
-                          {row.normalizedIDS > 0 ? "+" : ""}{row.normalizedIDS.toFixed(1)}
-                        </span>
-                      )}
-                      <StatusPill variant={RISK_STATUS_PILL[row.status]}>{RISK_STATUS_LABELS[row.status]}</StatusPill>
-                    </div>
+                    <StatusPill variant={RISK_STATUS_PILL[row.status]} size="sm">{RISK_STATUS_LABELS[row.status]}</StatusPill>
                   </Link>
                 </li>
               ))}
             </ul>
           )}
         </Card>
-      </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <Card className="space-y-3 overflow-hidden p-0">
-          <div className="flex items-center justify-between px-5 pt-4">
-            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Cohort change</h2>
-            <Link href={`/explorer?view=BEHAVIOUR_COHORTS_PIVOT&window=${windowDays}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">Explorer →</Link>
-          </div>
-          {!hasBehaviourData ? (
-            <div className="space-y-2 px-5 pb-4">
-              <BodyText className="text-muted">Behaviour snapshots not yet imported.</BodyText>
-              <Link href="/admin/imports" className="text-[12px] text-accent hover:underline">Import behaviour data →</Link>
-            </div>
-          ) : sortedCohorts.length === 0 ? (
-            <div className="px-5 pb-4"><MetaText>No cohort data available.</MetaText></div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-bg/60 text-xs uppercase tracking-[0.05em] text-muted">
-                    <th className="px-4 py-2 text-left font-medium">Year</th>
-                    <th className="px-3 py-2 text-right font-medium">Att %</th>
-                    <th className="px-3 py-2 text-right font-medium">Δ</th>
-                    <th className="px-3 py-2 text-right font-medium">Detent.</th>
-                    <th className="px-3 py-2 text-right font-medium">Δ</th>
-                    <th className="px-3 py-2 text-right font-medium">On call</th>
-                    <th className="px-3 py-2 text-right font-medium">Δ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedCohorts.map((row) => (
-                    <tr key={row.yearGroup} className="border-b border-border/50 last:border-0 hover:bg-accent/[0.03] calm-transition">
-                      <td className="px-4 py-2.5">
-                        <Link href={`/explorer?view=BEHAVIOUR_COHORTS_PIVOT&year=${encodeURIComponent(row.yearGroup ?? "")}&window=${windowDays}`} className="font-medium text-accent hover:underline">
-                          {row.yearGroup}
-                        </Link>
-                      </td>
-                      <td className="px-3 py-2.5 text-right tabular-nums text-text">{row.attendanceMean !== null ? `${row.attendanceMean.toFixed(1)}` : "—"}</td>
-                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.attendanceDelta !== null ? (row.attendanceDelta < 0 ? "text-[var(--error-text)]" : "text-positive") : "text-muted"}`}>
-                        {row.attendanceDelta !== null ? `${row.attendanceDelta > 0 ? "+" : ""}${row.attendanceDelta.toFixed(1)}` : "—"}
-                      </td>
-                      <td className="px-3 py-2.5 text-right tabular-nums text-text">{row.detentionsMean !== null ? row.detentionsMean.toFixed(1) : "—"}</td>
-                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.detentionsDelta !== null ? (row.detentionsDelta > 0 ? "text-[var(--error-text)]" : "text-positive") : "text-muted"}`}>
-                        {row.detentionsDelta !== null ? `${row.detentionsDelta > 0 ? "+" : ""}${row.detentionsDelta.toFixed(1)}` : "—"}
-                      </td>
-                      <td className="px-3 py-2.5 text-right tabular-nums text-text">{row.onCallsMean !== null ? row.onCallsMean.toFixed(1) : "—"}</td>
-                      <td className={`px-3 py-2.5 text-right tabular-nums ${row.onCallsDelta !== null ? (row.onCallsDelta > 0 ? "text-[var(--error-text)]" : "text-positive") : "text-muted"}`}>
-                        {row.onCallsDelta !== null ? `${row.onCallsDelta > 0 ? "+" : ""}${row.onCallsDelta.toFixed(1)}` : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
-
-        <Card className="space-y-3">
+        {/* Least Observed Teachers */}
+        <Card className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">Student support priorities</h2>
-            <Link href={`/analytics?tab=students&window=${windowDays}`} className="text-[0.75rem] font-medium text-accent calm-transition hover:text-accentHover">View all →</Link>
+            <div>
+              <h2 className="text-[1rem] font-bold tracking-[-0.01em] text-text">Observation Coverage</h2>
+              <p className="text-xs text-muted">Least observed this window</p>
+            </div>
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-container)] text-sm">🔍</span>
           </div>
-          {displayUrgentStudents.length === 0 ? (
-            <MetaText>No urgent or priority students in this window.</MetaText>
+          {leastObserved.length === 0 ? (
+            <MetaText>No teacher data available.</MetaText>
           ) : (
-            <ul className="space-y-1">
-              {displayUrgentStudents.map((row) => (
-                <li key={row.studentId}>
-                  <Link href={`/analysis/students/${row.studentId}?window=${windowDays}`} className="block rounded-lg p-3 hover:bg-coral-10 calm-transition">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="min-w-0 text-sm font-medium text-text truncate">
-                        {row.studentName}{row.yearGroup ? <span className="ml-1 font-normal text-muted">· {row.yearGroup}</span> : null}
-                      </p>
-                      <StatusPill variant={row.band === "URGENT" ? "error" : "warning"}>{row.band === "URGENT" ? "Urgent" : "Priority"}</StatusPill>
+            <ul className="space-y-2">
+              {leastObserved.map((row) => (
+                <li key={row.teacherMembershipId}>
+                  <Link href={`/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`} className="flex items-center justify-between gap-2 rounded-xl p-2 hover:bg-[var(--surface-container-low)] calm-transition">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Avatar name={row.teacherName} />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-text truncate">{row.teacherName}</p>
+                        <p className="text-[11px] text-muted">{row.departmentNames.join(", ") || "No dept"}</p>
+                      </div>
                     </div>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-muted">
-                      {row.attendancePct !== null && (
-                        <span>
-                          Attendance: {row.attendancePct.toFixed(1)}%
-                          {row.attendanceDelta !== null && (
-                            <span className={`ml-1 ${row.attendanceDelta < 0 ? "text-negative" : "text-positive"}`}>
-                              ({row.attendanceDelta > 0 ? "+" : ""}{row.attendanceDelta.toFixed(1)})
-                            </span>
-                          )}
-                        </span>
-                      )}
-                      {row.onCallsDelta !== null && (
-                        <span>
-                          On calls: <span className={row.onCallsDelta > 0 ? "text-negative" : "text-positive"}>{row.onCallsDelta > 0 ? "+" : ""}{row.onCallsDelta}</span>
-                        </span>
-                      )}
-                      {row.detentionsDelta !== null && (
-                        <span>
-                          Detentions: <span className={row.detentionsDelta > 0 ? "text-negative" : "text-positive"}>{row.detentionsDelta > 0 ? "+" : ""}{row.detentionsDelta}</span>
-                        </span>
-                      )}
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[var(--surface-container)] text-[10px] font-bold text-text">
+                        {row.teacherCoverage}
+                      </span>
+                      <span className="text-[11px] text-muted">obs</span>
                     </div>
-                    {row.drivers.length > 0 && <div className="mt-1.5"><DriverChips drivers={row.drivers} max={3} /></div>}
                   </Link>
                 </li>
               ))}
@@ -768,7 +843,21 @@ export default async function HomePage({
     enabledFeatures: Array.from(enabledFeatures),
   });
 
-  const computedAt = new Date();
+
+  // Build quick action items based on enabled features
+  const quickActionItems: { label: string; href: string; icon: string }[] = [];
+  if (enabledFeatures.has("OBSERVATIONS")) {
+    quickActionItems.push({ label: "New Observation", href: "/observe/new", icon: "📝" });
+  }
+  if (enabledFeatures.has("MEETINGS")) {
+    quickActionItems.push({ label: "New Meeting", href: "/meetings/new", icon: "📅" });
+  }
+  if (enabledFeatures.has("ON_CALL")) {
+    quickActionItems.push({ label: "On Call", href: "/on-call/new", icon: "📞" });
+  }
+  if (enabledFeatures.has("LEAVE")) {
+    quickActionItems.push({ label: "Leave of Absence", href: "/leave/request", icon: "🏖️" });
+  }
 
   const pageContent = async () => {
     if (variant === "leadership") {
@@ -781,7 +870,7 @@ export default async function HomePage({
       }
       const hasLeaveFeature = homeAssembly.has("operations.leave-approvals");
       const hasOnCallFeature = enabledFeatures.has("ON_CALL");
-      const { cpdRows, teacherRows, cohortRows, studentRows, pendingLeaveCount, openOnCallCount } = await hydrateLeadershipHomeData({ user, windowDays, hasLeaveFeature, hasOnCallFeature });
+      const { cpdRows, teacherRows, cohortRows, studentRows, pendingLeaveCount, openOnCallCount, pendingLeaveDetails, onCallDetails, weekObsCount, weekObsTeachers } = await hydrateLeadershipHomeData({ user, windowDays, hasLeaveFeature, hasOnCallFeature });
       return (
         <LeadershipHome
           windowDays={windowDays}
@@ -792,6 +881,10 @@ export default async function HomePage({
           hasLeaveFeature={hasLeaveFeature}
           pendingLeaveCount={pendingLeaveCount}
           openOnCallCount={openOnCallCount}
+          pendingLeaveDetails={pendingLeaveDetails}
+          onCallDetails={onCallDetails}
+          weekObsCount={weekObsCount}
+          weekObsTeachers={weekObsTeachers}
         />
       );
     }
@@ -848,7 +941,7 @@ export default async function HomePage({
 
   return (
     <div className="space-y-6">
-      <PageTitle windowDays={windowDays} computedAt={computedAt} userName={user.fullName} />
+      <PageTitle windowDays={windowDays} quickActionItems={quickActionItems} />
       {content}
     </div>
   );
