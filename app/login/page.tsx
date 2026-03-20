@@ -46,7 +46,7 @@ export default function LoginPage() {
           <Image src="/anaxi-logo.png" alt="Anaxi" width={32} height={32} priority className="h-8 w-8 object-contain" />
           <div className="h-4 w-px mx-2" style={{ background: "rgba(198,198,205,0.30)" }} />
           <span className="text-[11px] font-semibold tracking-[0.12em] uppercase" style={{ color: "var(--on-surface-variant)" }}>
-            Academic Ledger
+            Anaxi
           </span>
         </div>
       </nav>
@@ -59,7 +59,7 @@ export default function LoginPage() {
           <div className="mb-10 text-center md:text-left">
             <h1
               className="text-4xl font-bold mb-3"
-              style={{ color: "var(--on-surface)", fontFamily: "var(--font-newsreader), Georgia, serif" }}
+              style={{ color: "var(--on-surface)" }}
             >
               Sign in
             </h1>
@@ -96,7 +96,7 @@ export default function LoginPage() {
                     className="block text-[11px] font-bold tracking-widest uppercase ml-1"
                     style={{ color: "var(--on-surface-variant)" }}
                   >
-                    Official Email
+                    Email
                   </label>
                   <input
                     id="email"
@@ -136,7 +136,7 @@ export default function LoginPage() {
                   <a
                     className="calm-transition text-[13px] hover:opacity-70"
                     style={{ color: "var(--on-surface-variant)" }}
-                    href="#"
+                    href="/login/forgot-password"
                   >
                     Forgot password?
                   </a>
@@ -164,7 +164,7 @@ export default function LoginPage() {
                     color: "var(--on-primary)",
                   }}
                 >
-                  {loading ? "Signing in…" : "Continue to Ledger"}
+                  {loading ? "Signing in…" : "Continue"}
                   {!loading && (
                     <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" xmlns="http://www.w3.org/2000/svg">
                       <path d="M3.5 8h9M9 4.5 12.5 8 9 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

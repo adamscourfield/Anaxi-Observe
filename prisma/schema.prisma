@@ -201,6 +201,7 @@ model User {
   watchlistEntries            StudentWatchlist[]  @relation("WatchlistCreator")
   auditLogs                   AuditLog[]          @relation("AuditActor")
   sentAdminInvites            SchoolAdminInvite[] @relation("AdminInviteSender")
+  passwordResetTokens         PasswordResetToken[]
 
   @@unique([tenantId, email])
   @@unique([tenantId, id])
@@ -850,6 +851,18 @@ model SchoolAdminInvite {
   createdAt     DateTime @default(now())
 
   @@index([tenantId, email])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model StrategyArea {

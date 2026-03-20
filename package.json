@@ -19,7 +19,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.18.0",
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "csv-parse": "^5.5.6",
     "jose": "^5.6.3",
@@ -36,7 +36,7 @@
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
-    "prisma": "^5.18.0",
+    "prisma": "^5.22.0",
     "tailwindcss": "^3.4.13",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.1",
