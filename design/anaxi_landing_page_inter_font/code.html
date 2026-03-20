@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#ffb3b2",
+              "on-surface": "#191c1e",
+              "surface-container": "#eceef0",
+              "on-primary-fixed": "#131b2e",
+              "surface-container-highest": "#e0e3e5",
+              "primary": "#000000",
+              "error-container": "#ffdad6",
+              "surface-container-lowest": "#ffffff",
+              "outline": "#76777d",
+              "on-surface-variant": "#45464d",
+              "on-secondary": "#ffffff",
+              "on-tertiary-fixed-variant": "#763133",
+              "surface-variant": "#e0e3e5",
+              "on-tertiary-container": "#c06c6c",
+              "primary-fixed-dim": "#bec6e0",
+              "primary-fixed": "#dae2fd",
+              "on-error": "#ffffff",
+              "surface-bright": "#f7f9fb",
+              "primary-container": "#131b2e",
+              "inverse-on-surface": "#eff1f3",
+              "on-background": "#191c1e",
+              "secondary-fixed-dim": "#c4c6d1",
+              "on-error-container": "#93000a",
+              "secondary-container": "#dedfeb",
+              "on-secondary-fixed-variant": "#444650",
+              "background": "#f7f9fb",
+              "tertiary-fixed": "#ffdad9",
+              "surface-container-low": "#f2f4f6",
+              "surface": "#f7f9fb",
+              "tertiary-container": "#3d060b",
+              "secondary": "#5c5e68",
+              "on-primary-container": "#7c839b",
+              "surface-dim": "#d8dadc",
+              "inverse-surface": "#2d3133",
+              "surface-tint": "#565e74",
+              "outline-variant": "#c6c6cd",
+              "secondary-fixed": "#e1e2ed",
+              "inverse-primary": "#bec6e0",
+              "on-primary": "#ffffff",
+              "on-tertiary": "#ffffff",
+              "surface-container-high": "#e6e8ea",
+              "on-primary-fixed-variant": "#3f465c",
+              "on-tertiary-fixed": "#3d060b",
+              "on-secondary-fixed": "#191b24",
+              "tertiary": "#000000",
+              "on-secondary-container": "#60626c",
+              "error": "#ba1a1a"
+            },
+            fontFamily: {
+              "headline": ["Inter", "sans-serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.875rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+        .serif-italic { font-style: italic; }
+        .glass-header { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
+<!-- TopNavBar Implementation -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-16 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md">
+<div class="flex items-center gap-12">
+<span class="font-bold text-2xl text-slate-900 dark:text-slate-50"><img alt="Anaxi Logo" class="h-8 w-auto" src="https://lh3.googleusercontent.com/aida/ADBb0uiWuXC-j-4yrnSnBi3MFrY-tSDrFNQ7FP4_S8dznraLFqMGafLfLr5ybJEJ3z4fxaBnhusRKfAM9S7EaSnc33y6mBw2SzXWccQNDvlK2anmQzE0ut_Jt7jLlQ8rzk_B8ct6qn82LJdo8FLtBrr5lJMCRH0rD8Zw7PtZvA5yxtw9BgQV7Dp-l5gN5FbcwNeOUjBi0vJ0G2wtXEB-p2N-yH-9VTVACiOE4Df8dLplgaIduGvG4bOPWis6iNvuvZv9GNrh-g9sqpyw"/></span>
+<div class="hidden md:flex gap-8">
+<a class="text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-slate-50 pb-1 font-semibold text-sm tracking-tight" href="#">Core</a>
+<a class="text-slate-500 dark:text-slate-400 font-semibold hover:text-slate-900 dark:hover:text-white transition-colors text-sm tracking-tight" href="#">Learn</a>
+<a class="text-slate-500 dark:text-slate-400 font-semibold hover:text-slate-900 dark:hover:text-white transition-colors text-sm tracking-tight" href="#">Admissions</a>
+<a class="text-slate-500 dark:text-slate-400 font-semibold hover:text-slate-900 dark:hover:text-white transition-colors text-sm tracking-tight" href="#">Network</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-slate-900 dark:text-slate-50 font-semibold text-sm tracking-tight">Sign In</button>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-bold text-xs tracking-widest scale-95 duration-200 hover:scale-100 uppercase">GET STARTED</button>
+</div>
+</nav>
+<main class="pt-16">
+<!-- Section 1: Hero -->
+<section class="relative min-h-[921px] flex flex-col items-center justify-center px-6 text-center overflow-hidden bg-surface-bright">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-fixed via-transparent to-transparent"></div>
+</div>
+<div class="relative z-10 max-w-4xl mx-auto space-y-8">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-container-highest text-on-surface-variant text-xs font-bold tracking-widest uppercase">
+            Institutional Intelligence
+        </div>
+<h1 class="font-headline text-6xl md:text-8xl text-on-surface font-extrabold leading-[1.05] tracking-tight">
+            The Future of <span class="serif-italic">Education</span> Management.
+        </h1>
+<p class="max-w-2xl mx-auto text-xl text-on-surface-variant font-light leading-relaxed">
+            A unified ledger for school operations and mastery-based learning. Designed for institutional confidence and operational surgical precision.
+        </p>
+<div class="flex flex-col md:flex-row items-center justify-center gap-4 pt-4">
+<button class="w-full md:w-auto px-10 py-4 bg-primary text-on-primary rounded-xl font-bold text-lg hover:shadow-2xl transition-all">Request Institutional Access</button>
+<button class="w-full md:w-auto px-10 py-4 bg-surface-container-lowest text-on-surface rounded-xl font-bold text-lg border border-outline-variant/20 hover:bg-surface-container transition-all">View Methodology</button>
+</div>
+</div>
+<div class="mt-24 w-full max-w-6xl mx-auto px-4">
+<div class="relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary/5 to-tertiary-fixed-dim/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+<div class="relative bg-surface-container-lowest rounded-xl shadow-2xl overflow-hidden border border-outline-variant/10">
+<img class="w-full h-[500px] object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700" data-alt="Minimalist high-end office interior with glass and slate textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABStfcTd1eTdE8YUyb4juLYNJuPgge2RFxQznz9dWt5Bp8Wi4XwQ0kTMKusfTsLd3KHI82ZrnlONd1z_DlPQVfJbxhQRGDuD_FWwWf50L5cixGOu_IHu3nbA4uKKJobCemSxi5Yp92Fia6o_6RBO6zvCWnvdgbPVvi_gu3ZNUwn5Pj9xKQP49mK3X-6novS8wI6GYS0-k6gxUDbg3sS3tzcKCBoOSi_KtODj9NR2CHd9Yx92K18EwhOl9-yUdEv3fpJFvc0zzNbsc"/>
+<div class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-primary/80 to-transparent">
+<div class="flex justify-between items-end">
+<div class="text-on-primary">
+<div class="font-headline text-2xl font-bold">Global Command Center</div>
+<div class="text-on-primary/70 text-sm">Real-time operational awareness</div>
+</div>
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-full border border-on-primary/20 flex items-center justify-center backdrop-blur-md">
+<span class="material-symbols-outlined text-on-primary">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Core vs Learn -->
+<section class="py-32 bg-surface">
+<div class="max-w-7xl mx-auto px-8">
+<div class="grid md:grid-cols-2 gap-16 items-start">
+<!-- Anaxi Core -->
+<div class="space-y-8 p-12 bg-surface-container-low rounded-xl">
+<div class="w-14 h-14 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-size: 32px;">account_balance</span>
+</div>
+<h2 class="font-headline text-4xl text-on-surface font-bold">Anaxi Core</h2>
+<p class="text-lg text-on-surface-variant leading-relaxed">
+                    The definitive administrative engine. Manage staff rotations, attendance compliance, and resource allocation with clinical precision. No more fragmentation—one source of truth for the entire institution.
+                </p>
+<ul class="space-y-4">
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary font-bold">check_circle</span>
+<span class="font-medium">Real-time Staff Deployment Tracking</span>
+</li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary font-bold">check_circle</span>
+<span class="font-medium">Automated Compliance Reporting</span>
+</li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary font-bold">check_circle</span>
+<span class="font-medium">Institutional Resource Forecasting</span>
+</li>
+</ul>
+</div>
+<!-- Anaxi Learn -->
+<div class="space-y-8 p-12 bg-surface-container-lowest border border-outline-variant/10 rounded-xl shadow-sm">
+<div class="w-14 h-14 rounded-xl bg-on-tertiary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-size: 32px;">auto_stories</span>
+</div>
+<h2 class="font-headline text-4xl text-on-surface font-bold">Anaxi Learn</h2>
+<p class="text-lg text-on-surface-variant leading-relaxed">
+                    A mastery-engine designed for the modern scholar. Transcending simple gradebooks, Anaxi Learn maps individual progress across complex skill hierarchies to ensure deep pedagogical integrity.
+                </p>
+<ul class="space-y-4">
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-on-tertiary-container font-bold">check_circle</span>
+<span class="font-medium">Asymmetric Skill Mapping</span>
+</li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-on-tertiary-container font-bold">check_circle</span>
+<span class="font-medium">Cognitive Load Visualization</span>
+</li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-on-tertiary-container font-bold">check_circle</span>
+<span class="font-medium">Portfolio-grade Assessment Tools</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Data Density UI Mockup -->
+<section class="py-32 bg-surface-container-low overflow-hidden">
+<div class="max-w-7xl mx-auto px-8">
+<div class="flex flex-col md:flex-row justify-between items-end gap-8 mb-20">
+<div class="max-w-2xl">
+<h3 class="font-headline text-5xl text-on-surface leading-tight mb-6 font-bold">Designed for <span class="serif-italic">Insight</span>, not just visibility.</h3>
+<p class="text-xl text-on-surface-variant font-light">We replace the chaotic dashboard with a refined ledger. High information density meets purposeful whitespace to reduce administrative cognitive load.</p>
+</div>
+<div class="flex gap-4">
+<div class="px-6 py-2 rounded-full bg-tertiary-container text-on-tertiary-container text-xs font-bold tracking-widest uppercase">Precision Analytics</div>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-6">
+<!-- Bento Grid Layout -->
+<div class="col-span-12 md:col-span-8 bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10">
+<div class="flex justify-between items-center mb-8">
+<h4 class="font-headline text-xl font-bold">Institutional Flow Analysis</h4>
+<div class="flex gap-2">
+<div class="w-3 h-3 rounded-full bg-on-tertiary-container"></div>
+<div class="w-3 h-3 rounded-full bg-outline-variant"></div>
+</div>
+</div>
+<img class="w-full h-80 object-cover rounded-lg opacity-90" data-alt="Abstract data visualization with clean lines and slate tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtJvhJp0rbKNx_q6UBAvMHepz6lF4ODr49FAZB7VxbvPegcZVGYVbX35hCgoHYYO8dWVwDyG8McJU8kQi511WOZed3h-nQVk96dTQW2KdJ1TYC5NoTNWzfahkm4aG0RLUCn_z_fpHRuTDi5Ae8g_hj_tvTZD5EZi5prceYq37zUBQ-isX2aQTFG5CZlGW3_XGy77wnU86P8bSj7WBnPSJlWu7sd9FnNJG7QqtQETXkQ5gfzV4oqdokpLwVjx8AouE4AAH1LEeVWLU"/>
+</div>
+<div class="col-span-12 md:col-span-4 bg-primary text-on-primary rounded-xl p-8 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined mb-6" style="font-size: 40px;">architecture</span>
+<div class="font-headline text-3xl mb-4 font-bold">98% Efficient</div>
+<p class="text-on-primary-container text-sm leading-relaxed">Proprietary scheduling logic reduces resource overhead by nearly double the industry standard.</p>
+</div>
+<button class="mt-8 text-on-primary flex items-center gap-2 font-bold">
+                    Explore Metrics <span class="material-symbols-outlined">north_east</span>
+</button>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-high rounded-xl p-8">
+<div class="font-headline text-2xl mb-2 font-bold">Scholar Growth</div>
+<div class="text-on-surface-variant text-sm mb-6 font-semibold uppercase tracking-wider">Mastery Distribution — Q3</div>
+<div class="space-y-4">
+<div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-on-tertiary-container w-[75%]"></div>
+</div>
+<div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[45%]"></div>
+</div>
+<div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-outline w-[90%]"></div>
+</div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-8 bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10">
+<div class="grid grid-cols-3 gap-8">
+<div>
+<div class="text-4xl font-headline font-bold text-primary">2,400+</div>
+<div class="text-xs font-bold tracking-widest text-on-surface-variant uppercase mt-2">Active Students</div>
+</div>
+<div>
+<div class="text-4xl font-headline font-bold text-primary">14</div>
+<div class="text-xs font-bold tracking-widest text-on-surface-variant uppercase mt-2">Global Campuses</div>
+</div>
+<div>
+<div class="text-4xl font-headline font-bold text-on-tertiary-container">0.02s</div>
+<div class="text-xs font-bold tracking-widest text-on-surface-variant uppercase mt-2">Latency Floor</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Final CTA -->
+<section class="py-40 bg-surface-bright relative overflow-hidden">
+<div class="absolute top-0 right-0 w-1/3 h-full bg-primary/5 -skew-x-12 translate-x-1/2"></div>
+<div class="max-w-4xl mx-auto px-8 relative z-10 text-center">
+<h2 class="font-headline text-6xl text-on-surface mb-8 font-bold">Ready to evolve your <span class="serif-italic">institutional intelligence?</span></h2>
+<p class="text-xl text-on-surface-variant mb-12 max-w-2xl mx-auto font-light">Join the vanguard of schools operating with surgical precision and pedagogical clarity.</p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+<button class="px-12 py-5 bg-primary text-on-primary rounded-xl font-bold text-lg hover:bg-primary/90 transition-all shadow-xl uppercase tracking-wider">Request Demo</button>
+<button class="px-12 py-5 bg-transparent text-on-surface border border-outline rounded-xl font-bold text-lg hover:bg-surface-container transition-all">Speak to an Advisor</button>
+</div>
+<p class="mt-12 text-on-surface-variant text-xs font-bold uppercase tracking-[0.2em]">Trusted by Global Academic Partnerships</p>
+</div>
+</section>
+</main>
+<footer class="bg-surface-container-lowest py-20 px-8 border-t border-outline-variant/10">
+<div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
+<div class="col-span-1 space-y-6">
+<div class="font-bold text-3xl text-primary"><img alt="Anaxi Logo" class="h-10 w-auto" src="https://lh3.googleusercontent.com/aida/ADBb0uiWuXC-j-4yrnSnBi3MFrY-tSDrFNQ7FP4_S8dznraLFqMGafLfLr5ybJEJ3z4fxaBnhusRKfAM9S7EaSnc33y6mBw2SzXWccQNDvlK2anmQzE0ut_Jt7jLlQ8rzk_B8ct6qn82LJdo8FLtBrr5lJMCRH0rD8Zw7PtZvA5yxtw9BgQV7Dp-l5gN5FbcwNeOUjBi0vJ0G2wtXEB-p2N-yH-9VTVACiOE4Df8dLplgaIduGvG4bOPWis6iNvuvZv9GNrh-g9sqpyw"/></div>
+<p class="text-sm text-on-surface-variant leading-relaxed">Defining the standard for institutional intelligence in the modern academic landscape.</p>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-on-surface-variant">language</span>
+<span class="material-symbols-outlined text-on-surface-variant">security</span>
+<span class="material-symbols-outlined text-on-surface-variant">database</span>
+</div>
+</div>
+<div>
+<h5 class="font-bold text-xs tracking-widest uppercase text-on-surface mb-6">Product</h5>
+<ul class="space-y-4 text-sm font-medium text-on-surface-variant">
+<li><a class="hover:text-primary transition-colors" href="#">Anaxi Core</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Anaxi Learn</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Intelligence APIs</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Hardware Integration</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-bold text-xs tracking-widest uppercase text-on-surface mb-6">Institution</h5>
+<ul class="space-y-4 text-sm font-medium text-on-surface-variant">
+<li><a class="hover:text-primary transition-colors" href="#">Methodology</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Case Studies</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Network</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Compliance</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-bold text-xs tracking-widest uppercase text-on-surface mb-6">Connect</h5>
+<ul class="space-y-4 text-sm font-medium text-on-surface-variant">
+<li><a class="hover:text-primary transition-colors" href="#">Contact</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Support</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Press</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Legal</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-outline-variant/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-on-surface-variant/50">
+<div>© 2024 Anaxi Intelligence Systems. All rights reserved.</div>
+<div class="flex gap-8">
+<a class="hover:text-on-surface transition-colors" href="#">Privacy Protocol</a>
+<a class="hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-on-surface transition-colors" href="#">Cookie Policy</a>
+</div>
+</div>
+</footer>
+</body></html>
