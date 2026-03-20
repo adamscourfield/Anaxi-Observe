@@ -73,11 +73,7 @@ function IconCohorts() {
 
 /* ─── Page ─────────────────────────────────────────────────────────────────── */
 
-export default async function ExplorerPage({
-  searchParams,
-}: {
-  searchParams?: Record<string, string | string[] | undefined>;
-}) {
+export default async function ExplorerPage() {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "ANALYSIS");
 
@@ -177,7 +173,7 @@ export default async function ExplorerPage({
 
       <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Teachers */}
-        <Link href="/explorer?view=TEACHER_PRIORITIES&windowDays=21" className="block">
+        <Link href="/explorer/teachers" className="block">
           <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
             <div className="flex items-center gap-2 text-accent">
               <IconTeachers />
@@ -203,7 +199,7 @@ export default async function ExplorerPage({
         </Link>
 
         {/* Departments */}
-        <Link href="/explorer?view=INSTRUCTION_DEPARTMENTS_PIVOT&windowDays=21" className="block">
+        <Link href="/explorer/departments" className="block">
           <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
             <div className="flex items-center gap-2 text-accent">
               <IconDepartments />
@@ -221,7 +217,7 @@ export default async function ExplorerPage({
         </Link>
 
         {/* Signals */}
-        <Link href="/explorer?view=CPD_SIGNALS&windowDays=21" className="block">
+        <Link href="/explorer/signals" className="block">
           <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
             <div className="flex items-center gap-2 text-accent">
               <IconSignals />
@@ -247,7 +243,7 @@ export default async function ExplorerPage({
         </Link>
 
         {/* Observations */}
-        <Link href="/explorer?view=INSTRUCTION_LIST&windowDays=21" className="block">
+        <Link href="/explorer/observations" className="block">
           <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
             <div className="flex items-center gap-2 text-accent">
               <IconObservations />
@@ -272,7 +268,7 @@ export default async function ExplorerPage({
 
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Students */}
-            <Link href="/explorer?view=BEHAVIOUR_STUDENTS_TABLE&windowDays=21" className="block">
+            <Link href="/explorer/students" className="block">
               <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
                 <div className="flex items-center gap-2 text-accent">
                   <IconStudents />
@@ -298,7 +294,7 @@ export default async function ExplorerPage({
             </Link>
 
             {/* Cohorts */}
-            <Link href="/explorer?view=BEHAVIOUR_COHORTS_PIVOT&windowDays=21" className="block">
+            <Link href="/explorer/cohorts" className="block">
               <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
                 <div className="flex items-center gap-2 text-accent">
                   <IconCohorts />

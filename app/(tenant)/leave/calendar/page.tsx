@@ -161,7 +161,7 @@ export default async function LeaveCalendarPage() {
                   {entries.map((request) => (
                     <Link
                       key={request.id}
-                      href={`/leave/${request.id}`}
+                      href={`/leave/${request.id}?from=calendar`}
                       className={`block truncate rounded px-1.5 py-[3px] text-[11px] font-medium leading-snug calm-transition ${
                         request.status === "APPROVED"
                           ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
