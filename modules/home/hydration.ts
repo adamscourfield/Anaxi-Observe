@@ -24,6 +24,26 @@ async function safe<T>(task: Promise<T>, fallback: T): Promise<T> {
   }
 }
 
+export type PendingLeaveDetail = {
+  id: string;
+  requesterName: string;
+  reasonLabel: string | null;
+  startDate: string;
+  endDate: string;
+  notes: string | null;
+  status: string;
+  createdAt: string;
+};
+
+export type OnCallDetail = {
+  id: string;
+  requesterName: string;
+  location: string;
+  status: string;
+  createdAt: string;
+  resolvedAt: string | null;
+};
+
 export async function hydrateLeadershipHomeData({
   user,
   windowDays,
@@ -53,13 +73,91 @@ export async function hydrateLeadershipHomeData({
       )
     : Promise.resolve(0);
 
-  const [cpdRows, teacherRows, cohortResult, studentResult, pendingLeaveCount, openOnCallCount] = await Promise.all([
+  const pendingLeaveDetailsPromise: Promise<PendingLeaveDetail[]> = hasLeaveFeature
+    ? safe(
+        (prisma as any).lOARequest
+          .findMany({
+            where: { tenantId: user.tenantId, status: "PENDING" },
+            include: { requester: { select: { fullName: true } }, reason: { select: { label: true } } },
+            orderBy: { createdAt: "desc" },
+            take: 3,
+          })
+          .then((rows: any[]) =>
+            rows.map((r: any) => ({
+              id: r.id as string,
+              requesterName: (r.requester?.fullName ?? "Unknown") as string,
+              reasonLabel: (r.reason?.label ?? null) as string | null,
+              startDate: (r.startDate as Date).toISOString(),
+              endDate: (r.endDate as Date).toISOString(),
+              notes: r.notes as string | null,
+              status: r.status as string,
+              createdAt: (r.createdAt as Date).toISOString(),
+            }))
+          ),
+        [] as PendingLeaveDetail[]
+      )
+    : Promise.resolve([] as PendingLeaveDetail[]);
+
+  const onCallDetailsPromise: Promise<OnCallDetail[]> = hasOnCallFeature
+    ? safe(
+        (prisma as any).onCallRequest
+          .findMany({
+            where: { tenantId: user.tenantId },
+            include: { requester: { select: { fullName: true } } },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+          })
+          .then((rows: any[]) =>
+            rows.map((r: any) => ({
+              id: r.id as string,
+              requesterName: (r.requester?.fullName ?? "Unknown") as string,
+              location: (r.location ?? "") as string,
+              status: r.status as string,
+              createdAt: (r.createdAt as Date).toISOString(),
+              resolvedAt: r.resolvedAt ? (r.resolvedAt as Date).toISOString() : null,
+            }))
+          ),
+        [] as OnCallDetail[]
+      )
+    : Promise.resolve([] as OnCallDetail[]);
+
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+
+  const weekObsPromise = safe(
+    (prisma as any).observation
+      .findMany({
+        where: { tenantId: user.tenantId, observedAt: { gte: weekAgo } },
+        include: { observedTeacher: { select: { fullName: true } } },
+        orderBy: { observedAt: "desc" },
+        take: 20,
+      })
+      .then((rows: any[]) => {
+        const seen = new Set<string>();
+        const recentTeachers: { id: string; name: string }[] = [];
+        for (const r of rows) {
+          const tid = r.observedTeacherId as string;
+          if (!seen.has(tid)) {
+            seen.add(tid);
+            recentTeachers.push({ id: tid, name: (r.observedTeacher?.fullName ?? "Unknown") as string });
+          }
+          if (recentTeachers.length >= 5) break;
+        }
+        return { count: rows.length, recentTeachers };
+      }),
+    { count: 0, recentTeachers: [] as { id: string; name: string }[] }
+  );
+
+  const [cpdRows, teacherRows, cohortResult, studentResult, pendingLeaveCount, openOnCallCount, pendingLeaveDetails, onCallDetails, weekObs] = await Promise.all([
     safe(computeCpdPriorities(user.tenantId, windowDays), [] as CpdPriorityRow[]),
     safe(computeTeacherRiskIndex(user.tenantId, windowDays), [] as TeacherRiskRow[]),
     safe(computeCohortPivot(user.tenantId, windowDays), { rows: [] as CohortPivotRow[], computedAt: new Date() }),
     safe(computeStudentRiskIndex(user.tenantId, windowDays, user.id), { rows: [] as StudentRiskRow[], computedAt: new Date() }),
     pendingLeavePromise,
     openOnCallPromise,
+    pendingLeaveDetailsPromise,
+    onCallDetailsPromise,
+    weekObsPromise,
   ]);
 
   return {
@@ -70,6 +168,10 @@ export async function hydrateLeadershipHomeData({
     topImproving: getTopImprovingSignals(cpdRows),
     pendingLeaveCount: pendingLeaveCount as number,
     openOnCallCount: openOnCallCount as number,
+    pendingLeaveDetails,
+    onCallDetails,
+    weekObsCount: weekObs.count,
+    weekObsTeachers: weekObs.recentTeachers,
   };
 }
 
