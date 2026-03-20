@@ -71,6 +71,7 @@ export async function submitObservationDraft(formData: FormData) {
   const classCode = String(formData.get("classCode") || "").trim() || null;
   const phase = String(formData.get("phase") || "UNKNOWN");
   const contextNote = String(formData.get("contextNote") || "").trim() || null;
+  const observedAtRaw = String(formData.get("observedAt") || "").trim();
 
   if (!observedTeacherId || !yearGroup || !subject) throw new Error("INVALID_OBSERVATION");
 
@@ -96,7 +97,7 @@ export async function submitObservationDraft(formData: FormData) {
       tenantId: user.tenantId,
       observedTeacherId,
       observerId: user.id,
-      observedAt: new Date(),
+      observedAt: observedAtRaw ? new Date(observedAtRaw) : new Date(),
       yearGroup,
       subject,
       classCode,

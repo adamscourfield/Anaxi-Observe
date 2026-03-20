@@ -5,10 +5,12 @@ export type ScaleKey = "LIMITED" | "SOME" | "CONSISTENT" | "STRONG";
 
 export type ObservationContextState = {
   teacherId: string;
+  department: string;
+  classCode: string;
+  observedAt: string;
+  phase: Phase;
   yearGroup: string;
   subject: string;
-  phase: Phase;
-  classCode: string;
   contextNote: string;
 };
 
@@ -21,10 +23,12 @@ export type ObservationDraft = {
 
 export const DEFAULT_CONTEXT: ObservationContextState = {
   teacherId: "",
+  department: "",
+  classCode: "",
+  observedAt: new Date().toISOString().split("T")[0],
+  phase: "UNKNOWN",
   yearGroup: "",
   subject: "",
-  phase: "UNKNOWN",
-  classCode: "",
   contextNote: "",
 };
 

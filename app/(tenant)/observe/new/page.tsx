@@ -15,7 +15,20 @@ export default async function NewObservationPage() {
     select: { id: true, fullName: true, email: true }
   });
 
+  const departments = await (prisma as any).department.findMany({
+    where: { tenantId: user.tenantId },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true }
+  });
+
   const draftKey = `observation-draft:${user.tenantId}:${user.id}`;
 
-  return <ObservationContextForm teachers={teachers as any[]} draftKey={draftKey} signalKeys={SIGNAL_DEFINITIONS.map((s) => s.key)} />;
+  return (
+    <ObservationContextForm
+      teachers={teachers as any[]}
+      departments={departments as any[]}
+      draftKey={draftKey}
+      signalKeys={SIGNAL_DEFINITIONS.map((s) => s.key)}
+    />
+  );
 }
