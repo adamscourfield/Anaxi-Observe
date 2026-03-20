@@ -158,69 +158,69 @@ export default async function SignalsPage({
         <div className="border-b border-border/30 px-5 py-3">
           <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
         </div>
-        <form className="flex flex-wrap items-end gap-3 p-4">
-          {/* Window selector */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Window</span>
-            <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
-              {VALID_WINDOWS.map((w) => (
-                <option key={w} value={String(w)}>
-                  {w} days
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="flex flex-wrap items-end gap-3 p-4">
+          <form className="flex flex-wrap items-end gap-3">
+            {/* Window selector */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Window</span>
+              <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
+                {VALID_WINDOWS.map((w) => (
+                  <option key={w} value={String(w)}>
+                    {w} days
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          {/* Department filter */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Department</span>
-            <select
-              name="departmentId"
-              defaultValue={rawDeptId ?? ""}
-              className="field min-w-[160px]"
-            >
-              <option value="">All departments</option>
-              {selectableDepts.map((d: any) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </label>
+            {/* Department filter */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Department</span>
+              <select
+                name="departmentId"
+                defaultValue={rawDeptId ?? ""}
+                className="field min-w-[160px]"
+              >
+                <option value="">All departments</option>
+                {selectableDepts.map((d: any) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          {/* Buttons */}
-          <div className="flex items-end gap-2">
             <button
               type="submit"
               className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
             >
               Apply
             </button>
-            {departmentId && (
-              <Link
-                href={buildUrl({ departmentId: undefined })}
+          </form>
+
+          {departmentId && (
+            <Link
+              href={buildUrl({ departmentId: undefined })}
+              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+            >
+              Clear
+            </Link>
+          )}
+          {showExport && (
+            <form action="/api/explorer/export" method="POST" className="inline">
+              <input type="hidden" name="view" value="CPD_SIGNAL_PRIORITIES" />
+              <input type="hidden" name="windowDays" value={String(windowDays)} />
+              {departmentId && (
+                <input type="hidden" name="departmentId" value={departmentId} />
+              )}
+              <button
+                type="submit"
                 className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
               >
-                Clear
-              </Link>
-            )}
-            {showExport && (
-              <form action="/api/explorer/export" method="POST" className="inline">
-                <input type="hidden" name="view" value="CPD_SIGNAL_PRIORITIES" />
-                <input type="hidden" name="windowDays" value={String(windowDays)} />
-                {departmentId && (
-                  <input type="hidden" name="departmentId" value={departmentId} />
-                )}
-                <button
-                  type="submit"
-                  className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-                >
-                  Export CSV
-                </button>
-              </form>
-            )}
-          </div>
-        </form>
+                Export CSV
+              </button>
+            </form>
+          )}
+        </div>
       </div>
 
       {/* ── Result count ────────────────────────────────────────── */}

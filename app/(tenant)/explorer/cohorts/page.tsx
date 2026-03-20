@@ -180,68 +180,66 @@ export default async function CohortsPage({
         <div className="border-b border-border/30 px-5 py-3">
           <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
         </div>
-        <form className="flex flex-wrap items-end gap-3 p-4">
-          <input type="hidden" name="windowDays" value={windowDays} />
+        <div className="flex flex-wrap items-end gap-3 p-4">
+          <form className="flex flex-wrap items-end gap-3">
+            {/* Window selector */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Window</span>
+              <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
+                {VALID_WINDOWS.map((w) => (
+                  <option key={w} value={String(w)}>
+                    {w} days
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          {/* Window selector */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Window</span>
-            <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
-              {VALID_WINDOWS.map((w) => (
-                <option key={w} value={String(w)}>
-                  {w} days
-                </option>
-              ))}
-            </select>
-          </label>
+            {/* Year group filter */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Year group</span>
+              <select
+                name="yearGroup"
+                defaultValue={yearGroupFilter}
+                className="field min-w-[120px]"
+              >
+                <option value="">All years</option>
+                {yearGroups.map((yg) => (
+                  <option key={yg} value={yg}>
+                    {yg}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          {/* Year group filter */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Year group</span>
-            <select
-              name="yearGroup"
-              defaultValue={yearGroupFilter}
-              className="field min-w-[120px]"
-            >
-              <option value="">All years</option>
-              {yearGroups.map((yg) => (
-                <option key={yg} value={yg}>
-                  {yg}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {/* Buttons */}
-          <div className="flex items-end gap-2">
             <button
               type="submit"
               className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
             >
               Apply
             </button>
-            {hasActiveFilters && (
-              <Link
-                href={buildUrl({ yearGroup: undefined })}
+          </form>
+
+          {hasActiveFilters && (
+            <Link
+              href={buildUrl({ yearGroup: undefined })}
+              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+            >
+              Clear
+            </Link>
+          )}
+          {showExport && (
+            <form action="/api/explorer/export" method="POST" className="inline">
+              <input type="hidden" name="view" value="COHORT_PIVOT" />
+              <input type="hidden" name="windowDays" value={String(windowDays)} />
+              <button
+                type="submit"
                 className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
               >
-                Clear
-              </Link>
-            )}
-            {showExport && (
-              <form action="/api/explorer/export" method="POST" className="inline">
-                <input type="hidden" name="view" value="COHORT_PIVOT" />
-                <input type="hidden" name="windowDays" value={String(windowDays)} />
-                <button
-                  type="submit"
-                  className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-                >
-                  Export CSV
-                </button>
-              </form>
-            )}
-          </div>
-        </form>
+                Export CSV
+              </button>
+            </form>
+          )}
+        </div>
       </div>
 
       {/* ── Summary row ─────────────────────────────────────────── */}

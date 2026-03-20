@@ -215,75 +215,75 @@ export default async function DepartmentsPage({
         <div className="border-b border-border/30 px-5 py-3">
           <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
         </div>
-        <form className="flex flex-wrap items-end gap-3 p-4">
-          <input type="hidden" name="windowDays" value={windowDays} />
-          {sortSignal && (
-            <input type="hidden" name="sortSignal" value={sortSignal} />
-          )}
-          {sortDir && (
-            <input type="hidden" name="sortDir" value={sortDir} />
-          )}
+        <div className="flex flex-wrap items-end gap-3 p-4">
+          <form className="flex flex-wrap items-end gap-3">
+            <input type="hidden" name="windowDays" value={windowDays} />
+            {sortSignal && (
+              <input type="hidden" name="sortSignal" value={sortSignal} />
+            )}
+            {sortDir && (
+              <input type="hidden" name="sortDir" value={sortDir} />
+            )}
 
-          {/* Window selector */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Window</span>
-            <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
-              {WINDOW_OPTIONS.map((w) => (
-                <option key={w} value={String(w)}>
-                  {w} days
-                </option>
-              ))}
-            </select>
-          </label>
+            {/* Window selector */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Window</span>
+              <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
+                {WINDOW_OPTIONS.map((w) => (
+                  <option key={w} value={String(w)}>
+                    {w} days
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          {/* Department filter */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Department</span>
-            <select
-              name="departmentId"
-              defaultValue={rawDeptId ?? ""}
-              className="field min-w-[160px]"
-            >
-              <option value="">All departments</option>
-              {selectableDepts.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </label>
+            {/* Department filter */}
+            <label className="flex flex-col gap-1">
+              <span className="text-[0.6875rem] font-medium text-muted">Department</span>
+              <select
+                name="departmentId"
+                defaultValue={rawDeptId ?? ""}
+                className="field min-w-[160px]"
+              >
+                <option value="">All departments</option>
+                {selectableDepts.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          {/* Buttons */}
-          <div className="flex items-end gap-2">
             <button
               type="submit"
               className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
             >
               Apply
             </button>
-            <Link
-              href={buildUrl({ departmentId: undefined })}
-              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-            >
-              Clear
-            </Link>
-            {showExport && (
-              <form action="/api/explorer/export" method="POST" className="inline">
-                <input type="hidden" name="view" value="INSTRUCTION_DEPARTMENTS_PIVOT" />
-                <input type="hidden" name="windowDays" value={String(windowDays)} />
-                {rawDeptId && (
-                  <input type="hidden" name="departmentId" value={rawDeptId} />
-                )}
-                <button
-                  type="submit"
-                  className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-                >
-                  Export CSV
-                </button>
-              </form>
-            )}
-          </div>
-        </form>
+          </form>
+
+          <Link
+            href={buildUrl({ departmentId: undefined })}
+            className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+          >
+            Clear
+          </Link>
+          {showExport && (
+            <form action="/api/explorer/export" method="POST" className="inline">
+              <input type="hidden" name="view" value="INSTRUCTION_DEPARTMENTS_PIVOT" />
+              <input type="hidden" name="windowDays" value={String(windowDays)} />
+              {rawDeptId && (
+                <input type="hidden" name="departmentId" value={rawDeptId} />
+              )}
+              <button
+                type="submit"
+                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              >
+                Export CSV
+              </button>
+            </form>
+          )}
+        </div>
       </div>
 
       {/* Signal column headers (scrollable) */}
