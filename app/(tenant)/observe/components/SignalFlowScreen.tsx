@@ -40,7 +40,11 @@ export function SignalFlowScreen({
   const signalKeys = useMemo(() => orderedByOrder.map((s) => s.key), [orderedByOrder]);
   const [draft, setDraft] = useState(() => loadDraft(draftKey, signalKeys));
 
-  const hasContext = Boolean(draft.context.teacherId && draft.context.department && draft.context.classCode);
+  const hasContext = Boolean(
+    draft.context.teacherId &&
+    (draft.context.department || draft.context.subject) &&
+    (draft.context.classCode || draft.context.yearGroup)
+  );
 
   const orderedSignals = useMemo(() => {
     const phaseRelevant = orderedByOrder.filter((s) => s.phaseRelevance.includes(draft.context.phase));

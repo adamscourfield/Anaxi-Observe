@@ -158,11 +158,12 @@ export function ObservationContextForm({
                   value={context.classCode}
                   onChange={(e) => {
                     const val = e.target.value;
-                    const yearMatch = val.match(/(?:year|y)\s*(\d{1,2})/i);
+                    const yearMatch = val.match(/(?:year|y|grade|gr)\s*(\d{1,2})/i)
+                      || val.match(/^(\d{1,2})\s*[A-Za-z]/);
                     setContext((c) => ({
                       ...c,
                       classCode: val,
-                      yearGroup: yearMatch ? yearMatch[1] : c.yearGroup,
+                      yearGroup: yearMatch ? yearMatch[1] : val.trim(),
                     }));
                   }}
                 />
@@ -232,13 +233,8 @@ export function ObservationContextForm({
             type="button"
             disabled={!canContinue}
             onClick={() => {
-              const enrichedContext = {
-                ...context,
-                yearGroup: context.yearGroup || context.classCode,
-                subject: context.subject || departments.find((d) => d.id === context.department)?.name || "",
-              };
               persistDraft(draftKey, {
-                context: enrichedContext,
+                context,
                 signalState: loadDraft(draftKey, signalKeys).signalState,
               });
               router.push("/observe/new/signals");
