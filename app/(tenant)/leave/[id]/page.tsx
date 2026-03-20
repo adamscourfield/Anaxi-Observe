@@ -54,7 +54,7 @@ const STATUS_STYLES: Record<string, { badge: string; icon: React.ReactNode; labe
   },
 };
 
-export default async function LeaveDetailPage({ params }: { params: { id: string } }) {
+export default async function LeaveDetailPage({ params, searchParams }: { params: { id: string }; searchParams?: Record<string, string | string[] | undefined> }) {
   const user = await getSessionUserOrThrow();
   await requireFeature(user.tenantId, "LEAVE");
 
@@ -73,17 +73,19 @@ export default async function LeaveDetailPage({ params }: { params: { id: string
   const status = request.status as string;
   const statusStyle = STATUS_STYLES[status] ?? STATUS_STYLES.PENDING;
 
+  const fromCalendar = searchParams?.from === "calendar";
+
   return (
     <div className="mx-auto max-w-xl space-y-5">
       {/* Back */}
       <Link
-        href="/leave"
+        href={fromCalendar ? "/leave/calendar" : "/leave"}
         className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
       >
         <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
           <path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        Leave requests
+        {fromCalendar ? "Leave calendar" : "Leave requests"}
       </Link>
 
       {/* Hero card */}
