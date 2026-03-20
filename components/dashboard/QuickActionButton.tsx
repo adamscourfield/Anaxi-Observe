@@ -27,6 +27,9 @@ export function QuickActionButton({ items }: { items: QuickActionItem[] }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((p) => !p)}
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-label="Quick actions menu"
         className="inline-flex items-center gap-2 rounded-full bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm calm-transition hover:opacity-90 hover:shadow-md active:scale-[0.98]"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0">

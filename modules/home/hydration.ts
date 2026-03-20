@@ -132,12 +132,19 @@ export async function hydrateLeadershipHomeData({
         orderBy: { observedAt: "desc" },
         take: 20,
       })
-      .then((rows: any[]) => ({
-        count: rows.length,
-        recentTeachers: [...new Map(rows.map((r: any) => [r.observedTeacherId, r.observedTeacher?.fullName ?? "Unknown"])).entries()]
-          .slice(0, 5)
-          .map(([id, name]) => ({ id: id as string, name: name as string })),
-      })),
+      .then((rows: any[]) => {
+        const seen = new Set<string>();
+        const recentTeachers: { id: string; name: string }[] = [];
+        for (const r of rows) {
+          const tid = r.observedTeacherId as string;
+          if (!seen.has(tid)) {
+            seen.add(tid);
+            recentTeachers.push({ id: tid, name: (r.observedTeacher?.fullName ?? "Unknown") as string });
+          }
+          if (recentTeachers.length >= 5) break;
+        }
+        return { count: rows.length, recentTeachers };
+      }),
     { count: 0, recentTeachers: [] as { id: string; name: string }[] }
   );
 

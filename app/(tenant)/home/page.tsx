@@ -310,8 +310,8 @@ function LeadershipHome({
                           </Link>
                         ) : (
                           <div className="flex gap-2">
-                            <span className="cursor-pointer text-[var(--error)] calm-transition hover:opacity-70">✕</span>
-                            <span className="cursor-pointer text-positive calm-transition hover:opacity-70">✓</span>
+                            <Link href="/leave/pending" aria-label={`Deny leave for ${leave.requesterName}`} className="text-[var(--error)] calm-transition hover:opacity-70">✕</Link>
+                            <Link href="/leave/pending" aria-label={`Approve leave for ${leave.requesterName}`} className="text-positive calm-transition hover:opacity-70">✓</Link>
                           </div>
                         )}
                       </div>
