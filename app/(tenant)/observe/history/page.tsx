@@ -3,6 +3,12 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { formatPhaseLabel } from "@/modules/observations/phaseLabel";
+import { HistoryFilters } from "./HistoryFilters";
+
+function formatYearGroup(yg: string): string {
+  const num = yg.replace(/^Y/i, "");
+  return `Year ${num}`;
+}
 
 const SCALE_COLORS: Record<string, string> = {
   LIMITED:    "bg-rose-400",
@@ -127,7 +133,7 @@ export default async function ObservationHistoryPage({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-[1.5rem] font-bold tracking-tight text-text">Observation history</h1>
+          <h1 className="text-[1.5rem] font-bold tracking-tight text-text">Observation History</h1>
           <p className="mt-1 text-[0.9375rem] text-muted">
             {(observations as any[]).length > 0
               ? `${(observations as any[]).length} observation${(observations as any[]).length !== 1 ? "s" : ""} found`
@@ -148,59 +154,15 @@ export default async function ObservationHistoryPage({
       </div>
 
       {/* Filters */}
-      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
-        <div className="border-b border-border/30 px-5 py-3">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
-        </div>
-        <form className="flex flex-wrap items-end gap-3 p-4">
-          {user.role !== "TEACHER" && (
-            <>
-              <select name="teacherId" defaultValue={teacherId} className="field min-w-[160px] flex-1">
-                <option value="">All teachers</option>
-                {visibleTeachers.map((t: any) => (
-                  <option key={t.id} value={t.id}>{t.fullName}</option>
-                ))}
-              </select>
-              <select name="observerId" defaultValue={observerId} className="field min-w-[160px] flex-1">
-                <option value="">All observers</option>
-                {(observers as any[]).map((o: any) => (
-                  <option key={o.id} value={o.id}>{o.fullName}</option>
-                ))}
-              </select>
-            </>
-          )}
-          <select name="subject" defaultValue={subject} className="field min-w-[130px] flex-1">
-            <option value="">All subjects</option>
-            {(distinctSubjects as { subject: string }[]).map((r) => (
-              <option key={r.subject} value={r.subject}>{r.subject}</option>
-            ))}
-          </select>
-          <select name="yearGroup" defaultValue={yearGroup} className="field min-w-[130px] flex-1">
-            <option value="">All years</option>
-            {(distinctYearGroups as { yearGroup: string }[]).map((r) => (
-              <option key={r.yearGroup} value={r.yearGroup}>Year {r.yearGroup}</option>
-            ))}
-          </select>
-          <input name="from" type="date" defaultValue={from} className="field" />
-          <input name="to" type="date" defaultValue={to} className="field" />
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
-            >
-              Apply
-            </button>
-            {hasFilters && (
-              <Link
-                href="/observe/history"
-                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-              >
-                Clear
-              </Link>
-            )}
-          </div>
-        </form>
-      </div>
+      <HistoryFilters
+        teachers={visibleTeachers.map((t: any) => ({ id: t.id, fullName: t.fullName }))}
+        observers={(observers as any[]).map((o: any) => ({ id: o.id, fullName: o.fullName }))}
+        subjects={(distinctSubjects as { subject: string }[]).map((r) => r.subject)}
+        yearGroups={(distinctYearGroups as { yearGroup: string }[]).map((r) => r.yearGroup)}
+        defaults={{ teacherId, observerId: observerId, subject, yearGroup, from, to }}
+        showTeacherFilters={user.role !== "TEACHER"}
+        hasFilters={!!hasFilters}
+      />
 
       {/* Results */}
       {(observations as any[]).length === 0 ? (
@@ -243,7 +205,7 @@ export default async function ObservationHistoryPage({
                   }
 
                   return (
-                    <tr key={obs.id} className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50">
+                    <tr key={obs.id} className="group border-b border-border/20 last:border-0 calm-transition hover:bg-accent/[0.04]">
                       <td className="px-5 py-3">
                         <Link href={`/observe/${obs.id}`} className="flex items-center gap-2.5 min-w-0">
                           <div className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-bold text-accent sm:flex">
@@ -263,7 +225,7 @@ export default async function ObservationHistoryPage({
 
                       <td className="px-4 py-3">
                         <span className="text-text">{obs.subject}</span>
-                        <span className="ml-1.5 text-muted">Y{obs.yearGroup}</span>
+                        <span className="ml-1.5 text-muted">{formatYearGroup(obs.yearGroup)}</span>
                       </td>
 
                       <td className="px-4 py-3 tabular-nums text-muted whitespace-nowrap">
@@ -330,7 +292,7 @@ export default async function ObservationHistoryPage({
                 <Link
                   key={obs.id}
                   href={`/observe/${obs.id}`}
-                  className="group block px-4 py-3.5 calm-transition hover:bg-white/50"
+                  className="group block px-4 py-3.5 calm-transition hover:bg-accent/[0.04]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
@@ -343,7 +305,7 @@ export default async function ObservationHistoryPage({
                         </span>
                       </div>
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] text-muted">
-                        <span>{obs.subject} · Y{obs.yearGroup}</span>
+                        <span>{obs.subject} · {formatYearGroup(obs.yearGroup)}</span>
                         <span className="tabular-nums">
                           {formatShortDate(obs.observedAt)}
                         </span>
