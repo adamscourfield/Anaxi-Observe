@@ -28,7 +28,7 @@ function makeRow(overrides: Partial<CpdPriorityRow>): CpdPriorityRow {
 // ─── getTopImprovingSignals ───────────────────────────────────────────────────
 
 describe("getTopImprovingSignals", () => {
-  it("returns top 2 by priorityImprovementScore", () => {
+  it("returns top 3 by priorityImprovementScore", () => {
     const rows: CpdPriorityRow[] = [
       makeRow({ signalKey: "A", priorityImprovementScore: 0.1, teachersImproving: 2, teachersCovered: 10 }),
       makeRow({ signalKey: "B", priorityImprovementScore: 0.3, teachersImproving: 3, teachersCovered: 10 }),
@@ -36,9 +36,10 @@ describe("getTopImprovingSignals", () => {
       makeRow({ signalKey: "D", priorityImprovementScore: 0.2, teachersImproving: 1, teachersCovered: 10 }),
     ];
     const top = getTopImprovingSignals(rows);
-    expect(top).toHaveLength(2);
+    expect(top).toHaveLength(3);
     expect(top[0].signalKey).toBe("C");
     expect(top[1].signalKey).toBe("B");
+    expect(top[2].signalKey).toBe("D");
   });
 
   it("excludes signals with zero teachersImproving", () => {
@@ -68,7 +69,7 @@ describe("getTopImprovingSignals", () => {
     expect(getTopImprovingSignals(rows)).toHaveLength(0);
   });
 
-  it("returns at most 2 signals even when more are eligible", () => {
+  it("returns at most 3 signals even when more are eligible", () => {
     const rows = Array.from({ length: 5 }, (_, i) =>
       makeRow({
         signalKey: `SIG_${i}`,
@@ -77,7 +78,7 @@ describe("getTopImprovingSignals", () => {
         priorityImprovementScore: i * 0.1,
       })
     );
-    expect(getTopImprovingSignals(rows)).toHaveLength(2);
+    expect(getTopImprovingSignals(rows)).toHaveLength(3);
   });
 });
 
