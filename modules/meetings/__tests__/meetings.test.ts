@@ -127,7 +127,7 @@ describe("createMeeting", () => {
     ).rejects.toThrow("endDateTime must be after startDateTime");
   });
 
-  it("creator is always added as attendee (multi-tenant safe)", async () => {
+  it("creator is always added as attendee", async () => {
     await createMeeting("tenant_1", "user_1", {
       title: "Test",
       type: "OTHER",
@@ -137,7 +137,7 @@ describe("createMeeting", () => {
     });
     const createCall = (prisma as any).meeting.create.mock.calls[0][0];
     expect(createCall.data.attendees.createMany.data).toEqual(
-      expect.arrayContaining([expect.objectContaining({ tenantId: "tenant_1" })])
+      expect.arrayContaining([expect.objectContaining({ userId: "user_1" })])
     );
   });
 });

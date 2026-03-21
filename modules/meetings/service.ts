@@ -41,7 +41,7 @@ export async function createMeeting(
       createdByUserId,
       attendees: {
         createMany: {
-          data: validAttendees.map((u: { id: string }) => ({ userId: u.id, tenantId })),
+          data: validAttendees.map((u: { id: string }) => ({ userId: u.id })),
         },
       },
     },
