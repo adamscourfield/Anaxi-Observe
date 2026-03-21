@@ -46,6 +46,7 @@ export type TopDriver = {
 export type TeacherRiskRow = {
   teacherMembershipId: string;
   teacherName: string;
+  teacherRole: string;
   departmentNames: string[];
   teacherCoverage: number;
   lastObservationAt: Date | null;
@@ -241,6 +242,7 @@ export async function computeTeacherRiskIndex(
     rows.push({
       teacherMembershipId: teacherId,
       teacherName: teacher.fullName,
+      teacherRole: teacher.role ?? "",
       departmentNames: teacherDepts.get(teacherId) ?? [],
       teacherCoverage,
       lastObservationAt,
@@ -361,6 +363,7 @@ export type TeacherPivotSignalCell = {
 export type TeacherPivotRow = {
   teacherMembershipId: string;
   teacherName: string;
+  teacherRole: string;
   departmentNames: string[];
   teacherCoverage: number;
   lastObservationAt: Date | null;
@@ -459,6 +462,7 @@ export async function computeTeacherPivot(
     rows.push({
       teacherMembershipId: teacherId,
       teacherName: teacher.fullName,
+      teacherRole: teacher.role ?? "",
       departmentNames: teacherDepts.get(teacherId) ?? [],
       teacherCoverage,
       lastObservationAt,
