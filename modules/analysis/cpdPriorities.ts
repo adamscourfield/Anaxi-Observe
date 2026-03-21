@@ -22,6 +22,7 @@ const SCALE_SCORES: Record<string, number> = {
 const DEFAULT_MIN_COVERAGE = 6;
 const DEFAULT_DRIFT_THRESHOLD = 0.35;
 const MINIMUM_SCHOOL_COVERAGE_THRESHOLD = 5;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 const ALL_SIGNAL_KEYS = SIGNAL_DEFINITIONS.map((s) => s.key);
 
@@ -66,9 +67,9 @@ function windowBounds(windowDays: number): {
 } {
   const now = new Date();
   const currentEnd = now;
-  const currentStart = new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000);
+  const currentStart = new Date(now.getTime() - windowDays * MS_PER_DAY);
   const prevEnd = currentStart;
-  const prevStart = new Date(currentStart.getTime() - windowDays * 24 * 60 * 60 * 1000);
+  const prevStart = new Date(currentStart.getTime() - windowDays * MS_PER_DAY);
   return { currentStart, currentEnd, prevStart, prevEnd };
 }
 
@@ -380,8 +381,8 @@ export async function computeWeeklyDriftTrend(
   filters?: OptionalFilters
 ): Promise<{ days: DailyDriftPoint[]; weekOverWeekChange: number }> {
   const now = new Date();
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * MS_PER_DAY);
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * MS_PER_DAY);
 
   let departmentTeacherIds: string[] | undefined;
   if (filters?.departmentId) {
