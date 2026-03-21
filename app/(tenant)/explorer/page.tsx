@@ -16,6 +16,8 @@ import { computeCohortPivot } from "@/modules/analysis/cohortPivot";
 import { computeCpdPriorities } from "@/modules/analysis/cpdPriorities";
 
 const WINDOW_DAYS = 21;
+const MAX_DRIFT_LOG_ENTRIES = 3;
+const MAX_LOG_ENTRIES = 5;
 
 /* ─── Inline SVG icons ─────────────────────────────────────────────────────── */
 
@@ -206,7 +208,7 @@ export default async function ExplorerPage() {
   // Add behaviour drift signals from drifting teachers
   const significantDrifters = teacherRiskRows
     .filter((r) => r.status === "SIGNIFICANT_DRIFT")
-    .slice(0, 3);
+    .slice(0, MAX_DRIFT_LOG_ENTRIES);
   for (const teacher of significantDrifters) {
     logEntries.push({
       id: `drift-${teacher.teacherName}`,
@@ -219,7 +221,7 @@ export default async function ExplorerPage() {
   }
 
   // Sort by most recent observation first, then signals
-  const displayedLogs = logEntries.slice(0, 5);
+  const displayedLogs = logEntries.slice(0, MAX_LOG_ENTRIES);
 
   const computedAt = deptResult.computedAt;
   const computedAtStr = computedAt.toLocaleString("en-GB", {
