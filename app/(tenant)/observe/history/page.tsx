@@ -3,12 +3,8 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { formatPhaseLabel } from "@/modules/observations/phaseLabel";
+import { formatYearGroup } from "@/modules/observations/yearGroup";
 import { HistoryFilters } from "./HistoryFilters";
-
-function formatYearGroup(yg: string): string {
-  const num = yg.replace(/^Y/i, "");
-  return `Year ${num}`;
-}
 
 const SCALE_COLORS: Record<string, string> = {
   LIMITED:    "bg-rose-400",

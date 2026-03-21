@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormSelect } from "@/components/ui/form-select";
+import { formatYearGroup } from "@/modules/observations/yearGroup";
 
 interface HistoryFiltersProps {
   teachers: { id: string; fullName: string }[];
@@ -18,11 +19,6 @@ interface HistoryFiltersProps {
   };
   showTeacherFilters: boolean;
   hasFilters: boolean;
-}
-
-function formatYearGroupLabel(yg: string): string {
-  const num = yg.replace(/^Y/i, "");
-  return `Year ${num}`;
 }
 
 export function HistoryFilters({
@@ -91,7 +87,7 @@ export function HistoryFilters({
               placeholder="All years"
               options={[
                 { value: "", label: "All years" },
-                ...yearGroups.map((yg) => ({ value: yg, label: formatYearGroupLabel(yg) })),
+                ...yearGroups.map((yg) => ({ value: yg, label: formatYearGroup(yg) })),
               ]}
             />
           </label>
