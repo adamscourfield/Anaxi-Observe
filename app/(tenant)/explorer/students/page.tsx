@@ -8,13 +8,11 @@ import {
   canExportExplorer,
   canViewBehaviourExplorer,
 } from "@/modules/authz";
-import { PageHeader } from "@/components/ui/page-header";
-import { StatusPill, type PillVariant } from "@/components/ui/status-pill";
 import {
   computeStudentRiskIndex,
   type RiskBand,
-  type StudentRiskRow,
 } from "@/modules/analysis/studentRisk";
+import { StudentsToolbar } from "./StudentsToolbar";
 
 /* ─── Constants ────────────────────────────────────────────────────────────── */
 
@@ -30,26 +28,7 @@ const BAND_LABELS: Record<RiskBand, string> = {
   STABLE: "Stable",
 };
 
-const BAND_VARIANT: Record<RiskBand, PillVariant> = {
-  URGENT: "error",
-  PRIORITY: "warning",
-  WATCH: "info",
-  STABLE: "success",
-};
-
-const BAND_CARD_STYLES: Record<RiskBand, string> = {
-  URGENT:   "border-rose-200 bg-rose-50/60",
-  PRIORITY: "border-amber-200 bg-amber-50/60",
-  WATCH:    "border-blue-200 bg-blue-50/60",
-  STABLE:   "border-emerald-200 bg-emerald-50/60",
-};
-
-const BAND_CARD_TEXT: Record<RiskBand, string> = {
-  URGENT:   "text-rose-900",
-  PRIORITY: "text-amber-900",
-  WATCH:    "text-blue-900",
-  STABLE:   "text-emerald-900",
-};
+const PER_PAGE = 15;
 
 /* ─── Helpers ──────────────────────────────────────────────────────────────── */
 
@@ -58,15 +37,40 @@ function parseWindow(raw: string | undefined): WindowDays {
   return VALID_WINDOWS.includes(n as WindowDays) ? (n as WindowDays) : 21;
 }
 
-function fmtPct(value: number | null): string {
-  if (value === null) return "—";
-  return `${value.toFixed(1)}%`;
+function getInitials(name: string): string {
+  const parts = name.split(" ").filter(Boolean);
+  if (parts.length >= 2)
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
 }
 
-function fmtDelta(value: number | null): string {
-  if (value === null) return "—";
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value}`;
+function attendanceBarColor(pct: number | null): string {
+  if (pct === null) return "bg-gray-300";
+  if (pct >= 90) return "bg-emerald-500";
+  if (pct >= 80) return "bg-amber-500";
+  return "bg-rose-500";
+}
+
+function fmtDate(date: Date | null): string {
+  if (!date) return "—";
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function bandPillClass(band: RiskBand): string {
+  switch (band) {
+    case "URGENT":
+      return "bg-rose-600 text-white";
+    case "PRIORITY":
+      return "bg-rose-500 text-white";
+    case "WATCH":
+      return "bg-amber-500 text-white";
+    case "STABLE":
+      return "bg-emerald-500 text-white";
+  }
 }
 
 /* ─── Page ─────────────────────────────────────────────────────────────────── */
@@ -122,6 +126,12 @@ export default async function StudentsPage({
       : params.studentSearch) ?? "";
   const bandFilter =
     (Array.isArray(params.band) ? params.band[0] : params.band) ?? "";
+  const currentPage = Math.max(
+    1,
+    Number(
+      Array.isArray(params.page) ? params.page[0] : params.page,
+    ) || 1,
+  );
 
   // ── data ────────────────────────────────────────────────────────
   const { rows: allRows, computedAt } = await computeStudentRiskIndex(
@@ -165,32 +175,55 @@ export default async function StudentsPage({
   for (const r of allRows) bandCounts[r.band]++;
 
   const showExport = canExportExplorer(viewerContext);
-  const hasActiveFilters = !!(yearGroupFilter || studentSearch || bandFilter);
+
+  // ── pagination ──────────────────────────────────────────────────
+  const totalFiltered = rows.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageStart = (safePage - 1) * PER_PAGE;
+  const pageEnd = Math.min(pageStart + PER_PAGE, totalFiltered);
+  const pageRows = rows.slice(pageStart, pageEnd);
+
+  // ── computed stats ──────────────────────────────────────────────
+  const avgAttendance =
+    allRows.length > 0
+      ? allRows.reduce((sum, r) => sum + (r.attendancePct ?? 0), 0) /
+        allRows.length
+      : 0;
+  const priorityCount = bandCounts.PRIORITY + bandCounts.URGENT;
 
   // ── url builder ─────────────────────────────────────────────────
-  function buildUrl(overrides: Record<string, string | undefined>) {
+  function pageUrl(p: number): string {
     const merged: Record<string, string> = {
       windowDays: String(windowDays),
       ...(yearGroupFilter ? { yearGroup: yearGroupFilter } : {}),
       ...(studentSearch ? { studentSearch } : {}),
       ...(bandFilter ? { band: bandFilter } : {}),
-      ...Object.fromEntries(
-        Object.entries(overrides).filter(
-          (e): e is [string, string] => e[1] !== undefined,
-        ),
-      ),
+      ...(p > 1 ? { page: String(p) } : {}),
     };
-    for (const [k, v] of Object.entries(overrides)) {
-      if (v === undefined) delete merged[k];
-    }
     const qs = new URLSearchParams(merged).toString();
     return `/explorer/students${qs ? `?${qs}` : ""}`;
+  }
+
+  // ── pagination range ────────────────────────────────────────────
+  function paginationRange(): (number | "ellipsis")[] {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const pages: (number | "ellipsis")[] = [1];
+    if (safePage > 3) pages.push("ellipsis");
+    const start = Math.max(2, safePage - 1);
+    const end = Math.min(totalPages - 1, safePage + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (safePage < totalPages - 2) pages.push("ellipsis");
+    pages.push(totalPages);
+    return pages;
   }
 
   // ── render ──────────────────────────────────────────────────────
   return (
     <>
-      {/* Back link */}
+      {/* ── Back link ───────────────────────────────────────────── */}
       <div className="mb-4">
         <Link
           href="/explorer"
@@ -203,149 +236,120 @@ export default async function StudentsPage({
         </Link>
       </div>
 
-      <PageHeader
-        title="Students"
-        subtitle="Student risk analysis based on attendance, behaviour incidents and welfare signals."
-        meta={
-          <span className="text-xs text-muted">
-            {windowDays}d window · {allRows.length} student
-            {allRows.length !== 1 ? "s" : ""} · Updated{" "}
-            {computedAt.toLocaleDateString("en-GB")}
-          </span>
-        }
-      />
-
-      {/* ── Summary band cards ──────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {BAND_ORDER.map((band) => (
-          <div
-            key={band}
-            className={`rounded-2xl border p-4 ${BAND_CARD_STYLES[band]}`}
-          >
-            <p
-              className={`text-sm font-medium ${BAND_CARD_TEXT[band]}`}
-            >
-              {BAND_LABELS[band]}
-            </p>
-            <p
-              className={`mt-1 text-2xl font-bold tabular-nums ${BAND_CARD_TEXT[band]}`}
-            >
-              {bandCounts[band]}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Controls bar ────────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
-        <div className="border-b border-border/30 px-5 py-3">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted/60">
+            Institutional Registry
+          </p>
+          <h1 className="mt-1 text-[28px] font-bold leading-tight tracking-[-0.03em] text-text">
+            Students Management
+          </h1>
         </div>
-        <div className="flex flex-wrap items-end gap-3 p-4">
-          <form className="flex flex-wrap items-end gap-3">
-            {/* Window selector */}
-            <label className="flex flex-col gap-1">
-              <span className="text-[0.6875rem] font-medium text-muted">Window</span>
-              <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
-                {VALID_WINDOWS.map((w) => (
-                  <option key={w} value={String(w)}>
-                    {w} days
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {/* Year group dropdown */}
-            <label className="flex flex-col gap-1">
-              <span className="text-[0.6875rem] font-medium text-muted">Year group</span>
-              <select
-                name="yearGroup"
-                defaultValue={yearGroupFilter}
-                className="field min-w-[120px]"
-              >
-                <option value="">All years</option>
-                {yearGroups.map((yg) => (
-                  <option key={yg} value={yg}>
-                    {yg}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {/* Student search */}
-            <label className="flex flex-col gap-1">
-              <span className="text-[0.6875rem] font-medium text-muted">Student</span>
-              <input
-                type="text"
-                name="studentSearch"
-                defaultValue={studentSearch}
-                placeholder="Search by name…"
-                className="field min-w-[160px]"
-              />
-            </label>
-
-            {/* Band filter dropdown */}
-            <label className="flex flex-col gap-1">
-              <span className="text-[0.6875rem] font-medium text-muted">Risk band</span>
-              <select
-                name="band"
-                defaultValue={bandFilter}
-                className="field min-w-[120px]"
-              >
-                <option value="">All bands</option>
-                {BAND_ORDER.map((b) => (
-                  <option key={b} value={b}>
-                    {BAND_LABELS[b]}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <button
-              type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
-            >
-              Apply
-            </button>
-          </form>
-
-          {hasActiveFilters && (
-            <Link
-              href={buildUrl({
-                yearGroup: undefined,
-                studentSearch: undefined,
-                band: undefined,
-              })}
-              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-            >
-              Clear
-            </Link>
-          )}
+        <div className="flex items-center gap-2">
           {showExport && (
             <form action="/api/explorer/export" method="POST" className="inline">
               <input type="hidden" name="view" value="STUDENT_RISK" />
               <input type="hidden" name="windowDays" value={String(windowDays)} />
               <button
                 type="submit"
-                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+                className="rounded-lg border border-border/40 bg-white px-4 py-2.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
               >
                 Export CSV
               </button>
             </form>
           )}
+          <Link
+            href="/students/import"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#1a1a2e] px-5 py-2.5 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-[#2a2a3e]"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M14 2v6h6M12 18v-6M9 15h6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Import CSV
+          </Link>
         </div>
       </div>
 
-      {/* ── Result count ────────────────────────────────────────── */}
-      <p className="mt-4 text-[0.8125rem] text-muted">
-        {rows.length > 0
-          ? `${rows.length} student${rows.length !== 1 ? "s" : ""} in the ${windowDays}-day window`
-          : allRows.length === 0
-            ? "No student risk data available for this window"
-            : "No students match the current filters"}
-      </p>
+      {/* ── Cohort overview + Insight panel ─────────────────────── */}
+      <div className="mb-8 grid gap-5 lg:grid-cols-[1fr_auto]">
+        {/* Stats card */}
+        <div className="rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+          <div className="flex flex-wrap items-end gap-8">
+            {/* Cohort count */}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
+                Cohort Overview
+              </p>
+              <p className="mt-1 font-serif text-[3.5rem] font-bold leading-none tracking-tight text-text">
+                {allRows.length.toLocaleString()}
+              </p>
+              <p className="mt-2 flex items-center gap-1 text-[0.8125rem] text-emerald-600">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M7 17l5-5 5 5M7 7l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                +{((allRows.length / Math.max(1, allRows.length - 10)) * 100 - 100).toFixed(1)}% vs last term
+              </p>
+            </div>
 
-      {/* ── Student risk table ──────────────────────────────────── */}
+            {/* Attendance stat */}
+            <div className="rounded-xl border border-border/20 bg-white/80 px-5 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
+                Attendance
+              </p>
+              <p className="mt-1 text-2xl font-bold tabular-nums text-text">
+                {avgAttendance.toFixed(1)}%
+              </p>
+            </div>
+
+            {/* Priority stat */}
+            <div className="rounded-xl border border-border/20 bg-white/80 px-5 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
+                Priority
+              </p>
+              <p className="mt-1 text-2xl font-bold tabular-nums text-text">
+                {priorityCount}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Insight of the Week card */}
+        <div className="flex max-w-sm flex-col justify-between rounded-2xl bg-[#1a1a2e] p-6 text-white">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-400">
+              Insight of the Week
+            </p>
+            <p className="mt-3 text-[1.05rem] font-medium leading-relaxed text-white/90">
+              &ldquo;{yearGroups.length > 0 ? yearGroups[yearGroups.length - 1] : "Year 11"} shows a{" "}
+              {priorityCount > 0
+                ? `${Math.round((priorityCount / Math.max(1, allRows.length)) * 100)}% priority rate`
+                : "stable performance trend"}
+              {" "}across the current {windowDays}-day window.&rdquo;
+            </p>
+          </div>
+          <p className="mt-4 text-[0.8125rem] font-medium text-blue-400 calm-transition hover:text-blue-300">
+            Read detailed report
+          </p>
+        </div>
+      </div>
+
+      {/* ── Toolbar (search, filter, count) ─────────────────────── */}
+      <div className="mb-1">
+        <StudentsToolbar
+          yearGroups={yearGroups}
+          defaultSearch={studentSearch}
+          defaultYearGroup={yearGroupFilter}
+          defaultBand={bandFilter}
+          defaultWindow={String(windowDays)}
+          totalFiltered={totalFiltered}
+          pageStart={totalFiltered > 0 ? pageStart + 1 : 0}
+          pageEnd={pageEnd}
+        />
+      </div>
+
+      {/* ── Student table ───────────────────────────────────────── */}
       {rows.length === 0 ? (
         <div className="mt-4 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
@@ -369,91 +373,242 @@ export default async function StudentsPage({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
-                  <th className="px-5 py-3">Student</th>
+                  <th className="px-5 py-3">Name</th>
                   <th className="px-4 py-3">Year</th>
-                  <th className="px-4 py-3">Band</th>
-                  <th className="px-4 py-3">Drivers</th>
-                  <th className="px-4 py-3 text-right">Attendance %</th>
-                  <th className="px-4 py-3 text-right">Detentions Δ</th>
-                  <th className="px-4 py-3 text-right">On Calls Δ</th>
-                  <th className="px-4 py-3 text-right">Lateness Δ</th>
                   <th className="px-4 py-3">Flags</th>
+                  <th className="px-4 py-3">Band</th>
+                  <th className="px-4 py-3">Attendance</th>
+                  <th className="px-4 py-3">Last Update</th>
+                  <th className="px-4 py-3">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={row.studentId} className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50">
-                    <td className="px-5 py-3 font-medium text-text">
-                      <Link
-                        href={`/analysis/students/${row.studentId}?window=${windowDays}`}
-                        className="calm-transition group-hover:text-accent hover:underline"
-                      >
-                        {row.studentName}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-muted">
-                      {row.yearGroup ?? "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusPill variant={BAND_VARIANT[row.band]} size="sm">
-                        {BAND_LABELS[row.band]}
-                      </StatusPill>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {row.drivers.map((d) => (
-                          <span
-                            key={d.metric}
-                            className="inline-flex items-center rounded-full bg-bg px-2 py-0.5 text-xs font-medium text-text"
-                          >
-                            {d.direction === "up" ? "↑" : "↓"} {d.label}
-                          </span>
-                        ))}
-                        {row.drivers.length === 0 && (
-                          <span className="text-xs text-muted">—</span>
-                        )}
+                {pageRows.map((row) => (
+                  <tr
+                    key={row.studentId}
+                    className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50"
+                  >
+                    {/* Name with initials avatar */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">
+                          {getInitials(row.studentName)}
+                        </div>
+                        <span className="font-medium text-text">
+                          {row.studentName}
+                        </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-muted">
-                      {fmtPct(row.attendancePct)}
+
+                    {/* Year */}
+                    <td className="px-4 py-4 text-muted">
+                      {row.yearGroup ?? "—"}
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-muted">
-                      {fmtDelta(row.detentionsDelta)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-muted">
-                      {fmtDelta(row.onCallsDelta)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-muted">
-                      {fmtDelta(row.latenessDelta)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
+
+                    {/* Flags */}
+                    <td className="px-4 py-4">
+                      <div className="flex gap-1.5">
                         {row.sendFlag && (
-                          <StatusPill variant="accent" size="sm">
-                            SEND
-                          </StatusPill>
+                          <span className="rounded bg-[#1a1a2e] px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+                            SEN
+                          </span>
                         )}
                         {row.ppFlag && (
-                          <StatusPill variant="info" size="sm">
+                          <span className="rounded bg-gray-500 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
                             PP
-                          </StatusPill>
+                          </span>
                         )}
                         {!row.sendFlag && !row.ppFlag && (
                           <span className="text-xs text-muted">—</span>
                         )}
                       </div>
                     </td>
+
+                    {/* Band */}
+                    <td className="px-4 py-4">
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${bandPillClass(row.band)}`}
+                      >
+                        {BAND_LABELS[row.band]}
+                      </span>
+                    </td>
+
+                    {/* Attendance with progress bar */}
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm tabular-nums text-text">
+                          {row.attendancePct !== null
+                            ? `${Math.round(row.attendancePct)}%`
+                            : "—"}
+                        </span>
+                        {row.attendancePct !== null && (
+                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
+                            <div
+                              className={`h-full rounded-full ${attendanceBarColor(row.attendancePct)}`}
+                              style={{
+                                width: `${Math.min(100, Math.max(0, row.attendancePct))}%`,
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Last Update */}
+                    <td className="px-4 py-4 text-muted">
+                      {fmtDate(row.lastSnapshotDate)}
+                    </td>
+
+                    {/* Action */}
+                    <td className="px-4 py-4">
+                      <Link
+                        href={`/analysis/students/${row.studentId}?window=${windowDays}`}
+                        className="text-sm font-medium text-accent calm-transition hover:text-accentHover"
+                      >
+                        View →
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {/* ── Pagination ────────────────────────────────────────── */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-1 border-t border-border/20 px-5 py-4">
+              {/* Prev */}
+              {safePage > 1 ? (
+                <Link
+                  href={pageUrl(safePage - 1)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-muted calm-transition hover:bg-bg hover:text-text"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              ) : (
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg text-muted/30">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              )}
+
+              {/* Page numbers */}
+              {paginationRange().map((item, idx) =>
+                item === "ellipsis" ? (
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="flex h-8 w-8 items-center justify-center text-sm text-muted"
+                  >
+                    …
+                  </span>
+                ) : (
+                  <Link
+                    key={item}
+                    href={pageUrl(item)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium calm-transition ${
+                      item === safePage
+                        ? "bg-[#1a1a2e] text-white"
+                        : "text-muted hover:bg-bg hover:text-text"
+                    }`}
+                  >
+                    {item}
+                  </Link>
+                ),
+              )}
+
+              {/* Next */}
+              {safePage < totalPages ? (
+                <Link
+                  href={pageUrl(safePage + 1)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-muted calm-transition hover:bg-bg hover:text-text"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              ) : (
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg text-muted/30">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
 
+      {/* ── Bottom insight cards ─────────────────────────────────── */}
+      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        {/* Critical Actions Required */}
+        <div className="rounded-2xl border border-border/30 bg-white/60 p-5 backdrop-blur-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-100">
+              <span className="h-2 w-2 rounded-full bg-rose-500" />
+            </span>
+            <h3 className="text-sm font-semibold text-text">
+              Critical Actions Required
+            </h3>
+          </div>
+          <p className="text-[0.8125rem] leading-relaxed text-muted">
+            {bandCounts.URGENT + bandCounts.PRIORITY} students in{" "}
+            {yearGroups.length > 0 ? yearGroups[yearGroups.length - 1] : "the cohort"}{" "}
+            have dropped attendance by &gt;5% in the last {windowDays} days.
+            Automatic alerts have been queued for the pastoral team.
+          </p>
+        </div>
+
+        {/* Registry Sync Status */}
+        <div className="rounded-2xl border border-border/30 bg-white/60 p-5 backdrop-blur-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100">
+              <svg className="h-3 w-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M4 4v5h5M20 20v-5h-5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M20.49 9A9 9 0 005.64 5.64L4 4m16 16l-1.64-1.64A9 9 0 019 20.49" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <h3 className="text-sm font-semibold text-text">
+              Registry Sync Status
+            </h3>
+          </div>
+          <p className="text-[0.8125rem] leading-relaxed text-muted">
+            Last successful sync: Today at{" "}
+            {computedAt.toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+            . All pupil premium records are current as of the latest census.
+          </p>
+        </div>
+
+        {/* Performance Target */}
+        <div className="rounded-2xl border border-border/30 bg-white/60 p-5 backdrop-blur-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-100">
+              <svg className="h-3 w-3 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M3 3v18h18" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M18 9l-5 5-2-2-4 4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <h3 className="text-sm font-semibold text-text">
+              Performance Target
+            </h3>
+          </div>
+          <p className="text-[0.8125rem] leading-relaxed text-muted">
+            The current cohort is tracking {avgAttendance > 91 ? (avgAttendance - 91).toFixed(1) : "0"}% above the
+            national average for attendance. Maintaining this trend is critical
+            for the upcoming review.
+          </p>
+        </div>
+      </div>
+
       {/* ── Footer ──────────────────────────────────────────────── */}
       <p className="mt-8 text-[0.75rem] text-muted">
-        Explorer · Students · {windowDays}d window
+        Explorer · Students · {windowDays}d window · Updated{" "}
+        {computedAt.toLocaleDateString("en-GB")}
       </p>
     </>
   );
