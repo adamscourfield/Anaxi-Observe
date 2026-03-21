@@ -192,6 +192,23 @@ export default async function StudentsPage({
       : 0;
   const priorityCount = bandCounts.PRIORITY + bandCounts.URGENT;
 
+  // Students with attendance below 80%
+  const lowAttendanceCount = allRows.filter(
+    (r) => r.attendancePct !== null && r.attendancePct < 80,
+  ).length;
+
+  // Year group with the highest priority rate
+  const yearGroupStats: Record<string, { total: number; priority: number }> = {};
+  for (const r of allRows) {
+    const yg = r.yearGroup ?? "Unknown";
+    if (!yearGroupStats[yg]) yearGroupStats[yg] = { total: 0, priority: 0 };
+    yearGroupStats[yg].total++;
+    if (r.band === "PRIORITY" || r.band === "URGENT") yearGroupStats[yg].priority++;
+  }
+  const topPriorityYearGroup = Object.entries(yearGroupStats)
+    .filter(([, s]) => s.priority > 0)
+    .sort((a, b) => b[1].priority / b[1].total - a[1].priority / a[1].total)[0];
+
   // ── url builder ─────────────────────────────────────────────────
   function pageUrl(p: number): string {
     const merged: Record<string, string> = {

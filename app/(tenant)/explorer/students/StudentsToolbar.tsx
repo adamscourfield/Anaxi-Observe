@@ -39,7 +39,7 @@ export function StudentsToolbar({
     !!(defaultYearGroup || defaultBand),
   );
   const [search, setSearch] = useState(defaultSearch);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function navigate(overrides: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -57,7 +57,7 @@ export function StudentsToolbar({
 
   function handleSearchChange(value: string) {
     setSearch(value);
-    clearTimeout(debounceRef.current);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       navigate({ studentSearch: value || null });
     }, 400);
@@ -182,13 +182,14 @@ export function StudentsToolbar({
 
           {(defaultYearGroup || defaultBand) && (
             <button
-              onClick={() =>
+              onClick={() => {
+                setSearch("");
                 navigate({
                   yearGroup: null,
                   band: null,
                   studentSearch: null,
-                })
-              }
+                });
+              }}
               className="rounded-lg border border-border/40 bg-white px-3 py-2 text-xs font-medium text-muted calm-transition hover:text-text"
             >
               Clear all
