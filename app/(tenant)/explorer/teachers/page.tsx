@@ -49,6 +49,7 @@ const SIGNAL_LABEL_MAP: Record<string, string> = Object.fromEntries(
 /** Signals shown in the compact heatmap (first 6) */
 const HEATMAP_KEYS = SIGNAL_KEYS.slice(0, 6);
 
+/** Teachers per page — matches the design spec showing 4 rows per page */
 const ITEMS_PER_PAGE = 4;
 
 function formatTeacherRole(role: string): string {
@@ -75,7 +76,8 @@ function formatDrift(value: number): { text: string; arrow: string; color: strin
   const formatted = abs.toFixed(1);
   if (value > 0.5) return { text: `+${formatted}`, arrow: "↗", color: "text-emerald-600" };
   if (value < -0.5) return { text: `-${formatted}`, arrow: "↘", color: "text-rose-600" };
-  return { text: `+${formatted}`, arrow: "→", color: "text-muted" };
+  const sign = value < 0 ? "-" : "+";
+  return { text: `${sign}${formatted}`, arrow: "→", color: "text-muted" };
 }
 
 /** Zero-pad a number to 2 digits */
@@ -119,9 +121,9 @@ function computeSignalBreakdown(rows: TeacherPivotRow[]): { category: SignalCate
     }
     const avgMean = means.length > 0 ? means.reduce((a, b) => a + b, 0) / means.length : 0;
 
-    // Generate 2-3 dots based on average
+    // Generate colored dots based on category average
     const dotColor = avgMean >= 3 ? "bg-emerald-600" : avgMean >= 2 ? "bg-amber-400" : "bg-rose-400";
-    const dots = avgMean >= 3 ? [dotColor, dotColor] : avgMean >= 2 ? [dotColor, dotColor] : [dotColor, dotColor];
+    const dots = [dotColor, dotColor];
     return { category: cat, dots };
   });
 }
@@ -777,7 +779,7 @@ export default async function ExplorerTeachersPage({
             </div>
           </div>
 
-          {/* Observation Intelligence */}
+          {/* Observation Intelligence — static placeholder matching design spec */}
           <div className="relative rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
             <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full bg-text" />
             <div className="pl-4">
