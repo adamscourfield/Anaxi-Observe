@@ -56,6 +56,7 @@ export type DepartmentPivotSignalCell = {
 export type DepartmentPivotRow = {
   departmentId: string;
   departmentName: string;
+  faculty: string | null;
   teacherCount: number;
   observationCount: number;
   signalData: Record<string, DepartmentPivotSignalCell>;
@@ -120,6 +121,7 @@ export async function computeDepartmentPivot(
     rows.push({
       departmentId: dept.id,
       departmentName: dept.name,
+      faculty: dept.faculty ?? null,
       teacherCount: teacherIds.size,
       observationCount: deptCurrentObs.length,
       signalData,
