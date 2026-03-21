@@ -4,14 +4,15 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { canViewExplorer, canExportExplorer } from "@/modules/authz";
-import { PageHeader } from "@/components/ui/page-header";
+import { AutoSubmitSelect } from "@/app/(tenant)/explorer/departments/AutoSubmitSelect";
 import {
   computeCpdPriorities,
   getTopImprovingSignals,
+  computeWeeklyDriftTrend,
 } from "@/modules/analysis/cpdPriorities";
 import type { CpdPriorityRow } from "@/modules/analysis/cpdPriorities";
 
-const VALID_WINDOWS = [7, 21, 28] as const;
+const VALID_WINDOWS = [7, 21, 28, 90] as const;
 type WindowDays = (typeof VALID_WINDOWS)[number];
 
 function parseWindow(raw: string | undefined): WindowDays {
@@ -26,7 +27,32 @@ function pct(value: number): string {
 function delta(value: number | null): string {
   if (value === null) return "—";
   const sign = value >= 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}`;
+  return `${sign}${value.toFixed(1)}`;
+}
+
+function getPriorityLevel(row: CpdPriorityRow): "HIGH" | "MEDIUM" | "LOW" {
+  if (row.driftRate > 0.20) return "HIGH";
+  if (row.driftRate > 0.10) return "MEDIUM";
+  return "LOW";
+}
+
+function getPriorityColor(level: "HIGH" | "MEDIUM" | "LOW") {
+  if (level === "HIGH") return { border: "border-l-[#f43f5e]", text: "text-[#991b1b]", bg: "bg-[#fee2e2]" };
+  if (level === "MEDIUM") return { border: "border-l-[#f59e0b]", text: "text-[#92400e]", bg: "bg-[#fef3c7]" };
+  return { border: "border-l-[#3b82f6]", text: "text-[#1d4ed8]", bg: "bg-[#dbeafe]" };
+}
+
+function getImprovementLabel(index: number): { label: string; color: string } {
+  if (index >= 85) return { label: "Excellent", color: "text-[var(--success)]" };
+  if (index >= 70) return { label: "Good", color: "text-[var(--success)]" };
+  if (index >= 50) return { label: "Fair", color: "text-[var(--warning-text)]" };
+  return { label: "Needs Work", color: "text-[var(--error)]" };
+}
+
+function getDriftBarColor(rate: number): string {
+  if (rate > 0.20) return "bg-[#fe9f9f]";
+  if (rate > 0.10) return "bg-[#1e293b]";
+  return "bg-[#1e293b]";
 }
 
 export default async function SignalsPage({
@@ -74,7 +100,6 @@ export default async function SignalsPage({
     : params.departmentId;
 
   const isHod = user.role === "HOD";
-  const scopeIds = isHod ? hodDepartmentIds : undefined;
 
   // Validate the department filter against HOD scope
   const departmentId =
@@ -85,13 +110,14 @@ export default async function SignalsPage({
   const filters = departmentId ? { departmentId } : undefined;
 
   // ── data ────────────────────────────────────────────────────────
-  const [rows, departments] = await Promise.all([
+  const [rows, departments, driftTrend] = await Promise.all([
     computeCpdPriorities(user.tenantId, windowDays, filters),
     (prisma as any).department.findMany({
       where: { tenantId: user.tenantId },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
+    computeWeeklyDriftTrend(user.tenantId, filters),
   ]);
 
   const improving = getTopImprovingSignals(rows);
@@ -107,6 +133,17 @@ export default async function SignalsPage({
 
   const showExport = canExportExplorer(viewerContext);
 
+  // ── derived stats ───────────────────────────────────────────────
+  const totalSignals = sortedRows.reduce((s, r) => s + r.teachersCovered, 0);
+  const totalDrifting = sortedRows.reduce((s, r) => s + r.teachersDriftingDown, 0);
+  const totalImproving = sortedRows.reduce((s, r) => s + r.teachersImproving, 0);
+  const avgDriftRate = totalSignals > 0 ? totalDrifting / totalSignals : 0;
+  const avgImprovingRate = totalSignals > 0 ? totalImproving / totalSignals : 0;
+  const improvementIndex = totalSignals > 0 ? (1 - avgDriftRate) * 100 : 0;
+  const improvementMeta = getImprovementLabel(improvementIndex);
+  const maxDriftRate = Math.max(...sortedRows.map((r) => r.driftRate), 0.01);
+  const maxBarHeight = Math.max(...driftTrend.days.map((d) => d.observationCount), 1);
+
   // ── url builder ─────────────────────────────────────────────────
   function buildUrl(overrides: Record<string, string | undefined>) {
     const merged: Record<string, string> = {
@@ -118,7 +155,6 @@ export default async function SignalsPage({
         ),
       ),
     };
-    // Remove keys explicitly set to undefined in overrides
     for (const [k, v] of Object.entries(overrides)) {
       if (v === undefined) delete merged[k];
     }
@@ -129,82 +165,71 @@ export default async function SignalsPage({
   // ── render ──────────────────────────────────────────────────────
   return (
     <>
-      {/* Back link */}
-      <div className="mb-4">
-        <Link
-          href="/explorer"
-          className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-accent"
-        >
-          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Back to Explorer
-        </Link>
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-text">
+          Signals Explorer
+        </h1>
+        <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-muted">
+          Monitor and analyze instructional delivery across departments. Tracking drift rates
+          and instructional consistency metrics.
+        </p>
       </div>
 
-      <PageHeader
-        title="Signals"
-        subtitle="CPD priority signals ranked by how commonly they are weakening across teachers."
-        meta={
-          <span className="text-xs text-muted">
-            {windowDays}d window · {sortedRows.length} signal
-            {sortedRows.length !== 1 ? "s" : ""}
-          </span>
-        }
-      />
-
-      {/* ── Controls bar ────────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
-        <div className="border-b border-border/30 px-5 py-3">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
-        </div>
-        <div className="flex flex-wrap items-end gap-3 p-4">
-          <form className="flex flex-wrap items-end gap-3">
-            {/* Window selector */}
-            <label className="flex flex-col gap-1">
-              <span className="text-[0.6875rem] font-medium text-muted">Window</span>
-              <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
-                {VALID_WINDOWS.map((w) => (
-                  <option key={w} value={String(w)}>
-                    {w} days
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {/* Department filter */}
-            <label className="flex flex-col gap-1">
-              <span className="text-[0.6875rem] font-medium text-muted">Department</span>
-              <select
-                name="departmentId"
-                defaultValue={rawDeptId ?? ""}
-                className="field min-w-[160px]"
-              >
-                <option value="">All departments</option>
-                {selectableDepts.map((d: any) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <button
-              type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
+      {/* ── Controls bar ───────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-white/60 bg-white/60 px-5 py-3 backdrop-blur-sm">
+        {/* Window toggle */}
+        <div className="inline-flex overflow-hidden rounded-lg border border-border/40 bg-white/80">
+          {VALID_WINDOWS.map((w) => (
+            <Link
+              key={w}
+              href={buildUrl({ windowDays: String(w) })}
+              className={`px-3.5 py-1.5 text-[0.8125rem] font-medium calm-transition ${
+                w === windowDays
+                  ? "bg-[var(--primary)] text-white"
+                  : "text-muted hover:bg-[var(--surface-container-low)] hover:text-text"
+              }`}
             >
+              {w}D
+            </Link>
+          ))}
+        </div>
+
+        {/* Department filter */}
+        <form className="contents">
+          <input type="hidden" name="windowDays" value={String(windowDays)} />
+          <AutoSubmitSelect
+            name="departmentId"
+            defaultValue={rawDeptId ?? ""}
+            className="field min-w-[170px] !rounded-lg !py-1.5 !text-[0.8125rem]"
+          >
+            <option value="">All Departments</option>
+            {selectableDepts.map((d: any) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </AutoSubmitSelect>
+          <noscript>
+            <button type="submit" className="rounded-lg bg-accent px-3 py-1.5 text-[0.8125rem] font-medium text-white">
               Apply
             </button>
-          </form>
+          </noscript>
+        </form>
 
-          {departmentId && (
-            <Link
-              href={buildUrl({ departmentId: undefined })}
-              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-            >
-              Clear
-            </Link>
-          )}
+        <div className="ml-auto flex items-center gap-2">
+          {/* More Filters button */}
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border/40 bg-white/80 px-4 py-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:border-border hover:text-text"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+            </svg>
+            More Filters
+          </button>
+
+          {/* Export Data button */}
           {showExport && (
             <form action="/api/explorer/export" method="POST" className="inline">
               <input type="hidden" name="view" value="CPD_SIGNAL_PRIORITIES" />
@@ -214,25 +239,66 @@ export default async function SignalsPage({
               )}
               <button
                 type="submit"
-                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 py-1.5 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-[var(--accent-hover)]"
               >
-                Export CSV
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Export Data
               </button>
             </form>
           )}
         </div>
       </div>
 
-      {/* ── Result count ────────────────────────────────────────── */}
-      <p className="mt-4 text-[0.8125rem] text-muted">
-        {sortedRows.length > 0
-          ? `${sortedRows.length} signal${sortedRows.length !== 1 ? "s" : ""} in the ${windowDays}-day window`
-          : "No signal data for this window"}
-      </p>
+      {/* ── Summary stat cards ─────────────────────────────────── */}
+      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {/* Total Signals */}
+        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Total Signals</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-[2rem] font-bold leading-none tracking-tight text-text">{totalSignals}</span>
+            {avgImprovingRate > 0 && (
+              <span className="text-[0.8125rem] font-semibold text-[var(--success)]">
+                +{(avgImprovingRate * 100).toFixed(0)}%
+              </span>
+            )}
+          </div>
+        </div>
 
-      {/* ── Priority signals table ──────────────────────────────── */}
+        {/* Critical Drift */}
+        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Critical Drift</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-[2rem] font-bold leading-none tracking-tight text-text">{totalDrifting}</span>
+            {totalDrifting > 0 && (
+              <span className="text-[0.8125rem] font-semibold text-[var(--error)]">High Priority</span>
+            )}
+          </div>
+        </div>
+
+        {/* Avg. Drift Rate */}
+        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Avg. Drift Rate</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-[2rem] font-bold leading-none tracking-tight text-text">{pct(avgDriftRate)}</span>
+            <span className="text-[0.8125rem] text-muted">System Mean</span>
+          </div>
+        </div>
+
+        {/* Improvement Index */}
+        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Improvement Index</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-[2rem] font-bold leading-none tracking-tight text-text">{improvementIndex.toFixed(1)}</span>
+            <span className={`text-[0.8125rem] font-semibold ${improvementMeta.color}`}>{improvementMeta.label}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Priority signals table ─────────────────────────────── */}
       {sortedRows.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
+        <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
             <svg className="h-6 w-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
@@ -242,58 +308,71 @@ export default async function SignalsPage({
           <p className="mt-1 text-[0.8125rem] text-muted">Try adjusting your window or department filter.</p>
         </div>
       ) : (
-        <div className="mt-4 overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
-                  <th className="px-5 py-3">Signal</th>
-                  <th className="px-4 py-3 text-right">Teachers</th>
-                  <th className="px-4 py-3 text-right">Drifting</th>
-                  <th className="px-4 py-3 text-right">Drift rate</th>
-                  <th className="px-4 py-3 text-right">Avg drift</th>
-                  <th className="px-4 py-3 text-right">Priority</th>
-                  <th className="px-4 py-3 text-right">Improving</th>
-                  <th className="px-4 py-3 text-right">Improve rate</th>
+                  <th className="py-3 pl-5 pr-3">Signal</th>
+                  <th className="px-3 py-3 text-right">Teachers</th>
+                  <th className="px-3 py-3 text-right">Drifting</th>
+                  <th className="px-3 py-3 text-right">Drift Rate</th>
+                  <th className="px-3 py-3 text-right">Avg Drift</th>
+                  <th className="px-3 py-3 text-center">Priority</th>
+                  <th className="px-3 py-3 text-right">Improving</th>
+                  <th className="px-3 py-3 text-right">Impr. Rate</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedRows.map((row) => {
-                  const highlight = row.priorityScore > 0.1;
+                  const priority = getPriorityLevel(row);
+                  const colors = getPriorityColor(priority);
+                  const barWidth = maxDriftRate > 0 ? (row.driftRate / maxDriftRate) * 100 : 0;
                   return (
                     <tr
                       key={row.signalKey}
-                      className={`group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50 ${
-                        highlight ? "bg-amber-50/30" : ""
-                      }`}
+                      className={`group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50 border-l-[3px] ${colors.border}`}
                     >
-                      <td className="px-5 py-3 font-medium text-text">
+                      <td className="py-3.5 pl-4 pr-3 font-medium text-text">
                         <Link
                           href={`/analysis/cpd/${encodeURIComponent(row.signalKey)}`}
                           className="calm-transition group-hover:text-accent hover:underline"
+                          title={row.label}
                         >
-                          {row.label}
+                          <span className="block max-w-[140px] truncate">{row.label}</span>
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      <td className="px-3 py-3.5 text-right tabular-nums text-muted">
                         {row.teachersCovered}
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted">
+                      <td className={`px-3 py-3.5 text-right tabular-nums font-semibold ${
+                        row.teachersDriftingDown > 10 ? "text-[var(--error)]" : "text-muted"
+                      }`}>
                         {row.teachersDriftingDown}
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted">
-                        {pct(row.driftRate)}
+                      <td className="px-3 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-100">
+                            <div
+                              className={`h-full rounded-full ${getDriftBarColor(row.driftRate)}`}
+                              style={{ width: `${barWidth}%` }}
+                            />
+                          </div>
+                          <span className="tabular-nums text-muted">{pct(row.driftRate)}</span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted">
-                        {delta(row.avgNegDeltaAbs ? -row.avgNegDeltaAbs : null)}
+                      <td className="px-3 py-3.5 text-right tabular-nums text-muted">
+                        {row.avgNegDeltaAbs ? row.avgNegDeltaAbs.toFixed(1) : "—"}
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums font-semibold text-text">
-                        {row.priorityScore.toFixed(2)}
+                      <td className="px-3 py-3.5 text-center">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${colors.bg} ${colors.text}`}>
+                          {priority}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-success">
+                      <td className="px-3 py-3.5 text-right tabular-nums text-muted">
                         {row.teachersImproving}
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-success">
+                      <td className="px-3 py-3.5 text-right tabular-nums font-semibold text-[var(--success)]">
                         {pct(row.improvingRate)}
                       </td>
                     </tr>
@@ -305,54 +384,101 @@ export default async function SignalsPage({
         </div>
       )}
 
-      {/* ── Positive momentum section ───────────────────────────── */}
-      {improving.length > 0 && (
-        <section className="mt-6 space-y-3">
-          <h2 className="text-lg font-semibold text-text">
-            Positive momentum
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {improving.map((row) => (
-              <div
-                key={row.signalKey}
-                className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4"
-              >
-                <h3 className="font-semibold text-emerald-900">
-                  <Link
-                    href={`/analysis/cpd/${encodeURIComponent(row.signalKey)}`}
-                    className="hover:underline"
-                  >
-                    {row.label}
-                  </Link>
-                </h3>
-                <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-emerald-800">
-                  <span>
-                    <span className="font-medium">{row.teachersImproving}</span>{" "}
-                    teacher{row.teachersImproving !== 1 ? "s" : ""} improving
-                  </span>
-                  <span>
-                    Avg{" "}
-                    <span className="font-medium">
-                      {delta(row.avgPositiveDelta)}
-                    </span>
-                  </span>
-                  <span>
-                    Rate{" "}
-                    <span className="font-medium">
-                      {pct(row.improvingRate)}
-                    </span>
+      {/* ── Bottom section: Drift Trend + Top Improving ────────── */}
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        {/* Overall Drift Trend */}
+        <div className="rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-text">Overall Drift Trend</h2>
+            <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Last 7 Days</span>
+          </div>
+
+          {/* Bar chart */}
+          <div className="mt-6 flex items-end justify-between gap-2">
+            {driftTrend.days.map((d) => {
+              const barHeight = maxBarHeight > 0
+                ? Math.max((d.observationCount / maxBarHeight) * 100, d.observationCount > 0 ? 12 : 0)
+                : 0;
+              const isHighDrift = d.driftScore > 0.3;
+              return (
+                <div key={d.dayLabel} className="flex flex-1 flex-col items-center gap-2">
+                  <div className="flex h-28 w-full items-end justify-center">
+                    <div
+                      className={`w-full max-w-[36px] rounded-t-md ${
+                        isHighDrift ? "bg-[#fe9f9f]" : "bg-[#1e293b]"
+                      }`}
+                      style={{ height: `${barHeight}%` }}
+                    />
+                  </div>
+                  <span className="text-[0.625rem] font-medium uppercase text-muted">{d.dayLabel}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Trend summary */}
+          <div className="mt-6 flex items-center gap-2 border-t border-border/20 pt-4">
+            <p className="text-[0.8125rem] text-muted">
+              {driftTrend.weekOverWeekChange <= 0 ? (
+                <>System-wide drift reduced by <span className="font-semibold text-text">{Math.abs(driftTrend.weekOverWeekChange).toFixed(1)}%</span> compared to previous week.</>
+              ) : (
+                <>System-wide drift increased by <span className="font-semibold text-text">{driftTrend.weekOverWeekChange.toFixed(1)}%</span> compared to previous week.</>
+              )}
+            </p>
+            {driftTrend.weekOverWeekChange <= 0 ? (
+              <svg className="h-5 w-5 shrink-0 text-[var(--success)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5 shrink-0 text-[var(--error)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+              </svg>
+            )}
+          </div>
+        </div>
+
+        {/* Top Improving Signals */}
+        <div className="rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+          <h2 className="text-lg font-semibold text-text">Top Improving Signals</h2>
+          <div className="mt-4 space-y-3">
+            {improving.length > 0 ? (
+              improving.map((row) => (
+                <div
+                  key={row.signalKey}
+                  className="flex items-center gap-4 rounded-xl border border-border/20 bg-white/50 p-4"
+                >
+                  {/* Arrow icon */}
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50">
+                    <svg className="h-5 w-5 text-[var(--success)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                    </svg>
+                  </div>
+                  {/* Label */}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-text">
+                      <Link
+                        href={`/analysis/cpd/${encodeURIComponent(row.signalKey)}`}
+                        className="hover:underline"
+                      >
+                        {row.label}
+                      </Link>
+                    </p>
+                    <p className="text-[0.75rem] text-muted">{pct(row.improvingRate)} improvement rate</p>
+                  </div>
+                  {/* Delta */}
+                  <span className="shrink-0 text-lg font-bold text-text">
+                    {delta(row.avgPositiveDelta)}
                   </span>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="py-8 text-center text-[0.8125rem] text-muted">
+                No improving signals in this window.
+              </p>
+            )}
           </div>
-        </section>
-      )}
-
-      {/* ── Footer ──────────────────────────────────────────────── */}
-      <p className="mt-8 text-[0.75rem] text-muted">
-        Explorer · Signals · {windowDays}d window
-      </p>
+        </div>
+      </div>
     </>
   );
 }

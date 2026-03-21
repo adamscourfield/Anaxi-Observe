@@ -22,6 +22,7 @@ const SCALE_SCORES: Record<string, number> = {
 const DEFAULT_MIN_COVERAGE = 6;
 const DEFAULT_DRIFT_THRESHOLD = 0.35;
 const MINIMUM_SCHOOL_COVERAGE_THRESHOLD = 5;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 const ALL_SIGNAL_KEYS = SIGNAL_DEFINITIONS.map((s) => s.key);
 
@@ -66,9 +67,9 @@ function windowBounds(windowDays: number): {
 } {
   const now = new Date();
   const currentEnd = now;
-  const currentStart = new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000);
+  const currentStart = new Date(now.getTime() - windowDays * MS_PER_DAY);
   const prevEnd = currentStart;
-  const prevStart = new Date(currentStart.getTime() - windowDays * 24 * 60 * 60 * 1000);
+  const prevStart = new Date(currentStart.getTime() - windowDays * MS_PER_DAY);
   return { currentStart, currentEnd, prevStart, prevEnd };
 }
 
@@ -349,7 +350,7 @@ export async function computeSignalAffectedTeachers(
 }
 
 /**
- * Extract top 2 improving signals for the positive momentum section.
+ * Extract top 3 improving signals for the positive momentum section.
  * Requires teachersCovered >= MINIMUM_SCHOOL_COVERAGE_THRESHOLD and teachersImproving > 0.
  */
 export function getTopImprovingSignals(rows: CpdPriorityRow[]): CpdPriorityRow[] {
@@ -359,5 +360,115 @@ export function getTopImprovingSignals(rows: CpdPriorityRow[]): CpdPriorityRow[]
         r.teachersCovered >= MINIMUM_SCHOOL_COVERAGE_THRESHOLD && r.teachersImproving > 0
     )
     .sort((a, b) => b.priorityImprovementScore - a.priorityImprovementScore)
-    .slice(0, 2);
+    .slice(0, 3);
+}
+
+// ─── Weekly Drift Trend ──────────────────────────────────────────────────────
+
+export type DailyDriftPoint = {
+  dayLabel: string;
+  observationCount: number;
+  driftCount: number;
+  driftScore: number;
+};
+
+/**
+ * Compute daily drift breakdown for the last 7 calendar days,
+ * plus week-over-week drift change percentage.
+ */
+export async function computeWeeklyDriftTrend(
+  tenantId: string,
+  filters?: OptionalFilters
+): Promise<{ days: DailyDriftPoint[]; weekOverWeekChange: number }> {
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * MS_PER_DAY);
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * MS_PER_DAY);
+
+  let departmentTeacherIds: string[] | undefined;
+  if (filters?.departmentId) {
+    const memberships = await (prisma as any).departmentMembership.findMany({
+      where: { tenantId, departmentId: filters.departmentId },
+    });
+    departmentTeacherIds = (memberships as any[]).map((m: any) => m.userId);
+  }
+
+  const teacherFilter = departmentTeacherIds
+    ? { observedTeacherId: { in: departmentTeacherIds } }
+    : {};
+
+  const [currentWeekObs, prevWeekObs] = await Promise.all([
+    (prisma as any).observation.findMany({
+      where: { tenantId, observedAt: { gte: sevenDaysAgo, lte: now }, ...teacherFilter },
+      include: { signals: true },
+    }),
+    (prisma as any).observation.findMany({
+      where: { tenantId, observedAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo }, ...teacherFilter },
+      include: { signals: true },
+    }),
+  ]);
+
+  // Group current week by day of week (0=Sun … 6=Sat)
+  const dayBuckets = new Map<number, any[]>();
+  for (let i = 0; i < 7; i++) dayBuckets.set(i, []);
+
+  for (const obs of currentWeekObs as any[]) {
+    const dayOfWeek = new Date(obs.observedAt).getDay();
+    dayBuckets.get(dayOfWeek)!.push(obs);
+  }
+
+  // MON–SUN order
+  const dayOrder = [1, 2, 3, 4, 5, 6, 0];
+  const dayNames = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+
+  const days: DailyDriftPoint[] = dayOrder.map((dayIdx, i) => {
+    const dayObs = dayBuckets.get(dayIdx)!;
+    let driftCount = 0;
+    let totalSignals = 0;
+    for (const obs of dayObs) {
+      for (const sig of obs.signals as any[]) {
+        if (sig.notObserved || !sig.valueKey) continue;
+        totalSignals++;
+        const score = SCALE_SCORES[sig.valueKey];
+        if (score !== undefined && score <= 2) driftCount++; // LIMITED or SOME
+      }
+    }
+    return {
+      dayLabel: dayNames[i],
+      observationCount: dayObs.length,
+      driftCount,
+      driftScore: totalSignals > 0 ? driftCount / totalSignals : 0,
+    };
+  });
+
+  // Week-over-week drift change
+  let currentDriftTotal = 0;
+  let currentSignalTotal = 0;
+  for (const obs of currentWeekObs as any[]) {
+    for (const sig of obs.signals as any[]) {
+      if (sig.notObserved || !sig.valueKey) continue;
+      currentSignalTotal++;
+      const score = SCALE_SCORES[sig.valueKey];
+      if (score !== undefined && score <= 2) currentDriftTotal++;
+    }
+  }
+
+  let prevDriftTotal = 0;
+  let prevSignalTotal = 0;
+  for (const obs of prevWeekObs as any[]) {
+    for (const sig of obs.signals as any[]) {
+      if (sig.notObserved || !sig.valueKey) continue;
+      prevSignalTotal++;
+      const score = SCALE_SCORES[sig.valueKey];
+      if (score !== undefined && score <= 2) prevDriftTotal++;
+    }
+  }
+
+  const currentDriftRate = currentSignalTotal > 0 ? currentDriftTotal / currentSignalTotal : 0;
+  const prevDriftRate = prevSignalTotal > 0 ? prevDriftTotal / prevSignalTotal : 0;
+  const weekOverWeekChange =
+    prevDriftRate > 0
+      ? ((currentDriftRate - prevDriftRate) / prevDriftRate) * 100
+      : 0;
+
+  return { days, weekOverWeekChange };
 }
