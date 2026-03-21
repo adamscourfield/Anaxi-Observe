@@ -3,10 +3,7 @@ import { notFound } from "next/navigation";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
-import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
-import { SectionHeader } from "@/components/ui/section-header";
-import { StatusPill } from "@/components/ui/status-pill";
 import { MetaText } from "@/components/ui/typography";
 import {
   canViewExplorer,
@@ -19,6 +16,8 @@ import { computeCohortPivot } from "@/modules/analysis/cohortPivot";
 import { computeCpdPriorities } from "@/modules/analysis/cpdPriorities";
 
 const WINDOW_DAYS = 21;
+const MAX_DRIFT_LOG_ENTRIES = 3;
+const MAX_LOG_ENTRIES = 5;
 
 /* ─── Inline SVG icons ─────────────────────────────────────────────────────── */
 
@@ -33,7 +32,7 @@ function IconTeachers() {
 function IconDepartments() {
   return (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
     </svg>
   );
 }
@@ -41,7 +40,7 @@ function IconDepartments() {
 function IconSignals() {
   return (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.348 14.652a3.75 3.75 0 0 1 0-5.304m5.304 0a3.75 3.75 0 0 1 0 5.304m-7.425 2.121a6.75 6.75 0 0 1 0-9.546m9.546 0a6.75 6.75 0 0 1 0 9.546M5.106 18.894c-3.808-3.807-3.808-9.98 0-13.788m13.788 0c3.808 3.807 3.808 9.98 0 13.788M12 12h.008v.008H12V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
     </svg>
   );
 }
@@ -49,26 +48,40 @@ function IconSignals() {
 function IconObservations() {
   return (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
     </svg>
   );
 }
 
-function IconStudents() {
+/* Watermark icons for Pastoral Pulse section */
+function WatermarkGradCap() {
   return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a23.54 23.54 0 0 0-2.688 6.413A12.02 12.02 0 0 1 2.25 12c0-2.115.546-4.106 1.506-5.84A23.54 23.54 0 0 0 4.26 10.147ZM12 2.25l8.49 4.26a23.54 23.54 0 0 1 1.252 3.637 60.438 60.438 0 0 0-17.484 0 23.54 23.54 0 0 1 1.252-3.637L12 2.25ZM19.74 10.147a23.54 23.54 0 0 1 2.688 6.413A12.02 12.02 0 0 0 21.75 12c0-2.115-.546-4.106-1.506-5.84a23.54 23.54 0 0 0-.504 3.987Z" />
+    <svg className="absolute right-4 top-1/2 -translate-y-1/2 h-32 w-32 text-black/[0.06]" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z" />
     </svg>
   );
 }
 
-function IconCohorts() {
+function WatermarkDiamond() {
   return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+    <svg className="absolute right-4 top-1/2 -translate-y-1/2 h-28 w-28 text-black/[0.06]" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2L2 12l10 10 10-10L12 2zm0 2.83L19.17 12 12 19.17 4.83 12 12 4.83z" />
+      <path d="M12 6.34L6.34 12 12 17.66 17.66 12 12 6.34z" />
     </svg>
   );
+}
+
+/* ─── Time-ago helper ──────────────────────────────────────────────────────── */
+function timeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} mins ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 /* ─── Page ─────────────────────────────────────────────────────────────────── */
@@ -101,6 +114,7 @@ export default async function ExplorerPage() {
     deptResult,
     cpdRows,
     obsCount,
+    recentObservations,
     ...behaviourResults
   ] = await Promise.all([
     computeTeacherRiskIndex(user.tenantId, WINDOW_DAYS),
@@ -109,6 +123,18 @@ export default async function ExplorerPage() {
     (prisma as any).observation.count({
       where: { tenantId: user.tenantId, observedAt: { gte: since } },
     }) as Promise<number>,
+    (prisma as any).observation.findMany({
+      where: { tenantId: user.tenantId },
+      orderBy: { observedAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        observedAt: true,
+        yearGroup: true,
+        subject: true,
+        observer: { select: { fullName: true } },
+      },
+    }) as Promise<{ id: string; observedAt: Date; yearGroup: string; subject: string; observer: { fullName: string } }[]>,
     ...(canSeeBehaviour
       ? [
           computeStudentRiskIndex(user.tenantId, WINDOW_DAYS, user.id),
@@ -129,22 +155,73 @@ export default async function ExplorerPage() {
   const highPrioritySignals = cpdRows.filter((r) => r.priorityScore > 0.1).length;
   const totalSignals = cpdRows.length;
 
-  let priorityStudents = 0;
+  let urgentStudents = 0;
+  let safeStudents = 0;
   let totalStudents = 0;
   let yearGroupCount = 0;
-  let totalStudentsCovered = 0;
+  let academicLoadPct = 0;
 
   if (canSeeBehaviour && behaviourResults.length === 2) {
     const studentResult = behaviourResults[0] as Awaited<ReturnType<typeof computeStudentRiskIndex>>;
     const cohortResult = behaviourResults[1] as Awaited<ReturnType<typeof computeCohortPivot>>;
 
-    priorityStudents = studentResult.rows.filter(
+    urgentStudents = studentResult.rows.filter(
       (r) => r.band === "PRIORITY" || r.band === "URGENT",
     ).length;
     totalStudents = studentResult.rows.length;
+    safeStudents = totalStudents - urgentStudents;
     yearGroupCount = cohortResult.rows.length;
-    totalStudentsCovered = cohortResult.rows.reduce((s, r) => s + r.studentsCovered, 0);
+
+    // Compute academic load as average attendance across cohorts
+    const attendanceValues = cohortResult.rows
+      .map((r) => r.attendanceMean)
+      .filter((v): v is number => v !== null);
+    academicLoadPct = attendanceValues.length > 0
+      ? Math.round(attendanceValues.reduce((a, b) => a + b, 0) / attendanceValues.length)
+      : 0;
   }
+
+  // ─── Build intelligence log entries ─────────────────────────────────────────
+  type LogEntry = {
+    id: string;
+    icon: "observation" | "signal";
+    title: string;
+    meta: string;
+    tag: string;
+    tagVariant: "academic" | "priority";
+  };
+
+  const logEntries: LogEntry[] = [];
+
+  // Add recent observations
+  for (const obs of recentObservations) {
+    logEntries.push({
+      id: obs.id,
+      icon: "observation",
+      title: `Observation recorded for ${obs.yearGroup} ${obs.subject}`,
+      meta: `${obs.observer.fullName} · ${timeAgo(obs.observedAt)}`,
+      tag: "ACADEMIC",
+      tagVariant: "academic",
+    });
+  }
+
+  // Add behaviour drift signals from drifting teachers
+  const significantDrifters = teacherRiskRows
+    .filter((r) => r.status === "SIGNIFICANT_DRIFT")
+    .slice(0, MAX_DRIFT_LOG_ENTRIES);
+  for (const teacher of significantDrifters) {
+    logEntries.push({
+      id: `drift-${teacher.teacherName}`,
+      icon: "signal",
+      title: `Behaviour drift signal triggered`,
+      meta: `${teacher.departmentNames?.[0] ?? "Unknown dept"}: ${teacher.teacherName} · significant drift`,
+      tag: "PRIORITY",
+      tagVariant: "priority",
+    });
+  }
+
+  // Sort by most recent observation first, then signals
+  const displayedLogs = logEntries.slice(0, MAX_LOG_ENTRIES);
 
   const computedAt = deptResult.computedAt;
   const computedAtStr = computedAt.toLocaleString("en-GB", {
@@ -168,150 +245,228 @@ export default async function ExplorerPage() {
         }
       />
 
-      {/* ── Instruction & Performance ──────────────────────────────────────── */}
-      <SectionHeader title="Instruction & Performance" className="mt-2" />
-
-      <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ── Top Stats Row ──────────────────────────────────────────────────── */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Teachers */}
         <Link href="/explorer/teachers" className="block">
-          <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
-            <div className="flex items-center gap-2 text-accent">
-              <IconTeachers />
-              <span className="text-sm font-semibold">Teachers</span>
+          <div className="relative flex h-full flex-col justify-between rounded-2xl bg-[var(--surface-container-lowest)] p-5 shadow-ambient calm-transition hover:bg-[var(--surface-container-low)] hover:shadow-md">
+            <div className="flex items-start justify-between">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-container-low)] text-[var(--on-surface-variant)]">
+                <IconTeachers />
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--on-surface-variant)]">Real-time</span>
             </div>
-            <p className="text-[13px] leading-snug text-muted">
-              Risk index &amp; drift tracking across all observed teachers.
-            </p>
-            <div className="mt-auto flex items-end gap-3 pt-2">
-              <span className="text-2xl font-bold tabular-nums text-text">{totalTeachers}</span>
-              <MetaText>teachers tracked</MetaText>
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-[var(--on-surface)]">Teachers</p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-[2.5rem] font-bold leading-none tracking-tight text-[var(--on-surface)]">{totalTeachers}</span>
+                <span className="text-sm text-[var(--on-surface-variant)]">tracked</span>
+              </div>
             </div>
-            {driftingTeachers > 0 ? (
-              <StatusPill variant="warning" size="sm">
-                {driftingTeachers} drifting
-              </StatusPill>
-            ) : (
-              <StatusPill variant="success" size="sm">
-                All stable
-              </StatusPill>
-            )}
-          </Card>
+            <div className="mt-4 border-t border-[var(--surface-container)] pt-3">
+              {driftingTeachers > 0 ? (
+                <p className="flex items-center gap-1.5 text-[13px] text-[var(--on-tertiary-container)]">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--on-tertiary-container)]" />
+                  {driftingTeachers} drifting educators
+                </p>
+              ) : (
+                <p className="text-[13px] text-[var(--on-surface-variant)]">All educators stable</p>
+              )}
+            </div>
+          </div>
         </Link>
 
         {/* Departments */}
         <Link href="/explorer/departments" className="block">
-          <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
-            <div className="flex items-center gap-2 text-accent">
-              <IconDepartments />
-              <span className="text-sm font-semibold">Departments</span>
+          <div className="relative flex h-full flex-col justify-between rounded-2xl bg-[var(--surface-container-lowest)] p-5 shadow-ambient calm-transition hover:bg-[var(--surface-container-low)] hover:shadow-md">
+            <div className="flex items-start justify-between">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-container-low)] text-[var(--on-surface-variant)]">
+                <IconDepartments />
+              </span>
             </div>
-            <p className="text-[13px] leading-snug text-muted">
-              Aggregate signal performance broken down by department.
-            </p>
-            <div className="mt-auto flex items-end gap-3 pt-2">
-              <span className="text-2xl font-bold tabular-nums text-text">{totalDepartments}</span>
-              <MetaText>departments</MetaText>
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-[var(--on-surface)]">Departments</p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-[2.5rem] font-bold leading-none tracking-tight text-[var(--on-surface)]">{totalDepartments}</span>
+                <span className="text-sm text-[var(--on-surface-variant)]">depts</span>
+              </div>
             </div>
-            <MetaText>{totalObsAcrossDepts} obs across depts</MetaText>
-          </Card>
+            <div className="mt-4 border-t border-[var(--surface-container)] pt-3">
+              <p className="text-[13px] text-[var(--on-surface-variant)]">{totalObsAcrossDepts} total observations</p>
+            </div>
+          </div>
         </Link>
 
         {/* Signals */}
         <Link href="/explorer/signals" className="block">
-          <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
-            <div className="flex items-center gap-2 text-accent">
-              <IconSignals />
-              <span className="text-sm font-semibold">Signals</span>
+          <div className="relative flex h-full flex-col justify-between rounded-2xl bg-[var(--surface-container-lowest)] p-5 shadow-ambient calm-transition hover:bg-[var(--surface-container-low)] hover:shadow-md">
+            <div className="flex items-start justify-between">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-container-low)] text-[var(--on-surface-variant)]">
+                <IconSignals />
+              </span>
             </div>
-            <p className="text-[13px] leading-snug text-muted">
-              CPD signal priorities — where teachers are drifting most.
-            </p>
-            <div className="mt-auto flex items-end gap-3 pt-2">
-              <span className="text-2xl font-bold tabular-nums text-text">{totalSignals}</span>
-              <MetaText>signals tracked</MetaText>
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-[var(--on-surface)]">Signals</p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-[2.5rem] font-bold leading-none tracking-tight text-[var(--on-surface)]">{totalSignals}</span>
+                <span className="text-sm text-[var(--on-surface-variant)]">tracked</span>
+              </div>
             </div>
-            {highPrioritySignals > 0 ? (
-              <StatusPill variant="warning" size="sm">
-                {highPrioritySignals} high priority
-              </StatusPill>
-            ) : (
-              <StatusPill variant="success" size="sm">
-                No high-priority signals
-              </StatusPill>
-            )}
-          </Card>
+            <div className="mt-4 border-t border-[var(--surface-container)] pt-3">
+              {highPrioritySignals > 0 ? (
+                <p className="flex items-center gap-1.5 text-[13px] text-[var(--error)]">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--error)]" />
+                  {highPrioritySignals} high priority
+                </p>
+              ) : (
+                <p className="text-[13px] text-[var(--on-surface-variant)]">No high-priority signals</p>
+              )}
+            </div>
+          </div>
         </Link>
 
         {/* Observations */}
         <Link href="/explorer/observations" className="block">
-          <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
-            <div className="flex items-center gap-2 text-accent">
-              <IconObservations />
-              <span className="text-sm font-semibold">Observations</span>
+          <div className="relative flex h-full flex-col justify-between rounded-2xl bg-[var(--surface-container-lowest)] p-5 shadow-ambient calm-transition hover:bg-[var(--surface-container-low)] hover:shadow-md">
+            <div className="flex items-start justify-between">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-container-low)] text-[var(--on-surface-variant)]">
+                <IconObservations />
+              </span>
             </div>
-            <p className="text-[13px] leading-snug text-muted">
-              Browse recent lesson observations and signal ratings.
-            </p>
-            <div className="mt-auto flex items-end gap-3 pt-2">
-              <span className="text-2xl font-bold tabular-nums text-text">{obsCount}</span>
-              <MetaText>in last {WINDOW_DAYS}d</MetaText>
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-[var(--on-surface)]">Observations</p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-[2.5rem] font-bold leading-none tracking-tight text-[var(--on-surface)]">{obsCount}</span>
+              </div>
             </div>
-            <MetaText>Latest observation data</MetaText>
-          </Card>
+            <div className="mt-4 border-t border-[var(--surface-container)] pt-3">
+              <p className="text-[13px] text-[var(--on-surface-variant)]">
+                recorded in last <span className="font-semibold">{WINDOW_DAYS}d</span>
+              </p>
+            </div>
+          </div>
         </Link>
       </div>
 
-      {/* ── Behaviour & Welfare ────────────────────────────────────────────── */}
+      {/* ── Pastoral Pulse: Behaviour & Welfare ────────────────────────────── */}
       {canSeeBehaviour && (
-        <>
-          <SectionHeader title="Behaviour & Welfare" className="mt-10" />
+        <div className="mt-12">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--on-surface-variant)]">
+            Pastoral Pulse
+          </p>
+          <h2 className="mt-1 font-serif text-[28px] font-bold leading-tight tracking-[-0.02em] text-[var(--on-surface)]">
+            Behaviour &amp; Welfare
+          </h2>
 
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Students */}
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            {/* Students Card */}
             <Link href="/explorer/students" className="block">
-              <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
-                <div className="flex items-center gap-2 text-accent">
-                  <IconStudents />
-                  <span className="text-sm font-semibold">Students</span>
+              <div className="relative overflow-hidden rounded-2xl bg-[var(--surface-container-lowest)] p-6 shadow-ambient calm-transition hover:shadow-md">
+                <WatermarkGradCap />
+                <p className="text-lg font-semibold text-[var(--on-surface)]">Students</p>
+                <div className="mt-3 flex items-baseline gap-3">
+                  <span className="font-serif text-[4.5rem] font-bold leading-none tracking-tight text-[var(--on-surface)]">
+                    {totalStudents}
+                  </span>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--on-surface)]">Total Active</p>
+                    <p className="text-[11px] text-[var(--on-surface-variant)]">Managed Enrollment</p>
+                  </div>
                 </div>
-                <p className="text-[13px] leading-snug text-muted">
-                  Student risk index with attendance, detentions, and welfare flags.
-                </p>
-                <div className="mt-auto flex items-end gap-3 pt-2">
-                  <span className="text-2xl font-bold tabular-nums text-text">{totalStudents}</span>
-                  <MetaText>students tracked</MetaText>
+                <div className="mt-5 flex gap-3">
+                  <div className="rounded-xl border border-[var(--outline-variant)]/40 bg-[var(--surface-container-low)] px-4 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--on-tertiary-container)]">Urgent Action</p>
+                    <div className="mt-1 flex items-baseline gap-1.5">
+                      <span className="text-xl font-bold text-[var(--on-surface)]">{urgentStudents}</span>
+                      <span className="text-xs text-[var(--on-surface-variant)]">students</span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--on-surface-variant)]">Safe State</p>
+                    <div className="mt-1 flex items-baseline gap-1.5">
+                      <span className="text-xl font-bold text-[var(--on-surface)]">{safeStudents}</span>
+                      <span className="text-xs text-[var(--on-surface-variant)]">students</span>
+                    </div>
+                  </div>
                 </div>
-                {priorityStudents > 0 ? (
-                  <StatusPill variant="error" size="sm">
-                    {priorityStudents} priority / urgent
-                  </StatusPill>
-                ) : (
-                  <StatusPill variant="success" size="sm">
-                    No priority concerns
-                  </StatusPill>
-                )}
-              </Card>
+              </div>
             </Link>
 
-            {/* Cohorts */}
+            {/* Cohorts Card */}
             <Link href="/explorer/cohorts" className="block">
-              <Card tone="interactive" className="flex h-full flex-col gap-3 p-5">
-                <div className="flex items-center gap-2 text-accent">
-                  <IconCohorts />
-                  <span className="text-sm font-semibold">Cohorts</span>
+              <div className="relative overflow-hidden rounded-2xl bg-[var(--surface-container-lowest)] p-6 shadow-ambient calm-transition hover:shadow-md">
+                <WatermarkDiamond />
+                <p className="text-lg font-semibold text-[var(--on-surface)]">Cohorts</p>
+                <div className="mt-3 flex items-baseline gap-3">
+                  <span className="font-serif text-[4.5rem] font-bold leading-none tracking-tight text-[var(--on-surface)]">
+                    {yearGroupCount}
+                  </span>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--on-surface)]">Year Groups</p>
+                    <p className="text-[11px] text-[var(--on-surface-variant)]">Institutional Structure</p>
+                  </div>
                 </div>
-                <p className="text-[13px] leading-snug text-muted">
-                  Year-group behaviour trends — attendance, detentions, and more.
-                </p>
-                <div className="mt-auto flex items-end gap-3 pt-2">
-                  <span className="text-2xl font-bold tabular-nums text-text">{yearGroupCount}</span>
-                  <MetaText>year groups</MetaText>
+                <div className="mt-8">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--surface-container-high)]">
+                    <div
+                      className="h-full rounded-full bg-[var(--on-surface)]"
+                      style={{ width: `${academicLoadPct}%` }}
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--on-surface-variant)]">Academic Load</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--on-surface-variant)]">{academicLoadPct}% Capacity</p>
+                  </div>
                 </div>
-                <MetaText>{totalStudentsCovered} students covered</MetaText>
-              </Card>
+              </div>
             </Link>
           </div>
-        </>
+        </div>
+      )}
+
+      {/* ── Active Intelligence Log ────────────────────────────────────────── */}
+      {displayedLogs.length > 0 && (
+        <div className="mt-12">
+          <div className="flex items-center justify-between rounded-t-2xl bg-[var(--surface-container)] px-6 py-3.5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--on-surface-variant)]">
+              Active Intelligence Log
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="inline-block h-2 w-2 rounded-full bg-[var(--success)]" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--on-surface-variant)]">Live Syncing</span>
+            </div>
+          </div>
+          <div className="divide-y divide-[var(--surface-container)] overflow-hidden rounded-b-2xl bg-[var(--surface-container-lowest)] shadow-ambient">
+            {displayedLogs.map((entry) => (
+              <div key={entry.id} className="flex items-center gap-4 px-6 py-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-container-low)] text-[var(--on-surface-variant)]">
+                  {entry.icon === "observation" ? (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                  ) : (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                  )}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-[var(--on-surface)]">{entry.title}</p>
+                  <p className="mt-0.5 text-[12px] text-[var(--on-surface-variant)]">{entry.meta}</p>
+                </div>
+                <span
+                  className={`shrink-0 rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.06em] ${
+                    entry.tagVariant === "priority"
+                      ? "bg-[var(--tertiary-container)] text-[var(--on-tertiary-container)]"
+                      : "border border-[var(--outline-variant)] text-[var(--on-surface-variant)]"
+                  }`}
+                >
+                  {entry.tag}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
