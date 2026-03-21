@@ -46,11 +46,11 @@ function deriveStatus(
   const moderateCount = entries.filter(
     (s) => s.currentMean! >= 2.0 && s.currentMean! < 3.0,
   ).length;
-  const ratio = entries.length;
+  const totalEntries = entries.length;
 
-  if (criticalCount / ratio > 0.5) return "CRITICAL DRIFT";
-  if (criticalCount / ratio > 0.25) return "DRIFTING";
-  if ((criticalCount + moderateCount) / ratio > 0.4) return "WARNING";
+  if (criticalCount / totalEntries > 0.5) return "CRITICAL DRIFT";
+  if (criticalCount / totalEntries > 0.25) return "DRIFTING";
+  if ((criticalCount + moderateCount) / totalEntries > 0.4) return "WARNING";
   return "STABLE";
 }
 
@@ -150,11 +150,11 @@ export default async function DepartmentsPage({
       .filter((s) => s.delta !== null)
       .map((s) => s.delta!),
   );
+  const negativeDeltas = allDeltas.filter((d) => d < 0);
   const aggregateDrift =
-    allDeltas.length > 0
+    negativeDeltas.length > 0
       ? Math.abs(
-          allDeltas.filter((d) => d < 0).reduce((a, b) => a + b, 0) /
-            allDeltas.length,
+          negativeDeltas.reduce((a, b) => a + b, 0) / negativeDeltas.length,
         )
       : 0;
   const allMeans = sortedRows.flatMap((r) =>
@@ -232,7 +232,7 @@ export default async function DepartmentsPage({
               Departments Explorer
             </h1>
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted/60">
-              Signal {totalSignals > 0 ? "1" : "0"} of {totalSignals}
+              {totalSignals} signals monitored
             </p>
             <div className="mt-2 max-w-2xl border-l-2 border-border pl-4">
               <p className="text-[13px] leading-relaxed text-muted">
