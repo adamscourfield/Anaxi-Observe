@@ -69,7 +69,7 @@ async function main() {
     });
   }
 
-  for (const label of ["Medical", "Family", "Training"]) {
+  for (const label of ["Sick Leave", "Personal Leave", "Training"]) {
     await (prisma as any).loaReason.upsert({ where: { tenantId_label: { tenantId: tenant.id, label } }, update: {}, create: { tenantId: tenant.id, label } });
   }
   await (prisma as any).lOAAuthoriser.upsert({

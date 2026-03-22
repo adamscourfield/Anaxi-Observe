@@ -14,6 +14,9 @@ export async function createLoaRequest(formData: FormData) {
   const startDate = new Date(String(formData.get("startAt") || ""));
   const endDate = new Date(String(formData.get("endAt") || ""));
   const reasonId = String(formData.get("reasonId") || "");
+  const reasonText = String(formData.get("reasonText") || "").trim() || null;
+  const coverRequirements = String(formData.get("coverRequirements") || "").trim() || null;
+  const medicalEvidenceUrl = String(formData.get("medicalEvidenceUrl") || "").trim() || null;
   const notes = String(formData.get("coverNotes") || "").trim() || null;
 
   if (!reasonId || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate < startDate) {
@@ -30,6 +33,9 @@ export async function createLoaRequest(formData: FormData) {
       startDate,
       endDate,
       reasonId,
+      reasonText,
+      coverRequirements,
+      medicalEvidenceUrl,
       notes,
       status: "PENDING"
     }

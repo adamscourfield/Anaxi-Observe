@@ -121,6 +121,29 @@ export default async function LeaveDetailPage({ params, searchParams }: { params
             </div>
           </div>
 
+          {request.reasonText && (
+            <div className="mt-4 rounded-xl border border-border/30 bg-white/40 px-4 py-3">
+              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">Reason for leave</p>
+              <p className="mt-1.5 whitespace-pre-wrap text-[0.875rem] leading-relaxed text-text">{request.reasonText}</p>
+            </div>
+          )}
+
+          {request.coverRequirements && (
+            <div className="mt-4 rounded-xl border border-border/30 bg-white/40 px-4 py-3">
+              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">Cover requirements</p>
+              <p className="mt-1.5 whitespace-pre-wrap text-[0.875rem] leading-relaxed text-text">{request.coverRequirements}</p>
+            </div>
+          )}
+
+          {request.medicalEvidenceUrl && (
+            <div className="mt-4 rounded-xl border border-border/30 bg-white/40 px-4 py-3">
+              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">Medical evidence</p>
+              <p className="mt-1.5 text-[0.875rem] text-accent underline">
+                <a href={request.medicalEvidenceUrl} target="_blank" rel="noopener noreferrer">View uploaded document</a>
+              </p>
+            </div>
+          )}
+
           {request.notes && (
             <div className="mt-4 rounded-xl border border-border/30 bg-white/40 px-4 py-3">
               <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">Notes</p>
