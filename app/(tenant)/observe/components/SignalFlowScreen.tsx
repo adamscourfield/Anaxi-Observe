@@ -304,7 +304,7 @@ export function SignalFlowScreen({
               type="button"
               disabled={!hasSelection}
               onClick={confirmAndAdvance}
-              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-[0.875rem] font-semibold text-on-primary shadow-sm calm-transition hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-[0.875rem] font-semibold text-on-primary shadow-[0_4px_16px_rgba(0,0,0,0.14)] calm-transition hover:bg-primary-container hover:shadow-[0_6px_20px_rgba(0,0,0,0.20)] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {isLastSignal ? "Review & Submit" : "Next Signal"}
               <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">
