@@ -63,7 +63,7 @@ export function SearchableSelect({
         type="button"
         disabled={disabled}
         onClick={() => setOpen(!open)}
-        className={`field flex w-full items-center justify-between gap-2 text-left ${
+        className={`field !flex w-full items-center justify-between gap-2 text-left ${
           disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
         }`}
       >
