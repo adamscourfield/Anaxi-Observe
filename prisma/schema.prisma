@@ -37,6 +37,7 @@ enum ImportJobType {
   STUDENT_SUBJECT_TEACHERS
   STAFF_IMPORT
   TIMETABLE
+  ASSESSMENT_RESULTS
 }
 
 enum ImportJobStatus {
@@ -74,6 +75,23 @@ enum InsightType {
   COVERAGE_GAP
   BEHAVIOUR_SPIKE
   TRIANGULATED_RISK
+  ATTAINMENT_CONCERN
+  PROGRESS_DROP
+  COMBINED_METRIC_ALERT
+  ATTAINMENT_RISK_TRIANGULATION
+}
+
+enum GradeFormat {
+  GCSE
+  A_LEVEL
+  PERCENTAGE
+  RAW
+}
+
+enum AssessmentResultStatus {
+  PRESENT
+  ABSENT
+  WITHDRAWN
 }
 
 enum InsightScope {
@@ -108,6 +126,7 @@ enum AnalysisRunType {
   TEACHER_RISK
   CPD_PRIORITIES
   BEHAVIOUR_COHORTS
+  ASSESSMENT_ANALYSIS
 }
 
 enum AnalysisRunStatus {
@@ -165,8 +184,14 @@ model Tenant {
   studentWatchlist   StudentWatchlist[]
   analysisRuns       AnalysisRun[]
   auditLogs          AuditLog[]
-  strategyAreas      StrategyArea[]
-  strategyNotes      StrategyNote[]
+  strategyAreas        StrategyArea[]
+  strategyNotes        StrategyNote[]
+  assessmentCycles     AssessmentCycle[]
+  assessmentPoints     AssessmentPoint[]
+  assessments          Assessment[]
+  assessmentResults    AssessmentResult[]
+  subTopics            SubTopic[]
+  attainmentPresets    AttainmentMetricPreset[]
 }
 
 model User {
@@ -342,11 +367,12 @@ model Student {
   status          StudentStatus           @default(ACTIVE)
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
-  snapshots       StudentSnapshot[]
-  changeFlags     StudentChangeFlag[]
-  subjectTeachers StudentSubjectTeacher[]
-  onCallRequests  OnCallRequest[]
-  watchlistEntries StudentWatchlist[]
+  snapshots           StudentSnapshot[]
+  changeFlags         StudentChangeFlag[]
+  subjectTeachers     StudentSubjectTeacher[]
+  onCallRequests      OnCallRequest[]
+  watchlistEntries    StudentWatchlist[]
+  assessmentResults   AssessmentResult[]
 
   @@unique([tenantId, upn])
   @@unique([tenantId, id])
@@ -908,4 +934,132 @@ model StrategyNote {
   tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([strategyAreaId])
+}
+
+// ─── Assessment Models ────────────────────────────────────────────────────────
+
+model AssessmentCycle {
+  id        String            @id @default(cuid())
+  tenantId  String
+  tenant    Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  label     String            // e.g. "2024/25"
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean           @default(true)
+  points    AssessmentPoint[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([tenantId, label])
+  @@index([tenantId])
+}
+
+model AssessmentPoint {
+  id          String           @id @default(cuid())
+  tenantId    String
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  cycleId     String
+  cycle       AssessmentCycle  @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  label       String           // e.g. "Autumn 1", "Spring 2"
+  ordinal     Int              // sort order within cycle
+  assessedAt  DateTime
+  assessments Assessment[]
+  createdAt   DateTime         @default(now())
+
+  @@unique([tenantId, cycleId, label])
+  @@index([tenantId, cycleId])
+}
+
+model Assessment {
+  id              String                     @id @default(cuid())
+  tenantId        String
+  tenant          Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pointId         String
+  point           AssessmentPoint            @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  subject         String
+  yearGroup       String
+  title           String
+  gradeFormat     GradeFormat
+  maxScore        Int?
+  createdByUserId String
+  results         AssessmentResult[]
+  subTopicMappings AssessmentSubTopicMapping[]
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+
+  @@index([tenantId, pointId])
+  @@index([tenantId, subject, yearGroup])
+}
+
+model AssessmentResult {
+  id              String                  @id @default(cuid())
+  tenantId        String
+  tenant          Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assessmentId    String
+  assessment      Assessment              @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         Student                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  rawValue        String
+  normalizedScore Float?
+  status          AssessmentResultStatus  @default(PRESENT)
+  subTopicScores  AssessmentSubTopicScore[]
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@unique([tenantId, assessmentId, studentId])
+  @@index([tenantId, assessmentId])
+  @@index([tenantId, studentId])
+}
+
+model SubTopic {
+  id           String                     @id @default(cuid())
+  tenantId     String
+  tenant       Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subject      String
+  label        String
+  learnTopicId String?
+  mappings     AssessmentSubTopicMapping[]
+  scores       AssessmentSubTopicScore[]
+
+  @@unique([tenantId, subject, label])
+  @@index([tenantId, subject])
+}
+
+model AssessmentSubTopicMapping {
+  id           String     @id @default(cuid())
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  subTopicId   String
+  subTopic     SubTopic   @relation(fields: [subTopicId], references: [id], onDelete: Cascade)
+  weight       Float      @default(1.0)
+
+  @@unique([assessmentId, subTopicId])
+}
+
+model AssessmentSubTopicScore {
+  id               String           @id @default(cuid())
+  resultId         String
+  result           AssessmentResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  subTopicId       String
+  subTopic         SubTopic         @relation(fields: [subTopicId], references: [id], onDelete: Cascade)
+  rawValue         String
+  normalizedScore  Float?
+
+  @@unique([resultId, subTopicId])
+}
+
+model AttainmentMetricPreset {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  rulesJson       Json
+  logic           String   @default("AND")
+  createdByUserId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
 }
