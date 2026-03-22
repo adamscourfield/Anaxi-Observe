@@ -24,7 +24,6 @@ export default async function MyActionsPage() {
       <PageHeader
         eyebrow="Operations"
         title="My actions"
-        subtitle="Stay on top of meeting follow-ups and deadlines."
         meta={
           <>
             <StatusPill variant="neutral">{openCount} open</StatusPill>

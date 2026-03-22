@@ -110,7 +110,7 @@ export function MyActionsGrouped({ grouped: initial, currentUserId }: MyActionsG
           <p className="text-[0.875rem] font-semibold text-text">
             {activeTab === "All" ? "No actions assigned to you" : `No ${activeTab.toLowerCase()} actions`}
           </p>
-          <p className="mt-1 text-[0.8125rem] text-muted">Actions created in meetings will appear here.</p>
+          <p className="mt-1 text-[0.8125rem] font-medium text-muted">Actions created in meetings will appear here.</p>
         </div>
       ) : (
         <div className="space-y-2">
