@@ -4,7 +4,7 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { hasPermission } from "@/lib/rbac";
 import { getMeetingDetail } from "@/modules/meetings/service";
-import { MEETING_TYPE_LABELS } from "@/modules/meetings/types";
+import { MEETING_TYPE_LABELS, MEETING_STATUS_LABELS } from "@/modules/meetings/types";
 import { NotesEditor } from "@/components/meetings/NotesEditor";
 import { ActionList } from "@/components/actions/ActionList";
 import { ActionForm } from "@/components/actions/ActionForm";
@@ -42,7 +42,12 @@ export default async function MeetingDetailPage({ params }: { params: { id: stri
 
       <div className="flex items-start justify-between">
         <H1>{meeting.title}</H1>
-        <StatusPill variant="neutral">{MEETING_TYPE_LABELS[meeting.type] ?? meeting.type}</StatusPill>
+        <div className="flex gap-2">
+          <StatusPill variant={meeting.status === "CONFIRMED" ? "success" : meeting.status === "CANCELLED" ? "error" : "warning"}>
+            {MEETING_STATUS_LABELS[meeting.status] ?? meeting.status}
+          </StatusPill>
+          <StatusPill variant="neutral">{MEETING_TYPE_LABELS[meeting.type] ?? meeting.type}</StatusPill>
+        </div>
       </div>
 
       <Card className="space-y-1 text-sm">

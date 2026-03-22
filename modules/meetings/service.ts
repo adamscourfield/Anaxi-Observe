@@ -34,6 +34,7 @@ export async function createMeeting(
       tenantId,
       title: input.title,
       type: input.type,
+      status: input.status ?? "PENDING",
       startDateTime: input.startDateTime,
       endDateTime: input.endDateTime,
       location: input.location ?? null,
@@ -79,6 +80,7 @@ export async function updateMeeting(
   if (input.endDateTime !== undefined) data.endDateTime = input.endDateTime;
   if (input.location !== undefined) data.location = input.location;
   if (input.notes !== undefined) data.notes = input.notes;
+  if (input.status !== undefined) data.status = input.status;
 
   return (prisma as any).meeting.update({
     where: { id: meetingId },
@@ -143,4 +145,49 @@ export async function listMeetings(
     },
     orderBy: { startDateTime: "desc" },
   });
+}
+
+export async function getMeetingStats(tenantId: string) {
+  const [openActions, totalActions, doneActions, nextMeeting] = await Promise.all([
+    (prisma as any).meetingAction.count({
+      where: { tenantId, status: "OPEN" },
+    }),
+    (prisma as any).meetingAction.count({
+      where: { tenantId },
+    }),
+    (prisma as any).meetingAction.count({
+      where: { tenantId, status: "DONE" },
+    }),
+    (prisma as any).meeting.findFirst({
+      where: { tenantId, startDateTime: { gte: new Date() } },
+      orderBy: { startDateTime: "asc" },
+      select: { title: true, startDateTime: true, location: true },
+    }),
+  ]);
+
+  const completionRate = totalActions > 0 ? Math.round((doneActions / totalActions) * 100) : 0;
+
+  // Count actions created since last Monday for the trend
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const lastMonday = new Date(now);
+  lastMonday.setDate(now.getDate() - daysSinceMonday);
+  lastMonday.setHours(0, 0, 0, 0);
+
+  const newActionsSinceMonday = await (prisma as any).meetingAction.count({
+    where: {
+      tenantId,
+      status: "OPEN",
+      createdAt: { gte: lastMonday },
+    },
+  });
+
+  return {
+    openActions,
+    completionRate,
+    totalActions,
+    newActionsSinceMonday,
+    nextMeeting,
+  };
 }

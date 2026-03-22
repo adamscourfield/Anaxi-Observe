@@ -6,6 +6,7 @@ export interface CreateMeetingInput {
   location?: string;
   notes?: string;
   attendeeIds: string[];
+  status?: "PENDING" | "CONFIRMED" | "CANCELLED";
 }
 
 export interface UpdateMeetingInput {
@@ -16,6 +17,7 @@ export interface UpdateMeetingInput {
   location?: string;
   notes?: string;
   attendeeIds?: string[];
+  status?: "PENDING" | "CONFIRMED" | "CANCELLED";
 }
 
 export interface MeetingAttendeeDetail {
@@ -29,6 +31,7 @@ export interface MeetingDetail {
   tenantId: string;
   title: string;
   type: string;
+  status: string;
   startDateTime: Date;
   endDateTime: Date;
   location?: string | null;
@@ -43,6 +46,12 @@ export interface MeetingDetail {
 export interface MeetingWithAttendees extends MeetingDetail {
   _count?: { actions: number };
 }
+
+export const MEETING_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Pending",
+  CONFIRMED: "Confirmed",
+  CANCELLED: "Cancelled",
+};
 
 export const MEETING_TYPE_LABELS: Record<string, string> = {
   LINE_MANAGEMENT: "Line Management",

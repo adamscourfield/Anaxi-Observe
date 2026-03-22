@@ -917,6 +917,7 @@ export async function seedDemo(prisma: PrismaClient, isReset = false) {
         tenantId: tenant.id,
         title: meetingTitles[mIdx],
         type: meetingTypes[mIdx],
+        status: mIdx % 3 === 0 ? "PENDING" : "CONFIRMED",
         startDateTime: mDate,
         endDateTime: new Date(mDate.getTime() + 60 * 60 * 1000),
         location: pick(["Room 14", "Head's Office", "Conference Room", "Department Base", "Library"]),

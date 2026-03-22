@@ -91,6 +91,12 @@ enum MeetingType {
   OTHER
 }
 
+enum MeetingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
 enum ActionStatus {
   OPEN
   DONE
@@ -727,6 +733,7 @@ model Meeting {
 
   title             String
   type              MeetingType
+  status            MeetingStatus     @default(PENDING)
   startDateTime     DateTime
   endDateTime       DateTime
   location          String?
