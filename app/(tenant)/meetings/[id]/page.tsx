@@ -4,14 +4,8 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { hasPermission } from "@/lib/rbac";
 import { getMeetingDetail } from "@/modules/meetings/service";
-import { MEETING_TYPE_LABELS, MEETING_STATUS_LABELS } from "@/modules/meetings/types";
-import { NotesEditor } from "@/components/meetings/NotesEditor";
-import { ActionList } from "@/components/actions/ActionList";
-import { ActionForm } from "@/components/actions/ActionForm";
-import { Card } from "@/components/ui/card";
-import { H1, H3, MetaText } from "@/components/ui/typography";
-import { SectionHeader } from "@/components/ui/section-header";
-import { StatusPill } from "@/components/ui/status-pill";
+import { MEETING_TYPE_LABELS } from "@/modules/meetings/types";
+import { LiveMeetingView } from "@/components/meetings/LiveMeetingView";
 
 export default async function MeetingDetailPage({ params }: { params: { id: string } }) {
   const user = await getSessionUserOrThrow();
@@ -32,71 +26,27 @@ export default async function MeetingDetailPage({ params }: { params: { id: stri
   const canEdit = isCreator || user.role === "ADMIN";
   const canAddActions = hasPermission(user.role, "actions:create") && (isCreator || isAttendee);
 
-  const attendeeUsers = meeting.attendees.map((a: any) => a.user);
+  const typeLabel = MEETING_TYPE_LABELS[meeting.type] ?? meeting.type;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
+    <div>
+      <div className="mb-4">
         <Link href="/meetings" className="text-sm text-accent hover:underline">← Meetings</Link>
       </div>
 
-      <div className="flex items-start justify-between">
-        <H1>{meeting.title}</H1>
-        <div className="flex gap-2">
-          <StatusPill variant={meeting.status === "CONFIRMED" ? "success" : meeting.status === "CANCELLED" ? "error" : "warning"}>
-            {MEETING_STATUS_LABELS[meeting.status] ?? meeting.status}
-          </StatusPill>
-          <StatusPill variant="neutral">{MEETING_TYPE_LABELS[meeting.type] ?? meeting.type}</StatusPill>
-        </div>
-      </div>
-
-      <Card className="space-y-1 text-sm">
-        <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-          <MetaText>Start</MetaText><span>{new Date(meeting.startDateTime).toLocaleString()}</span>
-          <MetaText>End</MetaText><span>{new Date(meeting.endDateTime).toLocaleString()}</span>
-          {meeting.location && <><MetaText>Location</MetaText><span>{meeting.location}</span></>}
-          <MetaText>Created by</MetaText><span>{meeting.createdBy?.fullName}</span>
-        </div>
-      </Card>
-
-      <Card>
-        <SectionHeader title="Attendees" />
-        <ul className="mt-2 list-disc pl-5 text-sm space-y-1">
-          {meeting.attendees.map((a: any) => (
-            <li key={a.id}>{a.user?.fullName} <span className="text-muted">({a.user?.email})</span></li>
-          ))}
-        </ul>
-      </Card>
-
-      <Card>
-        <SectionHeader title="Notes" />
-        <div className="mt-3">
-          <NotesEditor
-            meetingId={meeting.id}
-            initialNotes={meeting.notes ?? ""}
-            canEdit={canEdit}
-          />
-        </div>
-      </Card>
-
-      <Card>
-        <SectionHeader title="Actions" />
-        <div className="mt-3">
-          <ActionList
-            actions={meeting.actions ?? []}
-            currentUserId={user.id}
-          />
-          {canAddActions && (
-            <div className="mt-4">
-              <H3 className="mb-2">Add Action</H3>
-              <ActionForm
-                meetingId={meeting.id}
-                attendees={attendeeUsers}
-              />
-            </div>
-          )}
-        </div>
-      </Card>
+      <LiveMeetingView
+        meetingId={meeting.id}
+        title={meeting.title}
+        type={typeLabel}
+        status={meeting.status}
+        startDateTime={new Date(meeting.startDateTime).toISOString()}
+        attendees={meeting.attendees}
+        initialNotes={meeting.notes ?? ""}
+        actions={meeting.actions ?? []}
+        canEdit={canEdit}
+        canAddActions={canAddActions}
+        currentUserId={user.id}
+      />
     </div>
   );
 }
