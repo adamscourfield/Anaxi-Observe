@@ -38,6 +38,7 @@ interface StrategyArea {
 interface Props {
   areas: StrategyArea[];
   canManage: boolean;
+  staffList: { id: string; fullName: string }[];
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -50,10 +51,10 @@ const PRIORITY_PILL: Record<Priority, "error" | "warning" | "success" | "neutral
 };
 
 const PRIORITY_LABEL: Record<Priority, string> = {
-  critical: "Critical",
-  high:     "High",
-  medium:   "Medium",
-  low:      "Low",
+  critical: "Critical Priority",
+  high:     "High Priority",
+  medium:   "Medium Priority",
+  low:      "Low Priority",
 };
 
 const STRIPE_COLOR: Record<Priority, string> = {
@@ -70,14 +71,67 @@ function fmtShort(ts: Date | string) {
   return new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
+// ─── Staff search input ───────────────────────────────────────────────────────
+
+function StaffSearchInput({
+  staffList,
+  defaultValue,
+}: {
+  staffList: { id: string; fullName: string }[];
+  defaultValue: string;
+}) {
+  const [query, setQuery] = useState(defaultValue);
+  const [open, setOpen] = useState(false);
+
+  const filtered = query.trim()
+    ? staffList.filter((s) =>
+        s.fullName.toLowerCase().includes(query.trim().toLowerCase())
+      ).slice(0, 8)
+    : staffList.slice(0, 8);
+
+  return (
+    <div className="relative">
+      <input type="hidden" name="owner" value={query} />
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Search staff member..."
+        maxLength={40}
+        className="field"
+        autoComplete="off"
+      />
+      {open && filtered.length > 0 && (
+        <ul className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[200px] overflow-y-auto rounded-xl border border-border/70 bg-white shadow-md">
+          {filtered.map((s) => (
+            <li key={s.id}>
+              <button
+                type="button"
+                className="calm-transition w-full cursor-pointer px-3 py-2.5 text-left text-sm text-text hover:bg-divider/50"
+                onMouseDown={() => { setQuery(s.fullName); setOpen(false); }}
+              >
+                {s.fullName}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // ─── Area modal ───────────────────────────────────────────────────────────────
 
 function AreaModal({
   area,
   onClose,
+  staffList,
 }: {
   area: StrategyArea | null;
   onClose: () => void;
+  staffList: { id: string; fullName: string }[];
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -100,18 +154,18 @@ function AreaModal({
       style={{ background: "var(--overlay)" }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="panel w-full max-w-lg overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl animate-in fade-in slide-in-from-bottom-3 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border bg-[#f8faff] px-5 py-4">
-          <h2 className="text-[0.9375rem] font-semibold tracking-tight text-text">
-            {area ? "Edit strategy area" : "Add strategy area"}
+        <div className="flex items-center justify-between px-6 pt-6 pb-2">
+          <h2 className="text-[1.125rem] font-bold tracking-tight text-text">
+            {area ? "Edit Strategy" : "Propose New Strategy"}
           </h2>
           <button
             type="button"
             onClick={onClose}
             className="calm-transition rounded-md p-1.5 text-muted hover:bg-bg hover:text-text"
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
@@ -119,89 +173,95 @@ function AreaModal({
 
         {/* Body */}
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 p-5">
+          <div className="space-y-5 px-6 pt-4 pb-2">
+            {/* Strategic Area Name */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
-                Title *
+                Strategic Area Name
               </label>
               <input
                 name="title"
                 required
                 defaultValue={area?.title ?? ""}
-                placeholder="e.g. Raise Attainment in Maths KS3"
+                placeholder="e.g., KS3 Literacy Intervention"
                 maxLength={80}
                 className="field"
               />
             </div>
 
+            {/* Target Metric + Priority Level */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
+                  Target Metric
+                </label>
+                <div className="relative">
+                  <input
+                    name="category"
+                    defaultValue={area?.category ?? ""}
+                    placeholder="95"
+                    maxLength={10}
+                    className="field pr-8"
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted">
+                    %
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
+                  Priority Level
+                </label>
+                <select name="priority" defaultValue={area?.priority ?? "high"} className="field">
+                  <option value="critical">Critical Priority</option>
+                  <option value="high">High Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="low">Low Priority</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Lead Person */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
-                Category
+                Lead Person
               </label>
-              <input
-                name="category"
-                defaultValue={area?.category ?? ""}
-                placeholder="e.g. Curriculum, Behaviour, Staffing…"
-                maxLength={40}
-                className="field"
+              <StaffSearchInput
+                staffList={staffList}
+                defaultValue={area?.owner ?? ""}
               />
             </div>
 
+            {/* Strategic Description */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
-                Description
+                Strategic Description
               </label>
               <textarea
                 name="description"
                 defaultValue={area?.description ?? ""}
-                placeholder="Brief overview of the challenge or objective…"
-                rows={3}
+                placeholder="Outline the primary objectives and key performance indicators..."
+                rows={4}
                 className="field resize-none"
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
-                  Priority
-                </label>
-                <select name="priority" defaultValue={area?.priority ?? "medium"} className="field">
-                  <option value="critical">Critical</option>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
-                </select>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
-                  Lead / Owner
-                </label>
-                <input
-                  name="owner"
-                  defaultValue={area?.owner ?? ""}
-                  placeholder="Name or role"
-                  maxLength={40}
-                  className="field"
-                />
-              </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-2 border-t border-border bg-bg px-5 py-3.5">
+          <div className="flex items-center justify-end gap-3 px-6 py-5">
             <button
               type="button"
               onClick={onClose}
-              className="calm-transition rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-muted hover:border-[#c4c9d0] hover:text-text"
+              className="calm-transition rounded-lg px-5 py-2.5 text-[0.8125rem] font-semibold uppercase tracking-[0.04em] text-muted hover:text-text"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={pending}
-              className="calm-transition rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accentHover disabled:opacity-60"
+              className="calm-transition rounded-lg bg-accent px-5 py-2.5 text-[0.8125rem] font-semibold uppercase tracking-[0.04em] text-white hover:bg-accentHover disabled:opacity-60"
             >
-              {pending ? "Saving…" : area ? "Save changes" : "Add to board"}
+              {pending ? "Saving…" : area ? "Save Changes" : "Submit Proposal"}
             </button>
           </div>
         </form>
@@ -260,9 +320,11 @@ function StrategyTile({
       {/* Body */}
       <div className="p-4 pb-3">
         <div className="mb-2 flex items-start justify-between gap-2">
-          {area.category && (
-            <MetaText className="pt-0.5">{area.category}</MetaText>
-          )}
+          <div className="flex items-center gap-2">
+            {area.category && (
+              <span className="text-[0.8125rem] font-semibold text-accent">{area.category}%</span>
+            )}
+          </div>
           <StatusPill variant={PRIORITY_PILL[area.priority]} size="sm">
             {PRIORITY_LABEL[area.priority]}
           </StatusPill>
@@ -410,7 +472,7 @@ function StrategyTile({
 
 // ─── Board ────────────────────────────────────────────────────────────────────
 
-export function StrategyBoardClient({ areas, canManage }: Props) {
+export function StrategyBoardClient({ areas, canManage, staffList }: Props) {
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingArea, setEditingArea] = useState<StrategyArea | null | undefined>(undefined);
   // undefined = modal closed, null = creating new, StrategyArea = editing
@@ -450,7 +512,7 @@ export function StrategyBoardClient({ areas, canManage }: Props) {
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            Add area
+            Propose New Strategy
           </button>
         )}
       </div>
@@ -459,10 +521,10 @@ export function StrategyBoardClient({ areas, canManage }: Props) {
       {visible.length === 0 ? (
         <div className="panel p-8">
           <EmptyState
-            title={areas.length === 0 ? "No strategy areas yet" : "All areas complete"}
+            title={areas.length === 0 ? "No strategies proposed yet" : "All strategies complete"}
             description={
               areas.length === 0
-                ? canManage ? "Click Add area to get started." : "No strategy areas have been added yet."
+                ? canManage ? "Click Propose New Strategy to get started." : "No strategies have been proposed yet."
                 : "Toggle Show completed to review them."
             }
           />
@@ -485,6 +547,7 @@ export function StrategyBoardClient({ areas, canManage }: Props) {
         <AreaModal
           area={editingArea}
           onClose={() => setEditingArea(undefined)}
+          staffList={staffList}
         />
       )}
     </>

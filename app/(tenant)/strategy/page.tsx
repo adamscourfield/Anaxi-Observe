@@ -44,6 +44,18 @@ export default async function StrategyPage() {
     dbError = err?.message ?? "Database error";
   }
 
+  // Fetch staff list for the lead person search
+  let staffList: { id: string; fullName: string }[] = [];
+  try {
+    staffList = await (prisma as any).user.findMany({
+      where: { tenantId: user.tenantId, isActive: true },
+      select: { id: true, fullName: true },
+      orderBy: { fullName: "asc" },
+    });
+  } catch {
+    // Non-critical — fall back to empty list
+  }
+
   const totalAreas     = areas.length;
   const activeAreas    = areas.filter((a: any) => !a.completed).length;
   const criticalAreas  = areas.filter((a: any) => !a.completed && a.priority === "critical").length;
@@ -56,7 +68,7 @@ export default async function StrategyPage() {
     <div className="space-y-6">
       <PageHeader
         title="Strategy Board"
-        subtitle="Senior Leadership · Priority Areas"
+        subtitle="Senior Leadership · Strategic Priorities"
       />
 
       {/* Stats toolbar */}
@@ -113,6 +125,7 @@ export default async function StrategyPage() {
         <StrategyBoardClient
           areas={areas}
           canManage={canManage}
+          staffList={staffList}
         />
       )}
     </div>
