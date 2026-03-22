@@ -61,7 +61,7 @@ export default function LoginPage() {
               className="text-4xl font-bold mb-3"
               style={{ color: "var(--on-surface)" }}
             >
-              Sign in
+              Sign In
             </h1>
             <p className="text-base leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
               {switchTo

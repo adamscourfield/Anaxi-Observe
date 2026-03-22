@@ -42,7 +42,7 @@ export default async function GodAuditPage({
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-6">
-      <H1>God audit log</H1>
+      <H1>God Audit Log</H1>
 
       <Card>
         <form className="grid gap-2 sm:grid-cols-4" method="get">

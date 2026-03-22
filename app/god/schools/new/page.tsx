@@ -20,7 +20,7 @@ export default async function NewSchoolPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-6">
-      <H1>Create school</H1>
+      <H1>Create School</H1>
       <MetaText>Creates a new tenant, enables selected modules, and creates initial school admin.</MetaText>
 
       <Card>

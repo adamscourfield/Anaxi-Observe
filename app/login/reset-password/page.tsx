@@ -72,7 +72,7 @@ export default function ResetPasswordPage() {
           {/* Header */}
           <div className="mb-10 text-center md:text-left">
             <h1 className="text-4xl font-bold mb-3" style={{ color: "var(--on-surface)" }}>
-              New password
+              New Password
             </h1>
             <p className="text-base leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
               Choose a strong password for your Anaxi account.

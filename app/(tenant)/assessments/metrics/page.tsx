@@ -186,7 +186,7 @@ export default function MetricsPage() {
   return (
     <div className="max-w-4xl space-y-6">
       <PageHeader
-        title="Metric builder"
+        title="Metric Builder"
         subtitle="Compute attainment thresholds and combined metrics for your cohort."
       />
 

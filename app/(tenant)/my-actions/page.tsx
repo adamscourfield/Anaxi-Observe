@@ -23,7 +23,7 @@ export default async function MyActionsPage() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Operations"
-        title="My actions"
+        title="My Actions"
         subtitle="Stay on top of meeting follow-ups and deadlines."
         meta={
           <>

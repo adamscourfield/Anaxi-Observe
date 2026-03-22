@@ -28,7 +28,7 @@ export default async function OnCallDetailPage({ params }: { params: { id: strin
   return (
     <div className="space-y-5">
       <PageHeader
-        title="On call request"
+        title="On Call Request"
         subtitle={`${request.student.fullName} · ${REQUEST_TYPE_LABELS[request.requestType as keyof typeof REQUEST_TYPE_LABELS] ?? request.requestType}`}
         actions={
           <Link href="/on-call">

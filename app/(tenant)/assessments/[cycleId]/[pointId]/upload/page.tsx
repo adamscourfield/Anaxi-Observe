@@ -176,7 +176,7 @@ export default function AssessmentUploadPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <PageHeader
-        title="Upload assessment results"
+        title="Upload Assessment Results"
         subtitle="Define the assessment, upload a CSV, and review before importing."
       />
 
