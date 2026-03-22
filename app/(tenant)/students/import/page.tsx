@@ -28,7 +28,7 @@ export default function StudentsImportPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <PageHeader
-        title="Import student snapshots"
+        title="Import Student Snapshots"
         subtitle="Upload a CSV file of behaviour data for a given date. Each row is one student."
       />
 

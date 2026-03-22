@@ -127,7 +127,7 @@ export default function AssessmentSetupPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <PageHeader
-        title="Set up assessment cycle"
+        title="Set Up Assessment Cycle"
         subtitle="An assessment cycle is an academic year. Within it, you'll define assessment points (e.g. Autumn 1, Spring 2)."
       />
 

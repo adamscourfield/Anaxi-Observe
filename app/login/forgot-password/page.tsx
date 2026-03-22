@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
           {/* Header */}
           <div className="mb-10 text-center md:text-left">
             <h1 className="text-4xl font-bold mb-3" style={{ color: "var(--on-surface)" }}>
-              Reset password
+              Reset Password
             </h1>
             <p className="text-base leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
               Enter your email and we&apos;ll send you a link to set a new password.

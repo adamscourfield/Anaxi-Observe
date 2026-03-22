@@ -228,7 +228,7 @@ export default async function ProgressPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[24px] font-bold tracking-[-0.02em] text-text">
-            Progress comparison
+            Progress Comparison
           </h1>
           <MetaText>
             {canRender

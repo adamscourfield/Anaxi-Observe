@@ -70,7 +70,7 @@ export default async function LeavePendingPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Pending approvals"
+        title="Pending Approvals"
         subtitle={
           pending.length === 0
             ? "You're all caught up — no outstanding requests."

@@ -57,7 +57,7 @@ export default async function TriangulationPage({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[24px] font-bold tracking-[-0.02em] text-text">
-              Triangulated risk
+              Triangulated Risk
             </h1>
             <MetaText>
               Students with both behavioural concern and low attainment · Updated {computedAtStr}

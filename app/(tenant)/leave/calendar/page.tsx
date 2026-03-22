@@ -51,7 +51,7 @@ export default async function LeaveCalendarPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Leave calendar — ${monthLabel}`}
+        title={`Leave Calendar — ${monthLabel}`}
         subtitle={manager ? "School-wide pending and approved leave." : "Your pending and approved leave requests."}
         actions={
           <Link
