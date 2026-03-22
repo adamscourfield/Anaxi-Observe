@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Avatar } from "@/components/ui/avatar";
+import { EditUserModal, EditableUser, TeacherOption } from "./EditUserModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -11,6 +12,8 @@ type UserRow = {
   email: string;
   role: string;
   isActive: boolean;
+  receivesOnCallEmails: boolean;
+  canApproveAllLoa: boolean;
 };
 
 // ─── Inline icons ─────────────────────────────────────────────────────────────
@@ -101,13 +104,18 @@ const PAGE_SIZE = 5;
 
 export function UserDirectoryTable({
   users,
-  editAction,
+  allTeachers,
+  scopedLoaByUser,
+  saveAction,
 }: {
   users: UserRow[];
-  editAction: (formData: FormData) => void;
+  allTeachers: TeacherOption[];
+  scopedLoaByUser: Record<string, string[]>;
+  saveAction: (formData: FormData) => void;
 }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null);
 
   // Filter users by search term
   const filtered = useMemo(() => {
@@ -232,15 +240,13 @@ export function UserDirectoryTable({
 
                       {/* Actions */}
                       <td className="px-5 py-4 text-right">
-                        <form action={editAction} className="inline">
-                          <input type="hidden" name="id" value={u.id} />
-                          <button
-                            type="submit"
-                            className="text-[12px] font-bold uppercase tracking-[0.06em] text-text calm-transition hover:text-muted"
-                          >
-                            EDIT
-                          </button>
-                        </form>
+                        <button
+                          type="button"
+                          onClick={() => setEditingUser(u)}
+                          className="text-[12px] font-bold uppercase tracking-[0.06em] text-text calm-transition hover:text-muted"
+                        >
+                          EDIT
+                        </button>
                       </td>
                     </tr>
                   );
@@ -327,6 +333,17 @@ export function UserDirectoryTable({
             </button>
           </div>
         </div>
+      )}
+
+      {/* ── Edit User Modal ─────────────────────────────────────── */}
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          allTeachers={allTeachers}
+          scopedLoaTargetIds={scopedLoaByUser[editingUser.id] ?? []}
+          onClose={() => setEditingUser(null)}
+          saveAction={saveAction}
+        />
       )}
     </div>
   );
