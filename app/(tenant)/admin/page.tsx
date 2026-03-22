@@ -146,18 +146,19 @@ function Section({ title, tag, rows }: { title: string; tag: string; rows: Admin
 export default async function AdminIndexPage() {
   const user = await requireAdminUser();
 
-  const [taxonomyCount, timetableCount, activeJobCount] = await Promise.all([
-    Promise.all([
-      prisma.loaReason.count({ where: { tenantId: user.tenantId } }),
-      (prisma as any).onCallReason.count({ where: { tenantId: user.tenantId } }),
-      (prisma as any).onCallLocation.count({ where: { tenantId: user.tenantId } }),
-      (prisma as any).onCallRecipient.count({ where: { tenantId: user.tenantId } }),
-    ]).then((counts: number[]) => counts.reduce((a: number, b: number) => a + b, 0)),
-    (prisma as any).timetableEntry.count({ where: { tenantId: user.tenantId } }),
-    prisma.importJob.count({
-      where: { tenantId: user.tenantId, status: { in: ["PENDING", "PROCESSING", "RUNNING"] } },
-    }),
-  ]);
+  const tid = user.tenantId;
+
+  const [loaCount, onCallReasonCount, locationCount, recipientCount, timetableCount, activeJobCount] =
+    await Promise.all([
+      prisma.loaReason.count({ where: { tenantId: tid } }),
+      (prisma as any).onCallReason.count({ where: { tenantId: tid } }),
+      (prisma as any).onCallLocation.count({ where: { tenantId: tid } }),
+      (prisma as any).onCallRecipient.count({ where: { tenantId: tid } }),
+      (prisma as any).timetableEntry.count({ where: { tenantId: tid } }),
+      prisma.importJob.count({ where: { tenantId: tid, status: { in: ["PENDING", "PROCESSING", "RUNNING"] } } }),
+    ]);
+
+  const taxonomyCount = loaCount + onCallReasonCount + locationCount + recipientCount;
 
   const hasTimetable = timetableCount > 0;
 
@@ -227,7 +228,7 @@ export default async function AdminIndexPage() {
             badge: activeJobCount > 0 ? (
               <span className="inline-flex items-center gap-1.5 text-[0.75rem] font-medium text-text">
                 <span className="h-1.5 w-1.5 rounded-full bg-text" />
-                Active Job
+                {activeJobCount === 1 ? "Active Job" : `${activeJobCount} Active Jobs`}
               </span>
             ) : undefined,
           },
