@@ -188,9 +188,7 @@ export default async function AdminLeaveApprovalsPage() {
                         {(group.approvers as any[]).length > 3 && (
                           <span className="text-xs text-muted ml-1">+{(group.approvers as any[]).length - 3}</span>
                         )}
-                        <span className="ml-2 text-sm text-text">
-                          {(group.approvers as any[]).map((a: any) => a.approver?.fullName).join(", ")}
-                        </span>
+                        <span className="ml-2 text-xs text-muted">{(group.approvers as any[]).length} approver{(group.approvers as any[]).length !== 1 ? "s" : ""}</span>
                       </div>
                     ) : (
                       <span className="text-sm text-muted italic">No approvers</span>
