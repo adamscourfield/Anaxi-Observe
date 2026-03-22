@@ -2,11 +2,15 @@ import Link from "next/link";
 import { ReactNode } from "react";
 import { requireAdminUser } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/ui/page-header";
 import { StatusPill } from "@/components/ui/status-pill";
 
-type AdminCard = { href: string; label: string; desc: string; icon: ReactNode };
+type AdminRow = {
+  href: string;
+  label: string;
+  desc: string;
+  icon: ReactNode;
+  badge?: ReactNode;
+};
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -20,25 +24,25 @@ const UsersIcon = () => (
 
 const DepartmentsIcon = () => (
   <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-    <rect x="2" y="3" width="6" height="5" rx="1.5" />
-    <rect x="16" y="3" width="6" height="5" rx="1.5" />
-    <rect x="9" y="16" width="6" height="5" rx="1.5" />
-    <path d="M5 8v3h14V8M12 11v5" />
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
   </svg>
 );
 
 const CoachingIcon = () => (
   <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
   </svg>
 );
 
-const CalendarCheckIcon = () => (
+const LeaveApprovalsIcon = () => (
   <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-    <rect x="3" y="4" width="18" height="18" rx="2" />
-    <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" />
-    <line x1="3" y1="10" x2="21" y2="10" />
-    <polyline points="9 16 11 18 15 14" />
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M9 12l2 2 4-4" />
   </svg>
 );
 
@@ -51,56 +55,69 @@ const SettingsIcon = () => (
 
 const TerminologyIcon = () => (
   <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-    <path d="M4 7V4h16v3M9 20h6M12 4v16" />
+    <path d="M5 8l5 10M2 8h8M10 8l1.5-3" />
+    <path d="M14 11h8M18 7v8" />
   </svg>
 );
 
-const TagIcon = () => (
+const TaxonomiesIcon = () => (
   <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-    <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
-    <line x1="7" y1="7" x2="7.01" y2="7" strokeLinecap="round" strokeWidth="2.5" />
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <line x1="14" y1="4" x2="21" y2="4" />
+    <line x1="14" y1="8" x2="21" y2="8" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <line x1="14" y1="15" x2="21" y2="15" />
+    <line x1="14" y1="19" x2="21" y2="19" />
   </svg>
 );
 
 const TimetableIcon = () => (
   <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <line x1="3" y1="9" x2="21" y2="9" />
-    <line x1="3" y1="15" x2="21" y2="15" />
-    <line x1="9" y1="3" x2="9" y2="21" />
-    <line x1="15" y1="3" x2="15" y2="21" />
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
   </svg>
 );
 
 const ImportsIcon = () => (
   <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-    <polyline points="16 16 12 12 8 16" />
-    <line x1="12" y1="12" x2="12" y2="21" />
-    <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="12" y1="18" x2="12" y2="12" />
+    <polyline points="9 15 12 12 15 15" />
   </svg>
 );
 
-// ─── Card component ───────────────────────────────────────────────────────────
+const ChevronRight = () => (
+  <svg
+    className="h-4 w-4 flex-shrink-0 text-muted/30 calm-transition group-hover:translate-x-0.5 group-hover:text-muted"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
 
-function AdminCardItem({ card }: { card: AdminCard }) {
+// ─── Row component ────────────────────────────────────────────────────────────
+
+function AdminRowItem({ row, isLast }: { row: AdminRow; isLast: boolean }) {
   return (
-    <Link href={card.href} className="group block">
-      <div className="flex items-start gap-3.5 rounded-xl border border-border bg-surface-container-lowest p-4 shadow-sm calm-transition group-hover:border-accent/40 group-hover:shadow-md">
-        <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#f4f7fb] text-muted calm-transition group-hover:bg-[var(--accent-tint)] group-hover:text-accent">
-          {card.icon}
+    <Link href={row.href} className="group block">
+      <div className={`flex items-center gap-4 px-5 py-4 calm-transition group-hover:bg-[var(--surface-container-low)] ${!isLast ? "border-b border-[var(--surface-container-low)]" : ""}`}>
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--surface-container-low)] text-muted">
+          {row.icon}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">{card.label}</span>
-            <svg
-              className="h-3.5 w-3.5 flex-shrink-0 text-muted/40 calm-transition group-hover:translate-x-0.5 group-hover:text-accent"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+          <div className="flex items-center gap-2">
+            <span className="text-[0.875rem] font-semibold tracking-[-0.01em] text-text">{row.label}</span>
+            {row.badge}
           </div>
-          <p className="mt-0.5 text-[0.8125rem] leading-snug text-muted">{card.desc}</p>
+          <p className="mt-0.5 text-[0.8125rem] leading-snug text-muted">{row.desc}</p>
         </div>
+        <ChevronRight />
       </div>
     </Link>
   );
@@ -108,16 +125,16 @@ function AdminCardItem({ card }: { card: AdminCard }) {
 
 // ─── Section component ────────────────────────────────────────────────────────
 
-function Section({ title, subtitle, cards }: { title: string; subtitle: string; cards: AdminCard[] }) {
+function Section({ title, tag, rows }: { title: string; tag: string; rows: AdminRow[] }) {
   return (
     <section className="space-y-3">
-      <div>
-        <h2 className="text-[0.9375rem] font-semibold tracking-[-0.01em] text-text">{title}</h2>
-        <p className="mt-0.5 text-[0.8125rem] text-muted">{subtitle}</p>
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-[1.0625rem] font-semibold tracking-[-0.01em] text-text">{title}</h2>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted/60">{tag}</span>
       </div>
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
-          <AdminCardItem key={card.href} card={card} />
+      <div className="overflow-hidden rounded-2xl bg-[var(--surface-container-lowest)] shadow-ambient">
+        {rows.map((row, i) => (
+          <AdminRowItem key={row.href} row={row} isLast={i === rows.length - 1} />
         ))}
       </div>
     </section>
@@ -128,58 +145,92 @@ function Section({ title, subtitle, cards }: { title: string; subtitle: string; 
 
 export default async function AdminIndexPage() {
   const user = await requireAdminUser();
-  const onboardingDone = await (prisma as any).tenantSettings.findUnique({
-    where: { tenantId: user.tenantId },
-    select: { onboardingCompletedAt: true },
-  });
 
-  const isOnboarded = !!onboardingDone?.onboardingCompletedAt;
+  const [taxonomyCount, timetableCount, activeJobCount] = await Promise.all([
+    Promise.all([
+      prisma.loaReason.count({ where: { tenantId: user.tenantId } }),
+      (prisma as any).onCallReason.count({ where: { tenantId: user.tenantId } }),
+      (prisma as any).onCallLocation.count({ where: { tenantId: user.tenantId } }),
+      (prisma as any).onCallRecipient.count({ where: { tenantId: user.tenantId } }),
+    ]).then((counts: number[]) => counts.reduce((a: number, b: number) => a + b, 0)),
+    (prisma as any).timetableEntry.count({ where: { tenantId: user.tenantId } }),
+    prisma.importJob.count({
+      where: { tenantId: user.tenantId, status: { in: ["PENDING", "PROCESSING", "RUNNING"] } },
+    }),
+  ]);
+
+  const hasTimetable = timetableCount > 0;
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="Administration"
-        title="Admin"
-        subtitle="Configure people, platform, language, and operational data."
-        meta={
-          <StatusPill variant={isOnboarded ? "success" : "warning"}>
-            {isOnboarded ? "Setup complete" : "Setup required"}
-          </StatusPill>
-        }
-        actions={
-          !isOnboarded ? (
-            <Link href="/onboarding"><Button>Run setup wizard</Button></Link>
-          ) : undefined
-        }
-      />
+    <div className="space-y-10">
+      {/* ── Header ──────────────────────────────────────────────────── */}
+      <div>
+        <h1 className="text-[1.75rem] font-bold leading-tight tracking-[-0.03em] text-text">
+          Institutional Dashboard
+        </h1>
+        <p className="mt-2 max-w-2xl text-[0.9375rem] leading-relaxed text-muted">
+          Manage foundational administrative architecture, staff hierarchies, and
+          semantic datasets from a single unified ledger.
+        </p>
+      </div>
 
+      {/* ── People & Access ─────────────────────────────────────────── */}
       <Section
-        title="People & access"
-        subtitle="Manage who can sign in, what they can see, and approval ownership."
-        cards={[
-          { href: "/admin/users", label: "Users", desc: "Staff accounts, roles, status, and notification flags", icon: <UsersIcon /> },
-          { href: "/admin/departments", label: "Departments", desc: "Department structure, memberships, and HODs", icon: <DepartmentsIcon /> },
-          { href: "/admin/coaching", label: "Coaching", desc: "Coach–coachee visibility assignments", icon: <CoachingIcon /> },
-          { href: "/admin/leave-approvals", label: "Leave approvals", desc: "Approval groups and staff coverage scope", icon: <CalendarCheckIcon /> },
+        title="People & Access"
+        tag="Foundation"
+        rows={[
+          { href: "/admin/users", label: "Users", desc: "Manage staff profiles, role-based access, and identity authentication.", icon: <UsersIcon /> },
+          { href: "/admin/departments", label: "Departments", desc: "Organize institutional structures and faculty hierarchies.", icon: <DepartmentsIcon /> },
+          { href: "/admin/coaching", label: "Coaching", desc: "Track professional development and mentorship programs.", icon: <CoachingIcon /> },
+          { href: "/admin/leave-approvals", label: "Leave Approvals", desc: "Review absence requests and maintain staffing continuity.", icon: <LeaveApprovalsIcon /> },
         ]}
       />
 
+      {/* ── Platform & Language ─────────────────────────────────────── */}
       <Section
-        title="Platform & language"
-        subtitle="School-wide defaults, module toggles, and terminology."
-        cards={[
-          { href: "/admin/settings", label: "Settings", desc: "School settings, thresholds, and module toggles", icon: <SettingsIcon /> },
-          { href: "/admin/terminology", label: "Terminology", desc: "Language, vocabulary, and signal labels", icon: <TerminologyIcon /> },
+        title="Platform & Language"
+        tag="Standardization"
+        rows={[
+          { href: "/admin/settings", label: "Settings", desc: "Configure global system behaviors and security protocols.", icon: <SettingsIcon /> },
+          { href: "/admin/terminology", label: "Terminology", desc: "Customize internal nomenclature and system-wide labels.", icon: <TerminologyIcon /> },
         ]}
       />
 
+      {/* ── Data & Imports ──────────────────────────────────────────── */}
       <Section
-        title="Data & imports"
-        subtitle="Taxonomies, timetable, and import jobs that power daily workflows."
-        cards={[
-          { href: "/admin/taxonomies", label: "Taxonomies", desc: "LOA/on-call reasons, locations, and recipients", icon: <TagIcon /> },
-          { href: "/admin/timetable", label: "Timetable", desc: "Timetable CSV import and current entries", icon: <TimetableIcon /> },
-          { href: "/admin/imports", label: "Import jobs", desc: "Import history, row counts, and errors", icon: <ImportsIcon /> },
+        title="Data & Imports"
+        tag="Processing"
+        rows={[
+          {
+            href: "/admin/taxonomies",
+            label: "Taxonomies",
+            desc: "Manage complex categorical hierarchies and tagging systems.",
+            icon: <TaxonomiesIcon />,
+            badge: taxonomyCount > 0 ? (
+              <StatusPill variant="neutral" size="sm">{taxonomyCount} {taxonomyCount === 1 ? "Category" : "Categories"}</StatusPill>
+            ) : undefined,
+          },
+          {
+            href: "/admin/timetable",
+            label: "Timetable",
+            desc: "Review and override institutional scheduling matrices.",
+            icon: <TimetableIcon />,
+            badge: hasTimetable ? (
+              <StatusPill variant="success" size="sm">Synced</StatusPill>
+            ) : undefined,
+          },
+          {
+            href: "/admin/imports",
+            label: "Import Jobs",
+            desc: "Bulk data ingestion, validation logs, and sync history.",
+            icon: <ImportsIcon />,
+            badge: activeJobCount > 0 ? (
+              <span className="inline-flex items-center gap-1.5 text-[0.75rem] font-medium text-text">
+                <span className="h-1.5 w-1.5 rounded-full bg-text" />
+                Active Job
+              </span>
+            ) : undefined,
+          },
         ]}
       />
     </div>
