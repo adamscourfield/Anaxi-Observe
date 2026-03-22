@@ -45,10 +45,10 @@ function getInitials(name: string): string {
 }
 
 function attendanceBarColor(pct: number | null): string {
-  if (pct === null) return "bg-gray-300";
-  if (pct >= 90) return "bg-emerald-500";
-  if (pct >= 80) return "bg-amber-500";
-  return "bg-rose-500";
+  if (pct === null) return "bg-surface-container-high";
+  if (pct >= 90) return "bg-scale-strong-bar";
+  if (pct >= 80) return "bg-scale-some-bar";
+  return "bg-scale-limited-bar";
 }
 
 function fmtDate(date: Date | null): string {
@@ -63,13 +63,13 @@ function fmtDate(date: Date | null): string {
 function bandPillClass(band: RiskBand): string {
   switch (band) {
     case "URGENT":
-      return "bg-rose-600 text-white";
+      return "bg-scale-limited-bar text-on-primary";
     case "PRIORITY":
-      return "bg-rose-500 text-white";
+      return "bg-scale-limited-bar text-on-primary";
     case "WATCH":
-      return "bg-amber-500 text-white";
+      return "bg-scale-some-bar text-on-primary";
     case "STABLE":
-      return "bg-emerald-500 text-white";
+      return "bg-scale-strong-bar text-on-primary";
   }
 }
 
@@ -270,7 +270,7 @@ export default async function StudentsPage({
               <input type="hidden" name="windowDays" value={String(windowDays)} />
               <button
                 type="submit"
-                className="rounded-lg border border-border/40 bg-white px-4 py-2.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+                className="rounded-lg border border-border/40 bg-surface-container-lowest px-4 py-2.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
               >
                 Export CSV
               </button>
@@ -278,7 +278,7 @@ export default async function StudentsPage({
           )}
           <Link
             href="/students/import"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#1a1a2e] px-5 py-2.5 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-[#2a2a3e]"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:bg-primary-container"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" strokeLinecap="round" strokeLinejoin="round" />
@@ -292,7 +292,7 @@ export default async function StudentsPage({
       {/* ── Cohort overview + Insight panel ─────────────────────── */}
       <div className="mb-8 grid gap-5 lg:grid-cols-[1fr_auto]">
         {/* Stats card */}
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-6">
           <div className="flex flex-wrap items-end gap-8">
             {/* Cohort count */}
             <div>
@@ -302,7 +302,7 @@ export default async function StudentsPage({
               <p className="mt-1 font-serif text-[3.5rem] font-bold leading-none tracking-tight text-text">
                 {allRows.length.toLocaleString()}
               </p>
-              <p className="mt-2 flex items-center gap-1 text-[0.8125rem] text-emerald-600">
+              <p className="mt-2 flex items-center gap-1 text-[0.8125rem] text-scale-strong-text">
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M7 17l5-5 5 5M7 7l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -311,7 +311,7 @@ export default async function StudentsPage({
             </div>
 
             {/* Attendance stat */}
-            <div className="rounded-xl border border-border/20 bg-white/80 px-5 py-3">
+            <div className="rounded-xl glass-card px-5 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
                 Attendance
               </p>
@@ -321,7 +321,7 @@ export default async function StudentsPage({
             </div>
 
             {/* Priority stat */}
-            <div className="rounded-xl border border-border/20 bg-white/80 px-5 py-3">
+            <div className="rounded-xl glass-card px-5 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
                 Priority
               </p>
@@ -333,12 +333,12 @@ export default async function StudentsPage({
         </div>
 
         {/* Insight of the Week card */}
-        <div className="flex max-w-sm flex-col justify-between rounded-2xl bg-[#1a1a2e] p-6 text-white">
+        <div className="flex max-w-sm flex-col justify-between rounded-2xl bg-primary-container p-6 text-on-primary">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-400">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-scale-some-bar">
               Insight of the Week
             </p>
-            <p className="mt-3 text-[1.05rem] font-medium leading-relaxed text-white/90">
+            <p className="mt-3 text-[1.05rem] font-medium leading-relaxed text-on-primary-container">
               &ldquo;{yearGroups.length > 0 ? yearGroups[yearGroups.length - 1] : "Year 11"} shows a{" "}
               {priorityCount > 0
                 ? `${Math.round((priorityCount / Math.max(1, allRows.length)) * 100)}% priority rate`
@@ -346,7 +346,7 @@ export default async function StudentsPage({
               {" "}across the current {windowDays}-day window.&rdquo;
             </p>
           </div>
-          <p className="mt-4 text-[0.8125rem] font-medium text-blue-400 calm-transition hover:text-blue-300">
+          <p className="mt-4 text-[0.8125rem] font-medium text-blue calm-transition hover:text-blue/70">
             Read detailed report
           </p>
         </div>
@@ -385,11 +385,11 @@ export default async function StudentsPage({
           </p>
         </div>
       ) : (
-        <div className="mt-4 overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="mt-4 overflow-hidden rounded-2xl glass-card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
                   <th className="px-5 py-3">Name</th>
                   <th className="px-4 py-3">Year</th>
                   <th className="px-4 py-3">Flags</th>
@@ -403,12 +403,12 @@ export default async function StudentsPage({
                 {pageRows.map((row) => (
                   <tr
                     key={row.studentId}
-                    className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50"
+                    className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
                   >
                     {/* Name with initials avatar */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container-low text-xs font-semibold text-on-surface-variant">
                           {getInitials(row.studentName)}
                         </div>
                         <span className="font-medium text-text">
@@ -426,12 +426,12 @@ export default async function StudentsPage({
                     <td className="px-4 py-4">
                       <div className="flex gap-1.5">
                         {row.sendFlag && (
-                          <span className="rounded bg-[#1a1a2e] px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+                          <span className="rounded bg-primary-container px-2 py-0.5 text-[10px] font-semibold uppercase text-on-primary">
                             SEN
                           </span>
                         )}
                         {row.ppFlag && (
-                          <span className="rounded bg-gray-500 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+                          <span className="rounded bg-primary-container px-2 py-0.5 text-[10px] font-semibold uppercase text-on-primary">
                             PP
                           </span>
                         )}
@@ -459,7 +459,7 @@ export default async function StudentsPage({
                             : "—"}
                         </span>
                         {row.attendancePct !== null && (
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
+                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-container-low">
                             <div
                               className={`h-full rounded-full ${attendanceBarColor(row.attendancePct)}`}
                               style={{
@@ -527,7 +527,7 @@ export default async function StudentsPage({
                     href={pageUrl(item)}
                     className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium calm-transition ${
                       item === safePage
-                        ? "bg-[#1a1a2e] text-white"
+                        ? "bg-primary text-on-primary"
                         : "text-muted hover:bg-bg hover:text-text"
                     }`}
                   >
@@ -561,10 +561,10 @@ export default async function StudentsPage({
       {/* ── Bottom insight cards ─────────────────────────────────── */}
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         {/* Critical Actions Required */}
-        <div className="rounded-2xl border border-border/30 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <div className="mb-3 flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-100">
-              <span className="h-2 w-2 rounded-full bg-rose-500" />
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-scale-limited-light">
+              <span className="h-2 w-2 rounded-full bg-scale-limited-bar" />
             </span>
             <h3 className="text-sm font-semibold text-text">
               Critical Actions Required
@@ -579,10 +579,10 @@ export default async function StudentsPage({
         </div>
 
         {/* Registry Sync Status */}
-        <div className="rounded-2xl border border-border/30 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <div className="mb-3 flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100">
-              <svg className="h-3 w-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-scale-consistent-light">
+              <svg className="h-3 w-3 text-scale-consistent-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M4 4v5h5M20 20v-5h-5" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M20.49 9A9 9 0 005.64 5.64L4 4m16 16l-1.64-1.64A9 9 0 019 20.49" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -602,10 +602,10 @@ export default async function StudentsPage({
         </div>
 
         {/* Performance Target */}
-        <div className="rounded-2xl border border-border/30 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <div className="mb-3 flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-100">
-              <svg className="h-3 w-3 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cat-violet-bg">
+              <svg className="h-3 w-3 text-cat-violet-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M3 3v18h18" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M18 9l-5 5-2-2-4 4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

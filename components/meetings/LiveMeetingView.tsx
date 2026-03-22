@@ -94,12 +94,12 @@ function useElapsedTimer(startDateTime: string) {
 /* ── Avatar Stack ────────────────────────────────────────────────────── */
 
 const AVATAR_COLORS = [
-  "bg-rose-200 text-rose-800",
-  "bg-amber-200 text-amber-800",
-  "bg-emerald-200 text-emerald-800",
-  "bg-sky-200 text-sky-800",
-  "bg-violet-200 text-violet-800",
-  "bg-pink-200 text-pink-800",
+  "bg-[var(--scale-limited-light)] text-[var(--scale-limited-text)]",
+  "bg-[var(--scale-some-light)] text-[var(--scale-some-text)]",
+  "bg-[var(--scale-strong-light)] text-[var(--scale-strong-text)]",
+  "bg-[var(--scale-consistent-light)] text-[var(--scale-consistent-text)]",
+  "bg-[var(--cat-violet-bg)] text-[var(--cat-violet-text)]",
+  "bg-[var(--cat-indigo-bg)] text-[var(--cat-indigo-text)]",
 ];
 
 function AvatarStack({ attendees }: { attendees: Attendee[] }) {
@@ -114,13 +114,13 @@ function AvatarStack({ attendees }: { attendees: Attendee[] }) {
           <div
             key={a.id}
             title={a.user.fullName}
-            className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[11px] font-bold ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}
+            className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface-container-lowest text-[11px] font-bold ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}
           >
             {getInitials(a.user.fullName)}
           </div>
         ))}
         {overflow > 0 && (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[var(--surface-container-high)] text-[11px] font-semibold text-muted">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface-container-lowest bg-[var(--surface-container-high)] text-[11px] font-semibold text-muted">
             +{overflow}
           </div>
         )}
@@ -261,12 +261,12 @@ export function LiveMeetingView({
       {/* ── Header ─────────────────────────────────────────────────── */}
       <div>
         <div className="flex flex-wrap items-center gap-3 mb-2">
-          <span className="rounded-md bg-[var(--primary-container)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+          <span className="rounded-md bg-[var(--primary-container)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-on-primary">
             Anaxi Core
           </span>
           {isInProgress && (
-            <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-scale-strong-text">
+              <span className="inline-block h-2 w-2 rounded-full bg-scale-strong-bg0" />
               IN PROGRESS
             </span>
           )}
@@ -313,7 +313,7 @@ export function LiveMeetingView({
       {/* ── Two-Column Layout ──────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         {/* ── Left: Live Minutes ───────────────────────────────────── */}
-        <div className="rounded-2xl border border-border/50 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-border/50 bg-surface-container-lowest p-6 shadow-sm">
           {/* Minutes Header */}
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -354,9 +354,9 @@ export function LiveMeetingView({
         <div className="space-y-5">
           {/* ── New Action Item Card ────────────────────────────────── */}
           {canAddActions && (
-            <div className="rounded-2xl border border-border/50 bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-border/50 bg-surface-container-lowest p-5 shadow-sm">
               <div className="mb-4 flex items-center gap-2">
-                <svg className="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="h-5 w-5 text-scale-strong-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                   <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
@@ -427,7 +427,7 @@ export function LiveMeetingView({
           )}
 
           {/* ── Session Tasks ──────────────────────────────────────── */}
-          <div className="rounded-2xl border border-border/50 bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-border/50 bg-surface-container-lowest p-5 shadow-sm">
             <h3 className="mb-4 text-base font-bold text-text">Session Tasks</h3>
             {openActions.length === 0 && totalActions === 0 ? (
               <p className="text-sm text-muted">No tasks yet. Add one above.</p>
@@ -440,13 +440,13 @@ export function LiveMeetingView({
                       {/* Status circle */}
                       <div className="mt-0.5 flex-shrink-0">
                         {action.status === "DONE" ? (
-                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500">
-                            <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-scale-strong-bg0">
+                            <svg className="h-2.5 w-2.5 text-on-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                               <polyline points="20 6 9 17 4 12" />
                             </svg>
                           </div>
                         ) : overdue ? (
-                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-error text-white">
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-error text-on-primary">
                             <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                               <line x1="12" y1="8" x2="12" y2="12" />
                               <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -493,17 +493,17 @@ export function LiveMeetingView({
           </div>
 
           {/* ── Efficiency Index ────────────────────────────────────── */}
-          <div className="rounded-2xl bg-[var(--primary-container)] p-5 text-white">
+          <div className="rounded-2xl bg-[var(--primary-container)] p-5 text-on-primary">
             <div className="mb-2 flex items-center gap-2">
-              <svg className="h-5 w-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="h-5 w-5 text-on-primary/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
                 <polyline points="17 6 23 6 23 12" />
               </svg>
-              <h3 className="text-lg font-bold text-white">Efficiency Index</h3>
+              <h3 className="text-lg font-bold text-on-primary">Efficiency Index</h3>
             </div>
-            <p className="text-sm leading-relaxed text-white/70">
+            <p className="text-sm leading-relaxed text-on-primary/70">
               This session is moving{" "}
-              <span className="font-semibold text-white">14% faster</span> than
+              <span className="font-semibold text-on-primary">14% faster</span> than
               typical {type} reviews.
             </p>
           </div>

@@ -17,7 +17,7 @@ const variantClasses: Record<Variant, string> = {
     "py-2.5 bg-transparent text-[var(--on-surface-variant)] hover:bg-[var(--surface-container-low)] hover:text-[var(--on-surface)] active:scale-[0.98]",
   // Danger: coral for destructive actions
   danger:
-    "py-2.5 bg-[var(--danger-btn)] text-white shadow-sm hover:bg-[var(--danger-btn-hover)] hover:shadow-md active:scale-[0.98] active:bg-[var(--danger-btn-active)]",
+    "py-2.5 bg-[var(--danger-btn)] text-on-primary shadow-sm hover:bg-[var(--danger-btn-hover)] hover:shadow-md active:scale-[0.98] active:bg-[var(--danger-btn-active)]",
   // Tertiary: coral — only for critical "single point of truth" actions
   tertiary:
     "py-2.5 bg-[var(--tertiary-container)] text-[var(--on-tertiary-container)] shadow-sm hover:opacity-90 hover:shadow-md active:scale-[0.98]",

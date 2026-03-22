@@ -64,7 +64,7 @@ export default async function LeaveRequestPage() {
         <div className="lg:col-span-2">
           <form action={createLoaRequest} className="space-y-8">
             {/* Date row */}
-            <div className="rounded-2xl border border-white/60 bg-white/70 px-6 py-6 backdrop-blur-sm">
+            <div className="rounded-2xl glass-card px-6 py-6">
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <label htmlFor="loa-start" className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
@@ -102,7 +102,7 @@ export default async function LeaveRequestPage() {
             </div>
 
             {/* Reason for leave */}
-            <div className="rounded-2xl border border-white/60 bg-white/70 px-6 py-6 backdrop-blur-sm">
+            <div className="rounded-2xl glass-card px-6 py-6">
               <div className="space-y-3">
                 <label htmlFor="loa-reason" className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
                   <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -129,7 +129,7 @@ export default async function LeaveRequestPage() {
             </div>
 
             {/* Cover requirements */}
-            <div className="rounded-2xl border border-white/60 bg-white/70 px-6 py-6 backdrop-blur-sm">
+            <div className="rounded-2xl glass-card px-6 py-6">
               <div className="space-y-2">
                 <label htmlFor="loa-cover" className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
                   <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -150,7 +150,7 @@ export default async function LeaveRequestPage() {
             </div>
 
             {/* Medical evidence */}
-            <div className="rounded-2xl border border-white/60 bg-white/70 px-6 py-6 backdrop-blur-sm">
+            <div className="rounded-2xl glass-card px-6 py-6">
               <div className="space-y-2">
                 <label className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
                   <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -182,7 +182,7 @@ export default async function LeaveRequestPage() {
               </Link>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-xl bg-accent px-8 py-3 text-[0.9375rem] font-semibold text-white shadow-sm calm-transition hover:bg-accentHover"
+                className="inline-flex items-center gap-2 rounded-xl bg-accent px-8 py-3 text-[0.9375rem] font-semibold text-on-primary shadow-sm calm-transition hover:bg-accentHover"
               >
                 Submit Request
                 <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">
@@ -196,12 +196,12 @@ export default async function LeaveRequestPage() {
         {/* ── Right column: Sidebar ──────────────────────────────────── */}
         <div className="space-y-6">
           {/* Institutional policy */}
-          <div className="rounded-2xl border border-white/60 bg-white/70 px-5 py-5 backdrop-blur-sm">
+          <div className="rounded-2xl glass-card px-5 py-5">
             <h3 className="mb-4 text-[0.9375rem] font-bold text-text">Institutional Policy</h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100">
-                  <svg className="h-3 w-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-container-low">
+                  <svg className="h-3 w-3 text-on-surface-variant" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
                 </div>
@@ -223,7 +223,7 @@ export default async function LeaveRequestPage() {
           </div>
 
           {/* Past 12 months summary */}
-          <div className="rounded-2xl border border-white/60 bg-white/70 px-5 py-5 backdrop-blur-sm">
+          <div className="rounded-2xl glass-card px-5 py-5">
             <h4 className="mb-3 text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
               Past 12 months
             </h4>
@@ -235,7 +235,7 @@ export default async function LeaveRequestPage() {
                   <div key={label} className="flex items-center justify-between border-b border-border/20 pb-3 last:border-0 last:pb-0">
                     <span className="text-[0.875rem] font-medium text-text">{label}</span>
                     <div className="flex items-center gap-2">
-                      <div className="h-1 w-16 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-1 w-16 overflow-hidden rounded-full bg-surface-container-low">
                         <div
                           className="h-full rounded-full bg-accent"
                           style={{ width: `${Math.min(100, (days / 20) * 100)}%` }}
@@ -252,8 +252,8 @@ export default async function LeaveRequestPage() {
           </div>
 
           {/* Support contact */}
-          <div className="rounded-2xl border border-amber-100 bg-amber-50/40 px-5 py-5">
-            <p className="mb-3 text-[0.8125rem] italic leading-relaxed text-amber-800">
+          <div className="rounded-2xl border border-scale-some-border bg-scale-some-bg/40 px-5 py-5">
+            <p className="mb-3 text-[0.8125rem] italic leading-relaxed text-scale-some-text">
               &ldquo;Ensuring educational continuity is our priority. Please ensure your cover notes are detailed.&rdquo;
             </p>
             <div className="flex items-center gap-3">

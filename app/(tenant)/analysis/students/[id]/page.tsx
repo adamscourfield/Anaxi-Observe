@@ -19,20 +19,20 @@ const BAND_LABELS: Record<RiskBand, string> = {
 };
 
 const BAND_PILL: Record<RiskBand, string> = {
-  URGENT: "bg-red-100 text-red-700",
-  PRIORITY: "bg-amber-100 text-amber-700",
-  WATCH: "bg-yellow-100 text-yellow-700",
-  STABLE: "bg-green-100 text-green-700",
+  URGENT: "bg-risk-urgent-bg text-risk-urgent-text",
+  PRIORITY: "bg-scale-some-light text-scale-some-text",
+  WATCH: "bg-risk-watch-bg text-risk-watch-text",
+  STABLE: "bg-risk-stable-bg text-risk-stable-text",
 };
 
 const CONFIDENCE_PILL: Record<Confidence, string> = {
   HIGH: "bg-divider text-muted",
-  LOW: "bg-orange-100 text-orange-600",
+  LOW: "bg-risk-priority-bg text-risk-priority-text",
 };
 
 function DeltaCell({ value }: { value: number | null }) {
   if (value === null) return <span className="text-muted">—</span>;
-  const color = value > 0 ? "text-red-600" : value < 0 ? "text-green-600" : "text-muted";
+  const color = value > 0 ? "text-red-600" : value < 0 ? "text-scale-strong-text" : "text-muted";
   return (
     <span className={`tabular-nums font-medium ${color}`}>
       {value > 0 ? `+${value}` : String(value)}
@@ -113,12 +113,12 @@ export default async function StudentProfilePage({
             Confidence: {profile.confidence === "HIGH" ? "High" : "Low"}
           </span>
           {profile.sendFlag && (
-            <span className="rounded-full bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-700">
+            <span className="rounded-full bg-cat-violet-bg px-2.5 py-1 text-xs font-medium text-cat-violet-text">
               SEND
             </span>
           )}
           {profile.ppFlag && (
-            <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
+            <span className="rounded-full bg-scale-consistent-light px-2.5 py-1 text-xs font-medium text-blue-700">
               PP
             </span>
           )}
@@ -129,8 +129,8 @@ export default async function StudentProfilePage({
           {" · "}Updated {computedAtStr}
         </MetaText>
         {profile.confidence === "LOW" && (
-          <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-2">
-            <BodyText className="text-orange-700 text-sm">
+          <div className="rounded-lg border border-scale-some-border bg-scale-some-bg px-4 py-2">
+            <BodyText className="text-risk-priority-text text-sm">
               Low confidence: no previous snapshot found in the preceding window. Deltas cannot be computed.
             </BodyText>
           </div>
@@ -170,7 +170,7 @@ export default async function StudentProfilePage({
                   {profile.attendanceDelta !== null ? (
                     <span
                       className={`tabular-nums font-medium ${
-                        profile.attendanceDelta < 0 ? "text-red-600" : "text-green-600"
+                        profile.attendanceDelta < 0 ? "text-red-600" : "text-scale-strong-text"
                       }`}
                     >
                       {profile.attendanceDelta > 0 ? "+" : ""}

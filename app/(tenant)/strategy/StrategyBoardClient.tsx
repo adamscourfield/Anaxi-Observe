@@ -58,10 +58,10 @@ const PRIORITY_LABEL: Record<Priority, string> = {
 };
 
 const STRIPE_COLOR: Record<Priority, string> = {
-  critical: "bg-red-500",
-  high:     "bg-amber-500",
-  medium:   "bg-emerald-500",
-  low:      "bg-slate-300",
+  critical: "bg-scale-limited-bar",
+  high:     "bg-scale-some-bar",
+  medium:   "bg-scale-strong-bar",
+  low:      "bg-outline-variant",
 };
 
 function fmtDate(ts: Date | string) {
@@ -104,7 +104,7 @@ function StaffSearchInput({
         autoComplete="off"
       />
       {open && filtered.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[200px] overflow-y-auto rounded-xl border border-border/70 bg-white shadow-md">
+        <ul className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[200px] overflow-y-auto rounded-xl border border-border/70 bg-surface-container-lowest shadow-md">
           {filtered.map((s) => (
             <li key={s.id}>
               <button
@@ -154,7 +154,7 @@ function AreaModal({
       style={{ background: "var(--overlay)" }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl animate-in fade-in slide-in-from-bottom-3 duration-200">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-surface-container-lowest shadow-xl animate-in fade-in slide-in-from-bottom-3 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-2">
           <h2 className="text-[1.125rem] font-bold tracking-tight text-text">
@@ -259,7 +259,7 @@ function AreaModal({
             <button
               type="submit"
               disabled={pending}
-              className="calm-transition rounded-lg bg-accent px-5 py-2.5 text-[0.8125rem] font-semibold uppercase tracking-[0.04em] text-white hover:bg-accentHover disabled:opacity-60"
+              className="calm-transition rounded-lg bg-accent px-5 py-2.5 text-[0.8125rem] font-semibold uppercase tracking-[0.04em] text-on-primary hover:bg-accentHover disabled:opacity-60"
             >
               {pending ? "Saving…" : area ? "Save Changes" : "Submit Proposal"}
             </button>
@@ -338,8 +338,8 @@ function StrategyTile({
               title={area.completed ? "Mark active" : "Mark complete"}
               className={`calm-transition mt-0.5 flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full border-[1.5px] p-0 ${
                 area.completed
-                  ? "border-emerald-500 bg-emerald-500"
-                  : "border-border hover:border-emerald-500"
+                  ? "border-scale-strong-bar bg-scale-strong-bg"
+                  : "border-border hover:border-scale-strong-bar"
               }`}
             >
               <svg className={`h-[9px] w-[9px] ${area.completed ? "opacity-100" : "opacity-0"}`} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
@@ -390,7 +390,7 @@ function StrategyTile({
               <button
                 onClick={handleSaveNote}
                 disabled={!noteText.trim() || pending}
-                className="calm-transition rounded-md bg-accent px-2.5 py-1.5 text-[0.75rem] font-semibold text-white hover:bg-accentHover disabled:opacity-50"
+                className="calm-transition rounded-md bg-accent px-2.5 py-1.5 text-[0.75rem] font-semibold text-on-primary hover:bg-accentHover disabled:opacity-50"
               >
                 Save
               </button>
@@ -483,7 +483,7 @@ export function StrategyBoardClient({ areas, canManage, staffList }: Props) {
     <>
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-muted calm-transition hover:border-[#c7d2d8] hover:text-text">
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-muted calm-transition hover:border-outline-variant hover:text-text">
           <input
             type="checkbox"
             className="sr-only"
@@ -492,11 +492,11 @@ export function StrategyBoardClient({ areas, canManage, staffList }: Props) {
           />
           <span
             className={`relative inline-block h-4 w-[30px] rounded-full transition-colors duration-200 ${
-              showCompleted ? "bg-accent" : "bg-slate-200"
+              showCompleted ? "bg-accent" : "bg-surface-container-high"
             }`}
           >
             <span
-              className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform duration-200 ${
+              className={`absolute top-0.5 h-3 w-3 rounded-full bg-surface-container-lowest shadow transition-transform duration-200 ${
                 showCompleted ? "translate-x-[14px]" : "translate-x-0.5"
               }`}
             />
@@ -507,7 +507,7 @@ export function StrategyBoardClient({ areas, canManage, staffList }: Props) {
         {canManage && (
           <button
             onClick={() => setEditingArea(null)}
-            className="calm-transition inline-flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-[0.8125rem] font-semibold text-white hover:bg-accentHover"
+            className="calm-transition inline-flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-[0.8125rem] font-semibold text-on-primary  hover:bg-accentHover"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />

@@ -491,3 +491,21 @@ textarea:focus-visible {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
+
+/* ── Glassmorphism card (floating panels, filter chips, context cards) ── */
+/* Implements the "Glass & Gradient" rule: semi-transparent surface at    */
+/* 80% opacity with backdrop-blur. Uses outline-variant at 20% opacity   */
+/* for the ghost border (no solid 1px lines per the No-Line Rule).        */
+.glass-card {
+  background: color-mix(in srgb, var(--surface-container-lowest) 80%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, var(--outline-variant) 20%, transparent);
+}
+
+/* ── Divider: Subtle ────────────────────────────────────────────── */
+/* Ghost divider using outline-variant at 30% opacity. Use instead   */
+/* of hardcoded rgba() values for horizontal divider lines.          */
+:root {
+  --divider-subtle: color-mix(in srgb, var(--outline-variant) 30%, transparent);
+}

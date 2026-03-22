@@ -23,9 +23,9 @@ function businessDays(start: Date, end: Date): number {
 }
 
 const STATUS_STYLES: Record<string, { dot: string; badge: string }> = {
-  PENDING:  { dot: "bg-amber-400",   badge: "bg-amber-50 text-amber-700 border-amber-200" },
-  APPROVED: { dot: "bg-emerald-500", badge: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  DENIED:   { dot: "bg-rose-500",    badge: "bg-rose-50 text-rose-700 border-rose-200" },
+  PENDING:  { dot: "bg-scale-some-bar",   badge: "bg-scale-some-bg text-scale-some-text border-scale-some-border" },
+  APPROVED: { dot: "bg-scale-strong-bar", badge: "bg-scale-strong-bg text-scale-strong-text border-status-approved-border" },
+  DENIED:   { dot: "bg-scale-limited-bar",    badge: "bg-status-denied-bg text-status-denied-text border-status-denied-border" },
 };
 
 export default async function LeavePage({
@@ -63,7 +63,7 @@ export default async function LeavePage({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/leave/request"
-            className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-[0.875rem] font-semibold text-white shadow-sm calm-transition hover:bg-accentHover"
+            className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-[0.875rem] font-semibold text-on-primary shadow-sm calm-transition hover:bg-accentHover"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -72,7 +72,7 @@ export default async function LeavePage({
           </Link>
           <Link
             href="/leave/calendar"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-white/70 px-4 py-2.5 text-[0.875rem] font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-surface-container-lowest/70 px-4 py-2.5 text-[0.875rem] font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none">
               <rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
@@ -83,11 +83,11 @@ export default async function LeavePage({
           {manager && (
             <Link
               href="/leave/pending"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-[0.875rem] font-medium text-amber-700 calm-transition hover:bg-amber-100"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-scale-some-border bg-scale-some-bg px-4 py-2.5 text-[0.875rem] font-medium text-scale-some-text calm-transition hover:bg-scale-some-light"
             >
               Pending approvals
               {pendingRequests.length > 0 && (
-                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1 text-[11px] font-bold text-white">
+                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-scale-some-bg0 px-1 text-[11px] font-bold text-on-primary">
                   {pendingRequests.filter((r) => manager && r.requesterId !== user.id).length || pendingRequests.length}
                 </span>
               )}
@@ -98,11 +98,11 @@ export default async function LeavePage({
 
       {/* Success banner */}
       {created && (
-        <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-          <svg className="h-4 w-4 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <div className="flex items-center gap-3 rounded-xl border border-status-approved-border bg-status-approved-bg px-4 py-3">
+          <svg className="h-4 w-4 shrink-0 text-scale-strong-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polyline points="20 6 9 17 4 12" />
           </svg>
-          <p className="text-[0.875rem] text-emerald-800">
+          <p className="text-[0.875rem] text-scale-strong-text">
             Leave request submitted — you can track its status below.
           </p>
         </div>
@@ -114,7 +114,7 @@ export default async function LeavePage({
           <h2 className="mb-3 text-[0.875rem] font-semibold uppercase tracking-[0.07em] text-muted">
             Awaiting decision · {pendingRequests.length}
           </h2>
-          <div className="overflow-hidden rounded-2xl border border-amber-200/60 bg-amber-50/40 backdrop-blur-sm">
+          <div className="overflow-hidden rounded-2xl border border-scale-some-border/60 bg-scale-some-bg/40 backdrop-blur-sm">
             {pendingRequests.map((request: any, idx: number) => {
               const start = new Date(request.startDate);
               const end = new Date(request.endDate);
@@ -124,27 +124,27 @@ export default async function LeavePage({
                 <Link
                   key={request.id}
                   href={`/leave/${request.id}`}
-                  className={`group flex items-center gap-4 px-5 py-4 calm-transition hover:bg-amber-50/60 ${!isLast ? "border-b border-amber-200/40" : ""}`}
+                  className={`group flex items-center gap-4 px-5 py-4 calm-transition hover:bg-scale-some-bg/60 ${!isLast ? "border-b border-scale-some-border/40" : ""}`}
                 >
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-amber-400" />
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-scale-some-bar" />
                   <div className="min-w-0 flex-1">
                     {manager && request.requester && (
                       <p className="text-[0.8125rem] font-semibold text-text">{request.requester.fullName}</p>
                     )}
-                    <p className="text-[0.875rem] font-medium text-amber-800">
+                    <p className="text-[0.875rem] font-medium text-scale-some-text">
                       {fmt(start)} — {fmt(end)}
                     </p>
-                    <div className="mt-0.5 flex items-center gap-2 text-[0.75rem] text-amber-700/80">
+                    <div className="mt-0.5 flex items-center gap-2 text-[0.75rem] text-scale-some-text/80">
                       {request.reason?.label && <span>{request.reason.label}</span>}
-                      <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium">
+                      <span className="rounded-full bg-scale-some-light px-1.5 py-0.5 text-[11px] font-medium">
                         {days} day{days !== 1 ? "s" : ""}
                       </span>
                     </div>
                   </div>
-                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-100 px-2.5 py-0.5 text-[0.75rem] font-semibold text-amber-700">
+                  <span className="inline-flex items-center rounded-full border border-scale-some-border bg-scale-some-light px-2.5 py-0.5 text-[0.75rem] font-semibold text-scale-some-text">
                     Pending
                   </span>
-                  <svg className="h-4 w-4 shrink-0 text-amber-400 calm-transition group-hover:text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg className="h-4 w-4 shrink-0 text-scale-some-bar calm-transition group-hover:text-scale-some-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </Link>
@@ -172,13 +172,13 @@ export default async function LeavePage({
             <p className="mt-1 text-[0.8125rem] text-muted">Submitted requests will appear here with approval status.</p>
             <Link
               href="/leave/request"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-[0.875rem] font-semibold text-white calm-transition hover:bg-accentHover"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-[0.875rem] font-semibold text-on-primary calm-transition hover:bg-accentHover"
             >
               Submit first request
             </Link>
           </div>
         ) : recentRequests.length === 0 ? null : (
-          <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-sm">
+          <div className="overflow-hidden rounded-2xl glass-card">
             {recentRequests.map((request: any, idx: number) => {
               const start = new Date(request.startDate);
               const end = new Date(request.endDate);
@@ -189,7 +189,7 @@ export default async function LeavePage({
                 <Link
                   key={request.id}
                   href={`/leave/${request.id}`}
-                  className={`group flex items-center gap-4 px-5 py-3.5 calm-transition hover:bg-white/50 ${!isLast ? "border-b border-border/20" : ""}`}
+                  className={`group flex items-center gap-4 px-5 py-3.5 calm-transition hover:bg-surface-container-lowest/50 ${!isLast ? "border-b border-border/20" : ""}`}
                 >
                   <span className={`h-2 w-2 shrink-0 rounded-full ${style.dot}`} />
                   <div className="min-w-0 flex-1">
@@ -201,7 +201,7 @@ export default async function LeavePage({
                     </p>
                     <div className="mt-0.5 flex items-center gap-2 text-[0.75rem] text-muted">
                       {request.reason?.label && <span>{request.reason.label}</span>}
-                      <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">
+                      <span className="rounded-full bg-surface-container-low px-1.5 py-0.5 text-[11px] font-medium text-slate-600">
                         {days} day{days !== 1 ? "s" : ""}
                       </span>
                     </div>

@@ -34,7 +34,7 @@ export function SchoolSwitcher({
         type="button"
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 rounded-[0.75rem] px-3 py-1.5 calm-transition hover:bg-[var(--surface-container-low)]"
-        style={{ border: "1px solid rgba(198,198,205,0.35)" }}
+        style={{ border: "1px solid color-mix(in srgb, var(--outline-variant) 35%, transparent)" }}
       >
         <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accentSurface text-[10px] font-bold text-accent">
           {initial}
@@ -46,7 +46,7 @@ export function SchoolSwitcher({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-lg border border-border bg-white py-1 shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-lg border border-border bg-surface-container-lowest py-1 shadow-lg">
           {tenants.map((t) => (
             <form key={t.tenantId} action="/api/auth/switch-tenant" method="post">
               <input type="hidden" name="tenantId" value={t.tenantId} />

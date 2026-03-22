@@ -55,14 +55,14 @@ function roleVariant(role: UserRole): "leadership" | "hod" | "teacher" {
 
 function WindowSelector({ windowDays }: { windowDays: number }) {
   return (
-    <div className="flex items-center rounded-lg border border-border bg-white p-1 shadow-sm">
+    <div className="flex items-center rounded-lg border border-border bg-surface-container-lowest p-1 shadow-sm">
       {[7, 14, 21, 28].map((w) => (
         <Link
           key={w}
           href={`/home?window=${w}`}
           className={`rounded-md px-3 py-1 text-[0.75rem] font-medium calm-transition ${
             windowDays === w
-              ? "bg-accent text-white shadow-sm"
+              ? "bg-accent text-on-primary shadow-sm"
               : "text-muted hover:text-text"
           }`}
         >
@@ -158,7 +158,7 @@ function LeadershipHome({
         <Card className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--tertiary-container)] text-white text-lg">🔔</span>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--tertiary-container)] text-on-primary text-lg">🔔</span>
               <h2 className="text-[1rem] font-bold tracking-[-0.01em] text-text">Anaxi Core: On-Call Status</h2>
             </div>
             {openOnCalls.length > 0 && (
@@ -197,7 +197,7 @@ function LeadershipHome({
                             return mins < 60 ? `Triggered ${mins}m ago` : `Triggered ${Math.round(mins / 60)}h ago`;
                           })()}
                         </span>
-                        <Link href={`/on-call`} className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-white">→</Link>
+                        <Link href={`/on-call`} className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary text-on-primary">→</Link>
                       </>
                     ) : (
                       <span className="text-xs text-muted">
@@ -250,7 +250,7 @@ function LeadershipHome({
                   <Avatar key={t.id} name={t.name} size="sm" />
                 ))}
                 {weekObsTeachers.length > 3 && (
-                  <span className="inline-flex h-7 w-auto min-w-[28px] items-center justify-center rounded-full bg-[var(--primary)] px-1.5 text-[10px] font-semibold text-white">
+                  <span className="inline-flex h-7 w-auto min-w-[28px] items-center justify-center rounded-full bg-[var(--primary)] px-1.5 text-[10px] font-semibold text-on-primary">
                     +{weekObsTeachers.length - 3}
                   </span>
                 )}
@@ -305,7 +305,7 @@ function LeadershipHome({
                           {new Date(leave.endDate).toLocaleDateString("en-GB", { month: "short", day: "numeric" })}
                         </div>
                         {isEmergency ? (
-                          <Link href="/leave/pending" className="rounded-lg border border-text bg-white px-3 py-1 text-[11px] font-semibold text-text calm-transition hover:bg-[var(--surface-container-low)]">
+                          <Link href="/leave/pending" className="rounded-lg border border-text bg-surface-container-lowest px-3 py-1 text-[11px] font-semibold text-text calm-transition hover:bg-[var(--surface-container-low)]">
                             APPROVE NOW
                           </Link>
                         ) : (
@@ -327,16 +327,16 @@ function LeadershipHome({
       {/* ═══ Hero Section 3: Signal Analysis ═══ */}
       <section className="grid gap-4 lg:grid-cols-12">
         {/* CPD Priorities (dark box) */}
-        <Card className="space-y-4 !bg-[var(--primary)] !text-white !shadow-lg lg:col-span-5">
+        <Card className="space-y-4 !bg-[var(--primary)] !text-on-primary !shadow-lg lg:col-span-5">
           <div className="flex items-center gap-2">
             <span className="text-lg">✦</span>
             <h2 className="text-[1rem] font-bold tracking-[-0.01em]">CPD Priorities</h2>
           </div>
           {topCpd.length === 0 ? (
-            <p className="text-sm text-white/60">No weakening signals detected in this window.</p>
+            <p className="text-sm text-on-primary/60">No weakening signals detected in this window.</p>
           ) : (
             <>
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-on-primary/70">
                 {topCpd.length} signal{topCpd.length !== 1 ? "s" : ""} weakening across {teacherRows.length} teachers in the {windowDays}-day window.
               </p>
               <div className="space-y-3">
@@ -347,12 +347,12 @@ function LeadershipHome({
                       <span className="text-sm font-bold">{Math.round(row.driftRate * 100)}%</span>
                     </div>
                     <div className="mt-1 h-1.5 w-full rounded-full bg-white/20 overflow-hidden">
-                      <div className="h-full rounded-full bg-white/80" style={{ width: `${Math.min(Math.round(row.driftRate * 100), 100)}%` }} />
+                      <div className="h-full rounded-full bg-surface-container-lowest/80" style={{ width: `${Math.min(Math.round(row.driftRate * 100), 100)}%` }} />
                     </div>
                   </div>
                 ))}
               </div>
-              <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="mt-2 inline-block text-[0.75rem] font-semibold uppercase tracking-[0.05em] text-white/80 calm-transition hover:text-white">
+              <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="mt-2 inline-block text-[0.75rem] font-semibold uppercase tracking-[0.05em] text-on-primary/80 calm-transition hover:text-on-primary">
                 Explore CPD Data ↗
               </Link>
             </>

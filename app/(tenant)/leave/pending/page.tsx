@@ -34,12 +34,12 @@ function initials(name: string) {
 }
 
 const AVATAR_COLORS = [
-  "bg-violet-100 text-violet-700",
-  "bg-sky-100 text-sky-700",
-  "bg-emerald-100 text-emerald-700",
-  "bg-rose-100 text-rose-700",
-  "bg-amber-100 text-amber-700",
-  "bg-indigo-100 text-indigo-700",
+  "bg-cat-violet-bg text-cat-violet-text",
+  "bg-cat-blue-bg text-cat-blue-text",
+  "bg-scale-strong-light text-scale-strong-text",
+  "bg-scale-limited-light text-scale-limited-text",
+  "bg-scale-some-light text-scale-some-text",
+  "bg-cat-indigo-bg text-cat-indigo-text",
 ];
 
 function avatarColor(name: string) {
@@ -79,7 +79,7 @@ export default async function LeavePendingPage() {
         actions={
           <Link
             href="/leave/calendar"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-white/70 px-3.5 py-2 text-sm font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-surface-container-lowest/70 px-3.5 py-2 text-sm font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none">
               <rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
@@ -91,9 +91,9 @@ export default async function LeavePendingPage() {
       />
 
       {pending.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-white/60 bg-white/70 py-16 shadow-sm backdrop-blur-sm">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50">
-            <svg className="h-6 w-6 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="flex flex-col items-center justify-center rounded-2xl glass-card py-16 shadow-sm">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-scale-strong-bg">
+            <svg className="h-6 w-6 text-scale-strong-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
@@ -101,7 +101,7 @@ export default async function LeavePendingPage() {
           <p className="mt-1 text-sm text-muted">No pending leave requests right now.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/70 shadow-sm backdrop-blur-sm">
+        <div className="overflow-hidden rounded-2xl glass-card shadow-sm">
           {(pending as any[]).map((request, idx) => {
             const startDate = new Date(request.startDate);
             const endDate = new Date(request.endDate);
@@ -113,7 +113,7 @@ export default async function LeavePendingPage() {
             return (
               <div
                 key={request.id}
-                className={`flex items-center gap-4 px-5 py-4 transition-colors duration-100 hover:bg-white/50 ${
+                className={`flex items-center gap-4 px-5 py-4 transition-colors duration-100 hover:bg-surface-container-lowest/50 ${
                   !isLast ? "border-b border-border/30" : ""
                 }`}
               >
@@ -136,7 +136,7 @@ export default async function LeavePendingPage() {
                     <span>{fmt(startDate)}</span>
                     <span className="text-border">→</span>
                     <span>{fmt(endDate)}</span>
-                    <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">
+                    <span className="rounded-full bg-surface-container-low px-1.5 py-0.5 text-[11px] font-medium text-slate-600">
                       {days} day{days === 1 ? "" : "s"}
                     </span>
                   </div>
@@ -151,7 +151,7 @@ export default async function LeavePendingPage() {
                 {/* Action */}
                 <Link
                   href={`/leave/${request.id}`}
-                  className="shrink-0 rounded-lg bg-accent px-3.5 py-2 text-[0.8125rem] font-semibold text-white shadow-sm calm-transition hover:bg-accentHover"
+                  className="shrink-0 rounded-lg bg-accent px-3.5 py-2 text-[0.8125rem] font-semibold text-on-primary  shadow-sm calm-transition hover:bg-accentHover"
                 >
                   Review
                 </Link>

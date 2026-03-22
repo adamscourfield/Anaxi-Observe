@@ -76,26 +76,26 @@ export default async function StrategyPage() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-5 flex-wrap">
             <div className="flex items-center gap-1.5 text-sm">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="inline-block h-2 w-2 rounded-full bg-scale-strong-bar" />
               <span className="font-semibold text-text">{activeAreas}</span>
               <MetaText>active</MetaText>
             </div>
             {criticalAreas > 0 && (
               <div className="flex items-center gap-1.5 text-sm">
-                <span className="inline-block h-2 w-2 rounded-full bg-red-500" />
+                <span className="inline-block h-2 w-2 rounded-full bg-scale-limited-bar" />
                 <span className="font-semibold text-text">{criticalAreas}</span>
                 <MetaText>critical</MetaText>
               </div>
             )}
             {highAreas > 0 && (
               <div className="flex items-center gap-1.5 text-sm">
-                <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+                <span className="inline-block h-2 w-2 rounded-full bg-scale-some-bar" />
                 <span className="font-semibold text-text">{highAreas}</span>
                 <MetaText>high</MetaText>
               </div>
             )}
             <div className="flex items-center gap-1.5 text-sm">
-              <span className="inline-block h-2 w-2 rounded-full bg-slate-300" />
+              <span className="inline-block h-2 w-2 rounded-full bg-outline-variant" />
               <span className="font-semibold text-text">{completedAreas}</span>
               <MetaText>complete</MetaText>
             </div>

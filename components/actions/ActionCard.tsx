@@ -38,11 +38,11 @@ export function ActionCard({ action, currentUserId, onComplete }: ActionCardProp
 
   return (
     <div
-      className={`group flex items-start gap-3.5 rounded-xl border bg-white px-4 py-3.5 shadow-sm calm-transition hover:shadow-md ${
+      className={`group flex items-start gap-3.5 rounded-xl border bg-surface-container-lowest px-4 py-3.5 shadow-sm calm-transition hover:shadow-md ${
         overdue
           ? "border-error/40 bg-error/[0.03]"
           : isBlocked
-          ? "border-amber-200/80"
+          ? "border-scale-some-border/80"
           : "border-border"
       }`}
     >
@@ -57,7 +57,7 @@ export function ActionCard({ action, currentUserId, onComplete }: ActionCardProp
               ? "border-accent/40 bg-accent/10"
               : overdue
               ? "border-error/50 hover:border-error hover:bg-error/10"
-              : "border-border hover:border-emerald-500 hover:bg-emerald-50"
+              : "border-border hover:border-scale-strong-bar hover:bg-scale-strong-bg"
           }`}
         >
           {completing ? (
@@ -66,7 +66,7 @@ export function ActionCard({ action, currentUserId, onComplete }: ActionCardProp
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           ) : (
-            <svg className="h-2.5 w-2.5 opacity-0 group-hover:opacity-60 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <svg className="h-2.5 w-2.5 opacity-0 group-hover:opacity-60 text-scale-strong-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           )}
@@ -75,19 +75,19 @@ export function ActionCard({ action, currentUserId, onComplete }: ActionCardProp
         <div
           className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-[1.5px] ${
             isDone
-              ? "border-emerald-500 bg-emerald-500"
+              ? "border-emerald-500 bg-scale-strong-bg0"
               : isBlocked
-              ? "border-amber-400 bg-amber-50"
+              ? "border-amber-400 bg-scale-some-bg"
               : "border-border"
           }`}
         >
           {isDone && (
-            <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <svg className="h-2.5 w-2.5 text-on-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           )}
           {isBlocked && (
-            <svg className="h-2.5 w-2.5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <svg className="h-2.5 w-2.5 text-scale-some-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" strokeLinecap="round" />
             </svg>
           )}
@@ -119,7 +119,7 @@ export function ActionCard({ action, currentUserId, onComplete }: ActionCardProp
 
       {/* Blocked badge */}
       {isBlocked && (
-        <span className="mt-0.5 flex-shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-amber-700">
+        <span className="mt-0.5 flex-shrink-0 rounded-full border border-scale-some-border bg-scale-some-bg px-2 py-0.5 text-[0.6875rem] font-semibold text-scale-some-text">
           Blocked
         </span>
       )}
@@ -148,7 +148,7 @@ function DueDateChip({ dueDate, status }: { dueDate: Date | string; status: stri
 
   if (days <= 3)
     return (
-      <span className="font-semibold text-amber-600">
+      <span className="font-semibold text-scale-some-text">
         Due {formatted} · {days}d left
       </span>
     );

@@ -12,10 +12,10 @@ const SCALE_STYLES: Record<string, {
   dot: string;
   number: string;
 }> = {
-  LIMITED:    { idle: "border-rose-200 bg-rose-50/80 text-rose-800 hover:border-rose-300 hover:bg-rose-50",   active: "border-rose-500 bg-rose-500 text-white ring-2 ring-rose-300/50",    dot: "bg-rose-500",    number: "bg-rose-100 text-rose-600" },
-  SOME:       { idle: "border-amber-200 bg-amber-50/80 text-amber-800 hover:border-amber-300 hover:bg-amber-50", active: "border-amber-500 bg-amber-500 text-white ring-2 ring-amber-300/50",  dot: "bg-amber-500",   number: "bg-amber-100 text-amber-600" },
-  CONSISTENT: { idle: "border-blue-200 bg-blue-50/80 text-blue-800 hover:border-blue-300 hover:bg-blue-50",  active: "border-blue-600 bg-blue-600 text-white ring-2 ring-blue-300/50",    dot: "bg-blue-600",    number: "bg-blue-100 text-blue-700" },
-  STRONG:     { idle: "border-emerald-200 bg-emerald-50/80 text-emerald-800 hover:border-emerald-300 hover:bg-emerald-50", active: "border-emerald-600 bg-emerald-600 text-white ring-2 ring-emerald-300/50", dot: "bg-emerald-600", number: "bg-emerald-100 text-emerald-700" },
+  LIMITED:    { idle: "border-scale-limited-border bg-scale-limited-bg/80 text-scale-limited-text hover:border-scale-limited-bar/50 hover:bg-scale-limited-bg",   active: "border-scale-limited-bar bg-scale-limited-bar text-on-primary ring-2 ring-scale-limited-border",    dot: "bg-scale-limited-bar",    number: "bg-scale-limited-light text-scale-limited-text" },
+  SOME:       { idle: "border-scale-some-border bg-scale-some-bg/80 text-scale-some-text hover:border-scale-some-bar/50 hover:bg-scale-some-bg",               active: "border-scale-some-bar bg-scale-some-bar text-on-primary ring-2 ring-scale-some-border",          dot: "bg-scale-some-bar",       number: "bg-scale-some-light text-scale-some-text" },
+  CONSISTENT: { idle: "border-scale-consistent-border bg-scale-consistent-bg/80 text-scale-consistent-text hover:border-scale-consistent-bar/50 hover:bg-scale-consistent-bg", active: "border-scale-consistent-bar bg-scale-consistent-bar text-on-primary ring-2 ring-scale-consistent-border", dot: "bg-scale-consistent-bar", number: "bg-scale-consistent-light text-scale-consistent-text" },
+  STRONG:     { idle: "border-scale-strong-border bg-scale-strong-bg/80 text-scale-strong-text hover:border-scale-strong-bar/50 hover:bg-scale-strong-bg",     active: "border-scale-strong-bar bg-scale-strong-bar text-on-primary ring-2 ring-scale-strong-border",     dot: "bg-scale-strong-bar",     number: "bg-scale-strong-light text-scale-strong-text" },
 };
 
 const SCALE_LABELS: Record<string, string> = {
@@ -54,26 +54,26 @@ export function SignalTileGroup({
               {/* Scale number badge */}
               <span
                 className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
-                  isSelected ? "bg-white/25 text-white" : styles.number
+                  isSelected ? "bg-white/25 text-on-primary" : styles.number
                 }`}
               >
                 {idx + 1}
               </span>
               <span className="flex-1">
                 {/* Scale level name */}
-                <span className={`block text-[0.8125rem] font-semibold leading-tight ${isSelected ? "text-white" : ""}`}>
+                <span className={`block text-[0.8125rem] font-semibold leading-tight ${isSelected ? "text-on-primary" : ""}`}>
                   {scaleLabel}
                 </span>
                 {/* Guidance text */}
                 {option.guidance && (
-                  <span className={`mt-0.5 block text-[0.75rem] leading-relaxed ${isSelected ? "text-white/80" : "opacity-80"}`}>
+                  <span className={`mt-0.5 block text-[0.75rem] leading-relaxed ${isSelected ? "text-on-primary/80" : "opacity-80"}`}>
                     {option.guidance}
                   </span>
                 )}
               </span>
               {/* Check mark when selected */}
               {isSelected && (
-                <svg className="mt-0.5 h-4 w-4 shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg className="mt-0.5 h-4 w-4 shrink-0 text-on-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               )}

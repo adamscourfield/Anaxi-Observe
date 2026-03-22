@@ -61,7 +61,7 @@ export default async function MeetingsPage({ searchParams }: { searchParams?: { 
         {hasPermission(user.role, "meetings:create") && (
           <Link
             href="/meetings/new"
-            className="calm-transition flex items-center gap-2 rounded-full bg-[#1a1a2e] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#2a2a3e]"
+            className="calm-transition flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-on-primary hover:bg-primary-container"
           >
             <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
               <path d="M8 2a.75.75 0 01.75.75v4.5h4.5a.75.75 0 010 1.5h-4.5v4.5a.75.75 0 01-1.5 0v-4.5h-4.5a.75.75 0 010-1.5h4.5v-4.5A.75.75 0 018 2z" />

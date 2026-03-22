@@ -1,10 +1,10 @@
 "use client";
 
 const SCALE_COLORS: Record<string, { border: string; label: string; dot: string }> = {
-  "Limited evidence": { border: "border-rose-200", label: "text-rose-700", dot: "bg-rose-500" },
-  "Some evidence":    { border: "border-amber-200", label: "text-amber-700", dot: "bg-amber-500" },
-  "Consistent":       { border: "border-blue-200",  label: "text-blue-700",  dot: "bg-blue-600" },
-  "Strong & embedded":{ border: "border-emerald-200", label: "text-emerald-700", dot: "bg-emerald-600" },
+  "Limited evidence": { border: "border-scale-limited-border", label: "text-scale-limited-text", dot: "bg-scale-limited-bar" },
+  "Some evidence":    { border: "border-scale-some-border",    label: "text-scale-some-text",    dot: "bg-scale-some-bar" },
+  "Consistent":       { border: "border-scale-consistent-border", label: "text-scale-consistent-text", dot: "bg-scale-consistent-bar" },
+  "Strong & embedded":{ border: "border-scale-strong-border",  label: "text-scale-strong-text",  dot: "bg-scale-strong-bar" },
 };
 
 export function SignalHelpSheet({
@@ -28,7 +28,7 @@ export function SignalHelpSheet({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg overflow-hidden rounded-t-2xl border border-white/60 bg-white/95 shadow-2xl backdrop-blur-xl sm:rounded-2xl"
+        className="w-full max-w-lg overflow-hidden rounded-t-2xl glass-card shadow-2xl sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle bar (mobile) */}
@@ -63,7 +63,7 @@ export function SignalHelpSheet({
             <p className="mb-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Rating guidance</p>
             <div className="space-y-2">
               {scaleRows.map((row, idx) => {
-                const color = SCALE_COLORS[row.label] ?? { border: "border-border", label: "text-text", dot: "bg-slate-400" };
+                const color = SCALE_COLORS[row.label] ?? { border: "border-border", label: "text-text", dot: "bg-outline-variant" };
                 return (
                   <div
                     key={row.label}
@@ -87,7 +87,7 @@ export function SignalHelpSheet({
           <button
             type="button"
             onClick={onClose}
-            className="w-full rounded-xl bg-accent py-2.5 text-[0.875rem] font-semibold text-white calm-transition hover:bg-accentHover"
+            className="w-full rounded-xl bg-accent py-2.5 text-[0.875rem] font-semibold text-on-primary calm-transition hover:bg-accentHover"
           >
             Got it
           </button>

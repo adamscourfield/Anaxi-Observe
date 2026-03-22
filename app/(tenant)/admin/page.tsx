@@ -85,7 +85,7 @@ const ImportsIcon = () => (
 function AdminCardItem({ card }: { card: AdminCard }) {
   return (
     <Link href={card.href} className="group block">
-      <div className="flex items-start gap-3.5 rounded-xl border border-border bg-white p-4 shadow-sm calm-transition group-hover:border-accent/40 group-hover:shadow-md">
+      <div className="flex items-start gap-3.5 rounded-xl border border-border bg-surface-container-lowest p-4 shadow-sm calm-transition group-hover:border-accent/40 group-hover:shadow-md">
         <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#f4f7fb] text-muted calm-transition group-hover:bg-[var(--accent-tint)] group-hover:text-accent">
           {card.icon}
         </div>

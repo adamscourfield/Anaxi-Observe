@@ -251,7 +251,7 @@ export default async function DepartmentsPage({
               )}
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-slate-800"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:bg-primary-container"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" strokeLinecap="round" strokeLinejoin="round" />
@@ -266,7 +266,7 @@ export default async function DepartmentsPage({
       </div>
 
       {/* ── Filter bar ─────────────────────────────────────────── */}
-      <div className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl border border-white/60 bg-white/60 px-5 py-3 backdrop-blur-sm">
+      <div className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl glass-card px-5 py-3">
         {/* Window toggle buttons */}
         <div className="inline-flex overflow-hidden rounded-lg border border-border">
           {WINDOW_OPTIONS.map((w) => (
@@ -275,8 +275,8 @@ export default async function DepartmentsPage({
               href={buildUrl({ windowDays: String(w) })}
               className={`px-3.5 py-1.5 text-[0.75rem] font-semibold calm-transition ${
                 windowDays === w
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-muted hover:bg-gray-50 hover:text-text"
+                  ? "bg-primary text-on-primary"
+                  : "bg-surface-container-lowest text-muted hover:bg-surface-container-low hover:text-text"
               }`}
             >
               {w}D
@@ -291,7 +291,7 @@ export default async function DepartmentsPage({
           <AutoSubmitSelect
             name="departmentId"
             defaultValue={rawDeptId ?? ""}
-            className="field min-w-[180px] rounded-lg border border-border bg-white px-3 py-1.5 text-[0.8125rem] font-semibold text-text"
+            className="field min-w-[180px] rounded-lg border border-border bg-surface-container-lowest px-3 py-1.5 text-[0.8125rem] font-semibold text-text"
           >
             <option value="">All Departments</option>
             {selectableDepts.map((d) => (
@@ -301,7 +301,7 @@ export default async function DepartmentsPage({
             ))}
           </AutoSubmitSelect>
           <noscript>
-            <button type="submit" className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white">
+            <button type="submit" className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-on-primary">
               Apply
             </button>
           </noscript>
@@ -313,15 +313,15 @@ export default async function DepartmentsPage({
         {/* Legend */}
         <div className="flex items-center gap-4 text-[0.75rem] font-medium text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 rounded-full bg-emerald-500" />
+            <span className="inline-block h-3 w-3 rounded-full bg-scale-strong-bg0" />
             Stable
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 rounded-full bg-amber-400" />
+            <span className="inline-block h-3 w-3 rounded-full bg-scale-some-bar" />
             Moderate
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 rounded-full bg-rose-500" />
+            <span className="inline-block h-3 w-3 rounded-full bg-scale-limited-bar" />
             Critical
           </span>
         </div>
@@ -348,7 +348,7 @@ export default async function DepartmentsPage({
       {/* ── Bottom summary cards ───────────────────────────────── */}
       <div className="mt-8 grid gap-5 md:grid-cols-3">
         {/* Signal Integrity */}
-        <div className="flex flex-col justify-between rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+        <div className="flex flex-col justify-between rounded-2xl glass-card p-6">
           <div>
             <h3 className="text-lg font-bold text-text">Signal Integrity</h3>
             <div className="mt-3 flex items-baseline gap-3">
@@ -360,9 +360,9 @@ export default async function DepartmentsPage({
               </span>
             </div>
             {/* Progress bar */}
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-container-high">
               <div
-                className="h-full rounded-full bg-slate-900"
+                className="h-full rounded-full bg-primary"
                 style={{ width: `${coveragePct}%` }}
               />
             </div>
@@ -378,12 +378,12 @@ export default async function DepartmentsPage({
         </div>
 
         {/* Drift Analysis */}
-        <div className="flex flex-col justify-between rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+        <div className="flex flex-col justify-between rounded-2xl glass-card p-6">
           <div>
             <h3 className="text-lg font-bold text-text">Drift Analysis</h3>
             <div className="mt-4 flex items-start gap-4">
               <div className="flex flex-col items-center">
-                <span className="text-3xl font-bold text-rose-500">
+                <span className="text-3xl font-bold text-scale-limited-bar">
                   {(aggregateDrift * 100).toFixed(0)}%
                 </span>
                 <span className="mt-1 text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">
@@ -392,7 +392,7 @@ export default async function DepartmentsPage({
               </div>
               <div className="mx-2 h-14 w-px bg-border" />
               <div className="flex flex-col items-center">
-                <span className="text-3xl font-bold text-emerald-600">
+                <span className="text-3xl font-bold text-scale-strong-text">
                   +{engagementScore.toFixed(1)}
                 </span>
                 <span className="mt-1 text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">
@@ -408,10 +408,10 @@ export default async function DepartmentsPage({
         </div>
 
         {/* Faculty Action Required */}
-        <div className="flex flex-col justify-between rounded-2xl bg-slate-900 p-6 text-white">
+        <div className="flex flex-col justify-between rounded-2xl bg-primary-container p-6 text-on-primary">
           <div>
             <h3 className="text-lg font-bold">Faculty Action Required</h3>
-            <p className="mt-3 text-[0.875rem] leading-relaxed text-slate-300">
+            <p className="mt-3 text-[0.875rem] leading-relaxed text-on-primary-container">
               {driftingCount > 0
                 ? `${driftingCount} department${driftingCount !== 1 ? "s" : ""} currently show${driftingCount === 1 ? "s" : ""} critical drift in observation signals based on recent observations. Immediate intervention recommended.`
                 : "All departments are currently within stable thresholds. Continue monitoring for any emerging patterns."}
@@ -420,7 +420,7 @@ export default async function DepartmentsPage({
           <div className="mt-4">
             <Link
               href="/explorer/teachers"
-              className="inline-flex items-center gap-1.5 text-[0.8125rem] font-bold uppercase tracking-[0.04em] text-white underline decoration-white/40 underline-offset-4 calm-transition hover:decoration-white"
+              className="inline-flex items-center gap-1.5 text-[0.8125rem] font-bold uppercase tracking-[0.04em] text-on-primary underline decoration-white/40 underline-offset-4 calm-transition hover:decoration-white"
             >
               Review Critical Reports
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

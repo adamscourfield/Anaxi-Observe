@@ -26,28 +26,28 @@ function businessDays(start: Date, end: Date): number {
 
 const STATUS_STYLES: Record<string, { badge: string; icon: React.ReactNode; label: string }> = {
   PENDING: {
-    badge: "border-amber-200 bg-amber-50 text-amber-700",
+    badge: "border-scale-some-border bg-scale-some-bg text-scale-some-text",
     label: "Pending approval",
     icon: (
-      <svg className="h-4 w-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg className="h-4 w-4 text-scale-some-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" strokeLinecap="round" />
       </svg>
     ),
   },
   APPROVED: {
-    badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    badge: "border-status-approved-border bg-status-approved-bg text-status-approved-text",
     label: "Approved",
     icon: (
-      <svg className="h-4 w-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <svg className="h-4 w-4 text-scale-strong-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
         <polyline points="20 6 9 17 4 12" />
       </svg>
     ),
   },
   DENIED: {
-    badge: "border-rose-200 bg-rose-50 text-rose-700",
+    badge: "border-status-denied-border bg-status-denied-bg text-status-denied-text",
     label: "Denied",
     icon: (
-      <svg className="h-4 w-4 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <svg className="h-4 w-4 text-scale-limited-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
         <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
       </svg>
     ),
@@ -89,7 +89,7 @@ export default async function LeaveDetailPage({ params, searchParams }: { params
       </Link>
 
       {/* Hero card */}
-      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-sm">
+      <div className="overflow-hidden rounded-2xl glass-card">
         <div className="px-6 py-5">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
@@ -102,7 +102,7 @@ export default async function LeaveDetailPage({ params, searchParams }: { params
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 rounded-xl border border-border/30 bg-white/50 p-4">
+          <div className="grid grid-cols-2 gap-4 rounded-xl border border-border/30 bg-surface-container-lowest/50 p-4">
             <div>
               <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">Start</p>
               <p className="mt-1 text-[0.9375rem] font-semibold text-text">{fmt(startDate)}</p>
@@ -122,21 +122,21 @@ export default async function LeaveDetailPage({ params, searchParams }: { params
           </div>
 
           {request.reasonText && (
-            <div className="mt-4 rounded-xl border border-border/30 bg-white/40 px-4 py-3">
+            <div className="mt-4 rounded-xl border border-border/30 bg-surface-container-lowest/40 px-4 py-3">
               <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">Reason for leave</p>
               <p className="mt-1.5 whitespace-pre-wrap text-[0.875rem] leading-relaxed text-text">{request.reasonText}</p>
             </div>
           )}
 
           {request.coverRequirements && (
-            <div className="mt-4 rounded-xl border border-border/30 bg-white/40 px-4 py-3">
+            <div className="mt-4 rounded-xl border border-border/30 bg-surface-container-lowest/40 px-4 py-3">
               <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">Cover requirements</p>
               <p className="mt-1.5 whitespace-pre-wrap text-[0.875rem] leading-relaxed text-text">{request.coverRequirements}</p>
             </div>
           )}
 
           {request.medicalEvidenceUrl && (
-            <div className="mt-4 rounded-xl border border-border/30 bg-white/40 px-4 py-3">
+            <div className="mt-4 rounded-xl border border-border/30 bg-surface-container-lowest/40 px-4 py-3">
               <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">Medical evidence</p>
               <p className="mt-1.5 text-[0.875rem] text-accent underline">
                 <a href={request.medicalEvidenceUrl} target="_blank" rel="noopener noreferrer">View uploaded document</a>
@@ -145,7 +145,7 @@ export default async function LeaveDetailPage({ params, searchParams }: { params
           )}
 
           {request.notes && (
-            <div className="mt-4 rounded-xl border border-border/30 bg-white/40 px-4 py-3">
+            <div className="mt-4 rounded-xl border border-border/30 bg-surface-container-lowest/40 px-4 py-3">
               <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">Notes</p>
               <p className="mt-1.5 whitespace-pre-wrap text-[0.875rem] leading-relaxed text-text">{request.notes}</p>
             </div>
@@ -159,7 +159,7 @@ export default async function LeaveDetailPage({ params, searchParams }: { params
 
       {/* Decision form — manager + pending only */}
       {manager && status === "PENDING" && (
-        <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-sm">
+        <div className="overflow-hidden rounded-2xl glass-card">
           <div className="border-b border-border/30 px-6 py-4">
             <h2 className="text-[0.9375rem] font-semibold text-text">Make a decision</h2>
             <p className="mt-0.5 text-[0.8125rem] text-muted">Your decision will be recorded with a timestamp.</p>
@@ -174,8 +174,8 @@ export default async function LeaveDetailPage({ params, searchParams }: { params
                   key={val}
                   className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3.5 calm-transition has-[:checked]:ring-1 ${
                     val === "APPROVED"
-                      ? "border-emerald-200 bg-emerald-50/60 has-[:checked]:border-emerald-500 has-[:checked]:ring-emerald-300/50"
-                      : "border-rose-200 bg-rose-50/60 has-[:checked]:border-rose-500 has-[:checked]:ring-rose-300/50"
+                      ? "border-status-approved-border bg-status-approved-bg/60 has-[:checked]:border-status-approved has-[:checked]:ring-status-approved-border/50"
+                      : "border-error/20 bg-error-container/30 has-[:checked]:border-error has-[:checked]:ring-error/20"
                   }`}
                 >
                   <input
@@ -186,15 +186,15 @@ export default async function LeaveDetailPage({ params, searchParams }: { params
                     className="sr-only"
                   />
                   {val === "APPROVED" ? (
-                    <svg className="h-4 w-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg className="h-4 w-4 text-scale-strong-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   ) : (
-                    <svg className="h-4 w-4 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg className="h-4 w-4 text-scale-limited-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   )}
-                  <span className={`text-[0.875rem] font-semibold ${val === "APPROVED" ? "text-emerald-700" : "text-rose-700"}`}>
+                  <span className={`text-[0.875rem] font-semibold ${val === "APPROVED" ? "text-scale-strong-text" : "text-scale-limited-text"}`}>
                     {val === "APPROVED" ? "Approve" : "Deny"}
                   </span>
                 </label>
@@ -217,7 +217,7 @@ export default async function LeaveDetailPage({ params, searchParams }: { params
 
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 text-[0.9375rem] font-semibold text-white shadow-sm calm-transition hover:bg-accentHover"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 text-[0.9375rem] font-semibold text-on-primary shadow-sm calm-transition hover:bg-accentHover"
             >
               Save decision
             </button>

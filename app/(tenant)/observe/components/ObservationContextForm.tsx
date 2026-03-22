@@ -86,7 +86,7 @@ export function ObservationContextForm({
   return (
     <ObservationStageLayout currentStep={1}>
       {/* Main Card */}
-      <div className="rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+      <div className="rounded-2xl glass-card">
         <div className="px-8 py-7">
           {/* Stage Header */}
           <div className="mb-8">
@@ -204,11 +204,11 @@ export function ObservationContextForm({
                     onClick={() => setContext((c) => ({ ...c, phase: phase.key }))}
                     className={`flex flex-col items-center gap-2 rounded-xl border-2 px-4 py-4 text-center calm-transition ${
                       selected
-                        ? "border-[#1e293b]/30 bg-[#1e293b]/[0.03] text-[#1e293b]"
-                        : "border-border/30 bg-white/70 text-muted hover:border-border hover:bg-white/90"
+                        ? "border-primary/30 bg-primary/[0.03] text-primary"
+                        : "border-border/30 bg-surface-container-lowest/70 text-muted hover:border-border hover:bg-surface-container-lowest/90"
                     }`}
                   >
-                    <span className={selected ? "text-[#1e293b]" : "text-muted"}>{phase.icon}</span>
+                    <span className={selected ? "text-primary" : "text-muted"}>{phase.icon}</span>
                     <span className="text-[0.8125rem] font-semibold leading-tight">{phase.label}</span>
                   </button>
                 );
@@ -239,7 +239,7 @@ export function ObservationContextForm({
               });
               router.push("/observe/new/signals");
             }}
-            className="flex items-center gap-2 rounded-xl bg-[#1e293b] px-6 py-3 text-[0.875rem] font-semibold text-white shadow-sm calm-transition hover:bg-[#334155] disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-[0.875rem] font-semibold text-on-primary shadow-sm calm-transition hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next Stage
             <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">
@@ -251,9 +251,9 @@ export function ObservationContextForm({
 
       {/* Info Cards */}
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <div className="mb-3">
-            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-rose-500">
+            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-scale-limited-bar">
               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" strokeWidth="1.5" />
             </svg>
@@ -263,9 +263,9 @@ export function ObservationContextForm({
             Ensure you have notified the staff member at least 24 hours prior to entering the classroom environment.
           </p>
         </div>
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <div className="mb-3">
-            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-rose-400">
+            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-scale-limited-bar">
               <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
               <path d="M3 10h18" stroke="currentColor" strokeWidth="1.5" />
               <circle cx="7" cy="14.5" r="1.5" stroke="currentColor" strokeWidth="1.2" />
@@ -277,9 +277,9 @@ export function ObservationContextForm({
             The system will automatically link previous observation trends to this teacher&apos;s final ledger report.
           </p>
         </div>
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <div className="mb-3">
-            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-violet-500">
+            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-cat-violet-text">
               <path d="M4 16l4-8 4 6 4-10 4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>

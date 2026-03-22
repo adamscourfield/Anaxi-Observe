@@ -95,7 +95,7 @@ export function StudentsToolbar({
             className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium calm-transition ${
               showFilters
                 ? "border-accent/20 bg-accent/5 text-accent"
-                : "border-border/40 bg-white text-text hover:bg-bg"
+                : "border-border/40 bg-surface-container-lowest text-text hover:bg-surface-container-low"
             }`}
           >
             <svg
@@ -126,7 +126,7 @@ export function StudentsToolbar({
 
       {/* Expanded filter panel */}
       {showFilters && (
-        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-border/20 bg-white/60 px-4 py-3 backdrop-blur-sm">
+        <div className="flex flex-wrap items-end gap-3 rounded-xl glass-card px-4 py-3">
           <label className="flex flex-col gap-1">
             <span className="text-[0.6875rem] font-medium text-muted">
               Window
@@ -190,7 +190,7 @@ export function StudentsToolbar({
                   studentSearch: null,
                 });
               }}
-              className="rounded-lg border border-border/40 bg-white px-3 py-2 text-xs font-medium text-muted calm-transition hover:text-text"
+              className="rounded-lg border border-border/40 bg-surface-container-lowest px-3 py-2 text-xs font-medium text-muted calm-transition hover:text-text"
             >
               Clear all
             </button>

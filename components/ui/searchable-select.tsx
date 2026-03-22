@@ -76,7 +76,7 @@ export function SearchableSelect({
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-2xl border border-border/80 bg-white shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-2xl border border-border/80 bg-surface-container-lowest shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
           <div className="border-b border-border p-2">
             <div className="flex items-center gap-2 rounded-xl bg-divider px-3 py-2">
               <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5 shrink-0 text-muted">

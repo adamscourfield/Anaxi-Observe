@@ -25,7 +25,7 @@ export function StatCard({
   href?: string;
 }) {
   const inner = (
-    <div className="overflow-hidden rounded-2xl border border-border/80 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-surface-container-lowest shadow-sm">
       <div className={`h-1 ${accentBarColors[accent]}`} />
       <div className="px-5 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">{label}</p>

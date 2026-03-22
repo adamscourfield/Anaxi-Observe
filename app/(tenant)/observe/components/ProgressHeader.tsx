@@ -24,7 +24,7 @@ export function ProgressHeader({
           disabled={!canBack}
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg calm-transition ${
             canBack
-              ? "text-muted hover:bg-white/60 hover:text-text"
+              ? "text-muted hover:bg-surface-container-high hover:text-text"
               : "cursor-not-allowed text-border"
           }`}
           aria-label="Previous signal"
@@ -48,7 +48,7 @@ export function ProgressHeader({
         <button
           type="button"
           onClick={onExit}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted calm-transition hover:bg-white/60 hover:text-text"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted calm-transition hover:bg-surface-container-high hover:text-text"
           aria-label="Exit observation"
         >
           <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">

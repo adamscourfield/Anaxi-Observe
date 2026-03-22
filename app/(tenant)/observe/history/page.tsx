@@ -7,24 +7,24 @@ import { formatYearGroup } from "@/modules/observations/yearGroup";
 import { HistoryFilters } from "./HistoryFilters";
 
 const SCALE_COLORS: Record<string, string> = {
-  LIMITED:    "bg-rose-400",
-  SOME:       "bg-amber-400",
-  CONSISTENT: "bg-blue-500",
-  STRONG:     "bg-emerald-500",
+  LIMITED:    "bg-scale-limited-bar",
+  SOME:       "bg-scale-some-bar",
+  CONSISTENT: "bg-scale-consistent-bar",
+  STRONG:     "bg-scale-strong-bar",
 };
 
 const SCALE_BADGE: Record<string, string> = {
-  LIMITED:    "bg-rose-50 text-rose-700 border-rose-200",
-  SOME:       "bg-amber-50 text-amber-700 border-amber-200",
-  CONSISTENT: "bg-blue-50 text-blue-700 border-blue-200",
-  STRONG:     "bg-emerald-50 text-emerald-700 border-emerald-200",
+  LIMITED:    "bg-scale-limited-bg text-scale-limited-text",
+  SOME:       "bg-scale-some-bg text-scale-some-text",
+  CONSISTENT: "bg-scale-consistent-bg text-scale-consistent-text",
+  STRONG:     "bg-scale-strong-bg text-scale-strong-text",
 };
 
 const PHASE_BADGE: Record<string, string> = {
-  INSTRUCTION:           "bg-indigo-50 text-indigo-700 border-indigo-200",
-  GUIDED_PRACTICE:       "bg-emerald-50 text-emerald-700 border-emerald-200",
-  INDEPENDENT_PRACTICE:  "bg-violet-50 text-violet-700 border-violet-200",
-  UNKNOWN:               "bg-slate-50 text-slate-600 border-slate-200",
+  INSTRUCTION:           "bg-phase-instruction-bg text-phase-instruction-text",
+  GUIDED_PRACTICE:       "bg-phase-guided-bg text-phase-guided-text",
+  INDEPENDENT_PRACTICE:  "bg-phase-independent-bg text-phase-independent-text",
+  UNKNOWN:               "bg-surface-container-low text-on-surface-variant",
 };
 
 const SCALE_LEVELS = ["STRONG", "CONSISTENT", "SOME", "LIMITED"] as const;
@@ -139,7 +139,7 @@ export default async function ObservationHistoryPage({
         {user.role !== "TEACHER" && (
           <Link
             href="/observe/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-[0.875rem] font-semibold text-white shadow-sm calm-transition hover:bg-accentHover"
+            className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-[0.875rem] font-semibold text-on-primary shadow-sm calm-transition hover:bg-accentHover"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -172,12 +172,12 @@ export default async function ObservationHistoryPage({
           <p className="mt-1 text-[0.8125rem] text-muted">Try widening your filters.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="overflow-hidden rounded-2xl glass-card">
           {/* Desktop table (≥ md) */}
           <div className="hidden md:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
                   <th className="px-5 py-3">Teacher</th>
                   {user.role !== "TEACHER" && <th className="px-4 py-3">Observer</th>}
                   <th className="px-4 py-3">Subject · Year</th>
