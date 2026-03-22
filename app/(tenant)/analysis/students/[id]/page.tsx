@@ -2,12 +2,15 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
+import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
 import { H1, H2, MetaText, BodyText } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { computeStudentRiskProfile, RiskBand, Confidence } from "@/modules/analysis/studentRisk";
 import { canViewStudentAnalysis } from "@/modules/authz";
+import { displayGrade } from "@/modules/assessments/gradeNormalizer";
 import { toggleWatchlist } from "../actions";
+import type { GradeFormat } from "@prisma/client";
 
 const WINDOW_OPTIONS = [7, 21, 28] as const;
 
@@ -71,6 +74,61 @@ export default async function StudentProfilePage({
   );
 
   if (!profile) notFound();
+
+  // ── Attainment data (active cycle) ────────────────────────────────────────
+  const activeCycle = await prisma.assessmentCycle.findFirst({
+    where: { tenantId: user.tenantId, isActive: true },
+    select: { id: true, label: true },
+  });
+
+  type AttainmentRow = {
+    subject: string;
+    points: Array<{
+      label: string;
+      ordinal: number;
+      normalizedScore: number | null;
+      rawValue: string;
+      gradeFormat: GradeFormat;
+      maxScore: number | null;
+    }>;
+  };
+
+  let attainmentBySubject: AttainmentRow[] = [];
+
+  if (activeCycle) {
+    const results = await prisma.assessmentResult.findMany({
+      where: {
+        tenantId: user.tenantId,
+        studentId: params.id,
+        assessment: { point: { cycleId: activeCycle.id } },
+      },
+      include: {
+        assessment: {
+          include: { point: true },
+        },
+      },
+      orderBy: { assessment: { point: { ordinal: "asc" } } },
+    });
+
+    // Group by subject
+    const subjectMap = new Map<string, AttainmentRow["points"]>();
+    for (const r of results) {
+      const subject = r.assessment.subject;
+      if (!subjectMap.has(subject)) subjectMap.set(subject, []);
+      subjectMap.get(subject)!.push({
+        label: r.assessment.point.label,
+        ordinal: r.assessment.point.ordinal,
+        normalizedScore: r.normalizedScore,
+        rawValue: r.rawValue,
+        gradeFormat: r.assessment.gradeFormat,
+        maxScore: r.assessment.maxScore,
+      });
+    }
+
+    attainmentBySubject = [...subjectMap.entries()]
+      .map(([subject, points]) => ({ subject, points }))
+      .sort((a, b) => a.subject.localeCompare(b.subject));
+  }
 
   const computedAtStr = profile.computedAt.toLocaleString("en-GB", {
     day: "numeric",
@@ -317,6 +375,76 @@ export default async function StudentProfilePage({
                   <td className="py-2 text-right tabular-nums text-text">{snap.latenessCount}</td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
+      {/* Attainment profile */}
+      {attainmentBySubject.length > 0 && activeCycle && (
+        <Card>
+          <div className="mb-4 border-b border-border pb-3 flex items-center justify-between">
+            <div>
+              <H2>Attainment</H2>
+              <MetaText>Active cycle: {activeCycle.label}</MetaText>
+            </div>
+            <Link
+              href={`/assessments/progress`}
+              className="text-sm text-accent hover:underline"
+            >
+              View cohort progress →
+            </Link>
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs font-medium uppercase tracking-wide text-muted">
+                <th className="pb-2 pr-4">Subject</th>
+                {/* Point headers — use the superset across all subjects */}
+                {attainmentBySubject[0]?.points.map((p) => (
+                  <th key={p.label} className="pb-2 pr-3 text-center">{p.label}</th>
+                ))}
+                <th className="pb-2 text-center">Δ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-divider">
+              {attainmentBySubject.map(({ subject, points }) => {
+                const scores = points.map((p) => p.normalizedScore).filter((s): s is number => s !== null);
+                const first = scores[0] ?? null;
+                const last = scores[scores.length - 1] ?? null;
+                const delta = first !== null && last !== null && scores.length > 1 ? last - first : null;
+                const deltaColour =
+                  delta === null ? "text-muted" :
+                  delta > 0.05 ? "text-scale-strong-text font-medium" :
+                  delta < -0.05 ? "text-red-600 font-medium" :
+                  "text-muted";
+
+                return (
+                  <tr key={subject}>
+                    <td className="py-2 pr-4 font-medium text-text">{subject}</td>
+                    {points.map((p, i) => {
+                      const prev = i > 0 ? points[i - 1].normalizedScore : null;
+                      const curr = p.normalizedScore;
+                      const colour =
+                        curr === null ? "text-muted" :
+                        prev === null ? "text-text" :
+                        curr - prev > 0.05 ? "text-scale-strong-text" :
+                        curr - prev < -0.05 ? "text-red-600" :
+                        "text-text";
+                      return (
+                        <td key={p.label} className={`py-2 pr-3 text-center tabular-nums font-semibold ${colour}`}>
+                          {curr !== null
+                            ? displayGrade(curr, p.gradeFormat, p.maxScore)
+                            : <span className="font-normal text-muted">—</span>}
+                        </td>
+                      );
+                    })}
+                    <td className={`py-2 text-center text-xs tabular-nums ${deltaColour}`}>
+                      {delta === null ? "—" :
+                        `${delta > 0 ? "▲" : delta < 0 ? "▼" : "="} ${Math.abs(Math.round(delta * 100))}%`}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </Card>
