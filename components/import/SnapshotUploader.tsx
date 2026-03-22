@@ -53,7 +53,14 @@ export function SnapshotUploader() {
   const [result, setResult] = useState<ImportResult | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
 
+  const MAX_FILE_SIZE = 24 * 1024 * 1024; // 24MB
+
   const parseFile = useCallback(async (file: File) => {
+    if (file.size > MAX_FILE_SIZE) {
+      setImportError("File exceeds 24MB limit. Please select a smaller file.");
+      return;
+    }
+    setImportError(null);
     const text = await file.text();
     setRawCsv(text);
     setFileName(file.name);

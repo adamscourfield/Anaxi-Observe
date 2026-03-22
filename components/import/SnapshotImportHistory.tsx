@@ -79,7 +79,7 @@ export function SnapshotImportHistory({
 
   const totalPages = Math.max(1, Math.ceil(initialTotal / PAGE_SIZE));
   const visibleJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const showingCount = Math.min(initialTotal, page * PAGE_SIZE) - (page - 1) * PAGE_SIZE;
+  const showingCount = Math.min(PAGE_SIZE, initialTotal - (page - 1) * PAGE_SIZE);
 
   return (
     <div className="table-shell">

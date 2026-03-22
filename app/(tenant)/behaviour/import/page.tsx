@@ -43,17 +43,18 @@ export default async function BehaviourImportPage() {
     ? Math.round(((totalRecords - prevTotalRecords) / prevTotalRecords) * 100)
     : 0;
 
-  // Calculate integrity score: percentage of successful import jobs
-  const successfulJobs = (jobs as any[]).filter(
+  // Calculate integrity score: percentage of successful import jobs (from the fetched window)
+  const jobsList = jobs as any[];
+  const successfulJobs = jobsList.filter(
     (j: any) => j.status === "SUCCESS" || j.status === "COMPLETED",
   ).length;
   const integrityScore =
-    totalJobs > 0
-      ? ((successfulJobs / Math.min(totalJobs, 20)) * 100).toFixed(1)
+    jobsList.length > 0
+      ? ((successfulJobs / jobsList.length) * 100).toFixed(1)
       : "100.0";
 
   // Serialize jobs for the client component
-  const serializedJobs = (jobs as any[]).map((j: any) => ({
+  const serializedJobs = jobsList.map((j: any) => ({
     id: j.id,
     type: j.type,
     status: j.status,
