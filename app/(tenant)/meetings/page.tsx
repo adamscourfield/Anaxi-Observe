@@ -2,11 +2,31 @@ import Link from "next/link";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { hasPermission } from "@/lib/rbac";
-import { listMeetings } from "@/modules/meetings/service";
-import { MeetingCard } from "@/components/meetings/MeetingCard";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { PageHeader } from "@/components/ui/page-header";
+import { listMeetings, getMeetingStats } from "@/modules/meetings/service";
+import { MEETING_TYPE_LABELS } from "@/modules/meetings/types";
+import { StatusPill } from "@/components/ui/status-pill";
+import { PastMeetingsList } from "@/components/meetings/PastMeetingsList";
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+}
+
+function formatTimeUntil(date: Date): string {
+  const now = new Date();
+  const diffMs = date.getTime() - now.getTime();
+  if (diffMs <= 0) return "Starting now";
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 60) return `Starts in ${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  const remainingMins = mins % 60;
+  return remainingMins > 0 ? `Starts in ${hrs}h ${remainingMins}m` : `Starts in ${hrs}h`;
+}
 
 export default async function MeetingsPage({ searchParams }: { searchParams?: { scope?: string; type?: string } }) {
   const user = await getSessionUserOrThrow();
@@ -16,54 +36,164 @@ export default async function MeetingsPage({ searchParams }: { searchParams?: { 
   const showAll = canViewAll && searchParams?.scope === "all";
   const type = searchParams?.type;
 
-  const meetings = await listMeetings(user.tenantId, {
-    type,
-    isAttendee: !showAll,
-    userId: user.id,
-  });
+  const [meetings, stats] = await Promise.all([
+    listMeetings(user.tenantId, {
+      type,
+      isAttendee: !showAll,
+      userId: user.id,
+    }),
+    getMeetingStats(user.tenantId),
+  ]);
 
   const now = new Date();
-  const upcoming = (meetings as any[]).filter((m) => new Date(m.startDateTime) >= now);
-  const past = (meetings as any[]).filter((m) => new Date(m.startDateTime) < now);
+  const upcoming = (meetings as any[])
+    .filter((m) => new Date(m.startDateTime) >= now)
+    .sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime());
+  const past = (meetings as any[])
+    .filter((m) => new Date(m.startDateTime) < now)
+    .sort((a, b) => new Date(b.startDateTime).getTime() - new Date(a.startDateTime).getTime());
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        title="Meetings"
-        subtitle="Track upcoming conversations, outcomes, and follow-up actions."
-        actions={
-          hasPermission(user.role, "meetings:create") ? (
-            <Link href="/meetings/new">
-              <Button>New meeting</Button>
-            </Link>
-          ) : null
-        }
-      />
-
-      <div className="flex flex-wrap gap-2 text-sm">
-        <Link className="rounded-md border border-border/80 px-3 py-1.5 hover:bg-divider/60" href="/meetings/actions">My actions</Link>
-        {canViewAll && (
-          <>
-            <Link className={`rounded-md border px-3 py-1.5 ${!showAll ? "border-accent bg-[var(--accent-tint)] text-text" : "border-border/80 text-muted hover:bg-divider/60 hover:text-text"}`} href="/meetings?scope=mine">Mine</Link>
-            <Link className={`rounded-md border px-3 py-1.5 ${showAll ? "border-accent bg-[var(--accent-tint)] text-text" : "border-border/80 text-muted hover:bg-divider/60 hover:text-text"}`} href="/meetings?scope=all">All</Link>
-          </>
+    <div className="space-y-8">
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-[28px] font-bold tracking-[-0.03em] text-text">Meetings</h1>
+        {hasPermission(user.role, "meetings:create") && (
+          <Link
+            href="/meetings/new"
+            className="calm-transition flex items-center gap-2 rounded-full bg-[#1a1a2e] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#2a2a3e]"
+          >
+            <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
+              <path d="M8 2a.75.75 0 01.75.75v4.5h4.5a.75.75 0 010 1.5h-4.5v4.5a.75.75 0 01-1.5 0v-4.5h-4.5a.75.75 0 010-1.5h4.5v-4.5A.75.75 0 018 2z" />
+            </svg>
+            New Meeting
+          </Link>
         )}
       </div>
 
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.06em] text-muted">Upcoming</h2>
-        <div className="space-y-2">
-          {upcoming.map((m: any) => <MeetingCard key={m.id} meeting={m} />)}
-          {upcoming.length === 0 && <EmptyState title="No upcoming meetings" description="Create a meeting to start capturing decisions and actions." />}
+      {/* ── Stats Cards ─────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {/* Total Open Actions */}
+        <div className="rounded-2xl border border-border/40 bg-surface-container-lowest px-5 py-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Total Open Actions</p>
+          <p className="mt-1 text-[32px] font-bold leading-none tracking-[-0.02em] text-text">{stats.openActions}</p>
+          {stats.newActionsSinceMonday > 0 && (
+            <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-[var(--coral)]">
+              <svg viewBox="0 0 12 12" fill="none" className="h-3 w-3">
+                <path d="M2 8l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              +{stats.newActionsSinceMonday} since Monday
+            </p>
+          )}
         </div>
+
+        {/* Completion Rate */}
+        <div className="rounded-2xl border border-border/40 bg-surface-container-lowest px-5 py-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Completion Rate</p>
+          <p className="mt-1 text-[32px] font-bold leading-none tracking-[-0.02em] text-text">{stats.completionRate}%</p>
+          <p className="mt-1.5 text-xs text-muted">Institutional Target: 95%</p>
+        </div>
+
+        {/* Next Up */}
+        <div className="rounded-2xl border border-border/40 bg-surface-container-lowest px-5 py-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Next Up</p>
+          {stats.nextMeeting ? (
+            <>
+              <p className="mt-1 text-lg font-bold leading-snug tracking-[-0.01em] text-text">
+                {stats.nextMeeting.title}
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                {formatTimeUntil(new Date(stats.nextMeeting.startDateTime))}
+                {stats.nextMeeting.location ? ` • ${stats.nextMeeting.location}` : ""}
+              </p>
+            </>
+          ) : (
+            <p className="mt-1 text-sm text-muted">No upcoming meetings</p>
+          )}
+        </div>
+      </div>
+
+      {/* ── Upcoming Meetings ───────────────────────────────────────────── */}
+      <section>
+        <h2 className="mb-4 text-xl font-semibold tracking-[-0.01em] text-text">Upcoming Meetings</h2>
+        <hr className="mb-4 border-border/40" />
+
+        {upcoming.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border/60 px-6 py-10 text-center">
+            <p className="text-sm font-medium text-text">No upcoming meetings</p>
+            <p className="mt-1 text-xs text-muted">Create a meeting to start capturing decisions and actions.</p>
+          </div>
+        ) : (
+          <div className="table-shell">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="table-head-row">
+                  <th className="px-5 py-3 text-left">Meeting Title</th>
+                  <th className="px-5 py-3 text-left">Date &amp; Time</th>
+                  <th className="px-5 py-3 text-left">Location</th>
+                  <th className="px-5 py-3 text-left">Organizer</th>
+                  <th className="px-5 py-3 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {upcoming.map((m: any) => {
+                  const start = new Date(m.startDateTime);
+                  const end = new Date(m.endDateTime);
+                  const typeLabel = MEETING_TYPE_LABELS[m.type] ?? m.type;
+                  const statusLabel = m.status === "CONFIRMED" ? "Confirmed" : m.status === "CANCELLED" ? "Cancelled" : "Pending";
+                  const statusVariant = m.status === "CONFIRMED" ? "success" : m.status === "CANCELLED" ? "error" : "warning";
+
+                  return (
+                    <tr key={m.id} className="table-row">
+                      <td className="px-5 py-4">
+                        <Link href={`/meetings/${m.id}`} className="hover:underline">
+                          <p className="font-semibold text-text">{m.title}</p>
+                          <p className="text-xs text-muted">{typeLabel}</p>
+                        </Link>
+                      </td>
+                      <td className="px-5 py-4 text-text">
+                        <p>{start.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                        <p className="text-xs text-muted">
+                          {start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} -{" "}
+                          {end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </td>
+                      <td className="px-5 py-4">
+                        {m.location ? (
+                          <span className="flex items-center gap-1.5 text-text">
+                            <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5 text-muted">
+                              <path fillRule="evenodd" d="M11.536 3.464a5 5 0 010 7.072L8 14.07l-3.536-3.535a5 5 0 117.072-7.072v.001zm-1.414 5.658a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" clipRule="evenodd" />
+                            </svg>
+                            {m.location}
+                          </span>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--secondary-container)] text-xs font-semibold text-text">
+                            {getInitials(m.createdBy.fullName)}
+                          </div>
+                          <span className="text-sm text-text">{m.createdBy.fullName}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <StatusPill variant={statusVariant as any} size="sm">{statusLabel}</StatusPill>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.06em] text-muted">Past</h2>
-        <div className="space-y-2">
-          {past.map((m: any) => <MeetingCard key={m.id} meeting={m} />)}
-          {past.length === 0 && <EmptyState title="No past meetings" description="Completed meetings will appear here for easy reference." />}
-        </div>
+      {/* ── Past Meetings ───────────────────────────────────────────────── */}
+      <section>
+        <h2 className="mb-4 text-xl font-semibold tracking-[-0.01em] text-text">Past Meetings</h2>
+        <PastMeetingsList meetings={past} />
       </section>
     </div>
   );
