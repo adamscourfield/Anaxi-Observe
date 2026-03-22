@@ -147,13 +147,8 @@ export function ObservationContextForm({
                 Class / Set
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted/50">
-                  <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4">
-                    <path d="M6.5 9.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0ZM3.5 16.5a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                </div>
                 <input
-                  className="field pl-9"
+                  className="field"
                   placeholder="e.g. Year 10 Set A"
                   value={context.classCode}
                   onChange={(e) => {
@@ -204,7 +199,7 @@ export function ObservationContextForm({
                     onClick={() => setContext((c) => ({ ...c, phase: phase.key }))}
                     className={`flex flex-col items-center gap-2 rounded-xl border-2 px-4 py-4 text-center calm-transition ${
                       selected
-                        ? "border-primary/30 bg-primary/[0.03] text-primary"
+                        ? "border-primary bg-primary/[0.06] text-primary shadow-sm"
                         : "border-border/30 bg-surface-container-lowest/70 text-muted hover:border-border hover:bg-surface-container-lowest/90"
                     }`}
                   >
@@ -239,7 +234,7 @@ export function ObservationContextForm({
               });
               router.push("/observe/new/signals");
             }}
-            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-[0.875rem] font-semibold text-on-primary shadow-sm calm-transition hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-[0.875rem] font-semibold text-on-primary shadow-[0_4px_16px_rgba(0,0,0,0.14)] calm-transition hover:bg-primary-container hover:shadow-[0_6px_20px_rgba(0,0,0,0.20)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next Stage
             <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">
@@ -251,7 +246,7 @@ export function ObservationContextForm({
 
       {/* Info Cards */}
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl glass-card p-5">
+        <div className="rounded-2xl bg-surface-container border border-border/20 p-5">
           <div className="mb-3">
             <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-scale-limited-bar">
               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -263,7 +258,7 @@ export function ObservationContextForm({
             Ensure you have notified the staff member at least 24 hours prior to entering the classroom environment.
           </p>
         </div>
-        <div className="rounded-2xl glass-card p-5">
+        <div className="rounded-2xl bg-surface-container border border-border/20 p-5">
           <div className="mb-3">
             <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-scale-limited-bar">
               <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
@@ -277,7 +272,7 @@ export function ObservationContextForm({
             The system will automatically link previous observation trends to this teacher&apos;s final ledger report.
           </p>
         </div>
-        <div className="rounded-2xl glass-card p-5">
+        <div className="rounded-2xl bg-surface-container border border-border/20 p-5">
           <div className="mb-3">
             <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-cat-violet-text">
               <path d="M4 16l4-8 4 6 4-10 4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
