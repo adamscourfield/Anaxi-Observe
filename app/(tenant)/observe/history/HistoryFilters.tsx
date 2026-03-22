@@ -2,18 +2,15 @@
 
 import Link from "next/link";
 import { FormSelect } from "@/components/ui/form-select";
-import { formatYearGroup } from "@/modules/observations/yearGroup";
 
 interface HistoryFiltersProps {
   teachers: { id: string; fullName: string }[];
   observers: { id: string; fullName: string }[];
   subjects: string[];
-  yearGroups: string[];
   defaults: {
     teacherId: string;
     observerId: string;
     subject: string;
-    yearGroup: string;
     from: string;
     to: string;
   };
@@ -25,98 +22,78 @@ export function HistoryFilters({
   teachers,
   observers,
   subjects,
-  yearGroups,
   defaults,
   showTeacherFilters,
   hasFilters,
 }: HistoryFiltersProps) {
   return (
-    <div className="overflow-hidden rounded-2xl glass-card">
-      <div className="border-b border-border/30 px-5 py-3">
-        <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
-      </div>
-      <form className="space-y-4 p-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {showTeacherFilters && (
-            <>
-              <label className="flex flex-col gap-1">
-                <span className="text-[0.6875rem] font-medium text-muted">Teacher</span>
-                <FormSelect
-                  name="teacherId"
-                  defaultValue={defaults.teacherId}
-                  placeholder="All teachers"
-                  searchable
-                  options={[
-                    { value: "", label: "All teachers" },
-                    ...teachers.map((t) => ({ value: t.id, label: t.fullName })),
-                  ]}
-                />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-[0.6875rem] font-medium text-muted">Observer</span>
-                <FormSelect
-                  name="observerId"
-                  defaultValue={defaults.observerId}
-                  placeholder="All observers"
-                  searchable
-                  options={[
-                    { value: "", label: "All observers" },
-                    ...observers.map((o) => ({ value: o.id, label: o.fullName })),
-                  ]}
-                />
-              </label>
-            </>
-          )}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Subject</span>
-            <FormSelect
-              name="subject"
-              defaultValue={defaults.subject}
-              placeholder="All subjects"
-              options={[
-                { value: "", label: "All subjects" },
-                ...subjects.map((s) => ({ value: s, label: s })),
-              ]}
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Year group</span>
-            <FormSelect
-              name="yearGroup"
-              defaultValue={defaults.yearGroup}
-              placeholder="All years"
-              options={[
-                { value: "", label: "All years" },
-                ...yearGroups.map((yg) => ({ value: yg, label: formatYearGroup(yg) })),
-              ]}
-            />
-          </label>
-        </div>
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">From</span>
-            <input name="from" type="date" defaultValue={defaults.from} className="field" />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">To</span>
-            <input name="to" type="date" defaultValue={defaults.to} className="field" />
-          </label>
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-on-primary  calm-transition hover:bg-accentHover"
+    <div className="rounded-2xl bg-surface-container-low/60 px-5 py-5">
+      <form className="flex flex-wrap items-end gap-4">
+        {showTeacherFilters && (
+          <>
+            <label className="flex flex-col gap-1.5 min-w-[140px]">
+              <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Teacher</span>
+              <FormSelect
+                name="teacherId"
+                defaultValue={defaults.teacherId}
+                placeholder="All Teachers"
+                searchable
+                options={[
+                  { value: "", label: "All Teachers" },
+                  ...teachers.map((t) => ({ value: t.id, label: t.fullName })),
+                ]}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 min-w-[140px]">
+              <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Observer</span>
+              <FormSelect
+                name="observerId"
+                defaultValue={defaults.observerId}
+                placeholder="All Observers"
+                searchable
+                options={[
+                  { value: "", label: "All Observers" },
+                  ...observers.map((o) => ({ value: o.id, label: o.fullName })),
+                ]}
+              />
+            </label>
+          </>
+        )}
+        <label className="flex flex-col gap-1.5 min-w-[140px]">
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Subject / Year</span>
+          <FormSelect
+            name="subject"
+            defaultValue={defaults.subject}
+            placeholder="All Curricula"
+            options={[
+              { value: "", label: "All Curricula" },
+              ...subjects.map((s) => ({ value: s, label: s })),
+            ]}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">From Date</span>
+          <input name="from" type="date" defaultValue={defaults.from} className="field" />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">To Date</span>
+          <input name="to" type="date" defaultValue={defaults.to} className="field" />
+        </label>
+        <div className="flex items-end gap-2">
+          <button
+            type="submit"
+            className="rounded-xl bg-accent px-5 py-2.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:bg-accentHover"
+          >
+            Apply Filters
+          </button>
+          {hasFilters && (
+            <Link
+              href="/observe/history"
+              className="rounded-xl border border-border bg-surface-container-lowest/70 px-4 py-2.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
             >
-              Apply
-            </button>
-            {hasFilters && (
-              <Link
-                href="/observe/history"
-                className="rounded-lg border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-              >
-                Clear
-              </Link>
-            )}
-          </div>
+              Clear
+            </Link>
+          )}
         </div>
       </form>
     </div>
