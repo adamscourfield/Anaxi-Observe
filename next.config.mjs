@@ -25,6 +25,14 @@ if (!process.env.NEXTAUTH_SECRET) {
 }
 
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+  },
   async redirects() {
     return [
       {
