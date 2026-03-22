@@ -5,7 +5,6 @@ import { requireFeature } from "@/lib/guards";
 import { hasOnCallPermission } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { OnCallRequestForm } from "@/components/oncall/OnCallRequestForm";
-import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 
 export default async function OnCallNewPage() {
@@ -23,16 +22,26 @@ export default async function OnCallNewPage() {
   });
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        title="New on call request"
-        subtitle="Designed for fast submission — under 15 seconds."
-        actions={
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-text uppercase">
+            New Request
+          </h1>
+          <p className="mt-1 text-[13px] text-muted">
+            Designed for fast submission — under 15 seconds.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <Link href="/on-call">
             <Button variant="secondary">Cancel</Button>
           </Link>
-        }
-      />
+        </div>
+      </div>
+
+      <hr className="border-border/60" />
+
       <OnCallRequestForm students={students} />
     </div>
   );
