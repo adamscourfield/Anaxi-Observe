@@ -33,7 +33,7 @@ export default async function MeetingsPage({ searchParams }: { searchParams?: { 
   await requireFeature(user.tenantId, "MEETINGS");
 
   const canViewAll = hasPermission(user.role, "meetings:view_all");
-  const showAll = canViewAll && searchParams?.scope === "all";
+  const showAll = canViewAll && searchParams?.scope !== "mine";
   const type = searchParams?.type;
 
   const [meetings, stats] = await Promise.all([
