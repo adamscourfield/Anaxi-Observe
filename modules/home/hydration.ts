@@ -24,6 +24,13 @@ async function safe<T>(task: Promise<T>, fallback: T): Promise<T> {
   }
 }
 
+export type AttainmentSummary = {
+  cycleLabel: string;
+  totalAssessments: number;
+  totalResults: number;
+  triangulatedCount: number;
+};
+
 export type PendingLeaveDetail = {
   id: string;
   requesterName: string;
@@ -49,11 +56,13 @@ export async function hydrateLeadershipHomeData({
   windowDays,
   hasLeaveFeature,
   hasOnCallFeature,
+  hasAssessmentsFeature,
 }: {
   user: SessionUser;
   windowDays: number;
   hasLeaveFeature: boolean;
   hasOnCallFeature: boolean;
+  hasAssessmentsFeature?: boolean;
 }) {
   const pendingLeavePromise = hasLeaveFeature
     ? safe(
@@ -121,6 +130,43 @@ export async function hydrateLeadershipHomeData({
       )
     : Promise.resolve([] as OnCallDetail[]);
 
+  const attainmentPromise: Promise<AttainmentSummary | null> = hasAssessmentsFeature
+    ? safe(
+        (prisma as any).assessmentCycle
+          .findFirst({
+            where: { tenantId: user.tenantId, isActive: true },
+            include: {
+              points: {
+                include: {
+                  assessments: {
+                    include: { _count: { select: { results: true } } },
+                  },
+                },
+              },
+            },
+          })
+          .then(async (cycle: any) => {
+            if (!cycle) return null;
+            const allAssessments = (cycle.points as any[]).flatMap((p: any) => p.assessments as any[]);
+            const totalAssessments = allAssessments.length;
+            const totalResults = allAssessments.reduce(
+              (sum: number, a: any) => sum + (a._count?.results ?? 0),
+              0
+            );
+            // Count students flagged with low attainment AND high SRI
+            const { computeTriangulatedRisks } = await import("@/modules/assessments/analysis");
+            const tri = await computeTriangulatedRisks(user.tenantId, user.id, windowDays);
+            return {
+              cycleLabel: cycle.label as string,
+              totalAssessments,
+              totalResults,
+              triangulatedCount: tri.meta.total,
+            };
+          }),
+        null as AttainmentSummary | null
+      )
+    : Promise.resolve(null as AttainmentSummary | null);
+
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
 
@@ -148,7 +194,7 @@ export async function hydrateLeadershipHomeData({
     { count: 0, recentTeachers: [] as { id: string; name: string }[] }
   );
 
-  const [cpdRows, teacherRows, cohortResult, studentResult, pendingLeaveCount, openOnCallCount, pendingLeaveDetails, onCallDetails, weekObs] = await Promise.all([
+  const [cpdRows, teacherRows, cohortResult, studentResult, pendingLeaveCount, openOnCallCount, pendingLeaveDetails, onCallDetails, weekObs, attainmentSummary] = await Promise.all([
     safe(computeCpdPriorities(user.tenantId, windowDays), [] as CpdPriorityRow[]),
     safe(computeTeacherRiskIndex(user.tenantId, windowDays), [] as TeacherRiskRow[]),
     safe(computeCohortPivot(user.tenantId, windowDays), { rows: [] as CohortPivotRow[], computedAt: new Date() }),
@@ -158,6 +204,7 @@ export async function hydrateLeadershipHomeData({
     pendingLeaveDetailsPromise,
     onCallDetailsPromise,
     weekObsPromise,
+    attainmentPromise,
   ]);
 
   return {
@@ -172,6 +219,7 @@ export async function hydrateLeadershipHomeData({
     onCallDetails,
     weekObsCount: weekObs.count,
     weekObsTeachers: weekObs.recentTeachers,
+    attainmentSummary,
   };
 }
 

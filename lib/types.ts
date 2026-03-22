@@ -13,7 +13,8 @@ export type FeatureKey =
   | "ADMIN"
   | "ADMIN_SETTINGS"
   | "ANALYSIS"
-  | "STUDENT_ANALYSIS";
+  | "STUDENT_ANALYSIS"
+  | "ASSESSMENTS";
 
 export type SessionUser = {
   id: string;

@@ -22,6 +22,7 @@ import {
   hydrateTeacherHomeData,
   PendingLeaveDetail,
   OnCallDetail,
+  AttainmentSummary,
 } from "@/modules/home/hydration";
 import { QuickActionButton } from "@/components/dashboard/QuickActionButton";
 
@@ -106,6 +107,7 @@ function LeadershipHome({
   onCallDetails,
   weekObsCount,
   weekObsTeachers,
+  attainmentSummary,
 }: {
   windowDays: number;
   cpdRows: CpdPriorityRow[];
@@ -119,6 +121,7 @@ function LeadershipHome({
   onCallDetails: OnCallDetail[];
   weekObsCount: number;
   weekObsTeachers: { id: string; name: string }[];
+  attainmentSummary: AttainmentSummary | null;
 }) {
   const allDriftingCpd = cpdRows.filter((r) => r.teachersDriftingDown > 0);
   const topCpd = allDriftingCpd.slice(0, 3);
@@ -426,6 +429,33 @@ function LeadershipHome({
           )}
         </Card>
       </section>
+
+      {/* ═══ Attainment Summary ═══ */}
+      {attainmentSummary && (
+        <section>
+          <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Attainment · {attainmentSummary.cycleLabel}</p>
+              <p className="text-sm text-muted">
+                {attainmentSummary.totalAssessments} assessment{attainmentSummary.totalAssessments !== 1 ? "s" : ""} · {attainmentSummary.totalResults.toLocaleString()} results recorded
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {attainmentSummary.triangulatedCount > 0 && (
+                <Link
+                  href="/assessments/triangulation"
+                  className="inline-flex items-center gap-1 rounded-lg bg-risk-urgent-bg px-3 py-1.5 text-xs font-medium text-risk-urgent-text hover:opacity-80"
+                >
+                  {attainmentSummary.triangulatedCount} dual-flagged →
+                </Link>
+              )}
+              <Link href="/assessments" className="text-sm text-accent hover:underline">
+                View assessments →
+              </Link>
+            </div>
+          </Card>
+        </section>
+      )}
     </div>
   );
 }
@@ -870,7 +900,8 @@ export default async function HomePage({
       }
       const hasLeaveFeature = homeAssembly.has("operations.leave-approvals");
       const hasOnCallFeature = enabledFeatures.has("ON_CALL");
-      const { cpdRows, teacherRows, cohortRows, studentRows, pendingLeaveCount, openOnCallCount, pendingLeaveDetails, onCallDetails, weekObsCount, weekObsTeachers } = await hydrateLeadershipHomeData({ user, windowDays, hasLeaveFeature, hasOnCallFeature });
+      const hasAssessmentsFeature = enabledFeatures.has("ASSESSMENTS");
+      const { cpdRows, teacherRows, cohortRows, studentRows, pendingLeaveCount, openOnCallCount, pendingLeaveDetails, onCallDetails, weekObsCount, weekObsTeachers, attainmentSummary } = await hydrateLeadershipHomeData({ user, windowDays, hasLeaveFeature, hasOnCallFeature, hasAssessmentsFeature });
       return (
         <LeadershipHome
           windowDays={windowDays}
@@ -885,6 +916,7 @@ export default async function HomePage({
           onCallDetails={onCallDetails}
           weekObsCount={weekObsCount}
           weekObsTeachers={weekObsTeachers}
+          attainmentSummary={attainmentSummary ?? null}
         />
       );
     }

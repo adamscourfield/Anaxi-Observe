@@ -12,7 +12,8 @@ export type HomeCardId =
   | "culture.my-oncall-status"
   | "observe.whole-school-focus"
   | "observe.my-observation-profile"
-  | "observe.positive-momentum";
+  | "observe.positive-momentum"
+  | "attainment.summary";
 
 export type HomeDataSource =
   | "analysis.computeCpdPriorities"
@@ -20,6 +21,7 @@ export type HomeDataSource =
   | "analysis.computeCohortPivot"
   | "analysis.computeStudentRiskIndex"
   | "analysis.computeTeacherSignalProfile"
+  | "analysis.computeCycleSummary"
   | "prisma.lOARequest"
   | "prisma.onCallRequest"
   | "prisma.meeting"
@@ -142,6 +144,15 @@ export const HOME_CARD_CONTRACTS: HomeCardContract[] = [
     roles: ["ADMIN", "SLT"],
     requiredFeatures: ["ANALYSIS"],
     dataSource: "analysis.computeCpdPriorities",
+    refreshHintSeconds: 300,
+  },
+  {
+    id: "attainment.summary",
+    title: "Attainment summary",
+    domain: "culture",
+    roles: ["ADMIN", "SLT"],
+    requiredFeatures: ["ASSESSMENTS"],
+    dataSource: "analysis.computeCycleSummary",
     refreshHintSeconds: 300,
   },
 ];

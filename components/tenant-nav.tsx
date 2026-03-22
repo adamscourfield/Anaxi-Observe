@@ -83,6 +83,7 @@ function iconFor(href: string) {
   if (href.includes("/observe/history")) return "history";
   if (href.includes("/observe")) return "radar";
   if (href.includes("/explorer")) return "grid";
+  if (href.includes("/assessments")) return "chart";
   if (href.includes("/students")) return "users";
   if (href.includes("/behaviour/import")) return "upload";
   if (href.includes("/on-call")) return "flag";
@@ -147,7 +148,8 @@ export function TenantNav({
     {
       label: "Culture",
       items: [
-        ...(has("STUDENTS") ? [navItem("Students", "/students")] : []),
+        ...(has("ASSESSMENTS") ? [navItem("Assessments", "/assessments")] : []),
+      ...(has("STUDENTS") ? [navItem("Students", "/students")] : []),
         ...(has("STUDENTS_IMPORT") && canImport ? [navItem("Behaviour import", "/behaviour/import")] : []),
         ...(has("ON_CALL") ? [navItem("On call", "/on-call", onCallCount)] : []),
       ],
