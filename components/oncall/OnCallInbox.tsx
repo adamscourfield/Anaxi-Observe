@@ -72,6 +72,12 @@ function formatTime(dateVal: Date | string): string {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
+function formatYearGroup(yearGroup: string | null | undefined): string {
+  if (!yearGroup) return "—";
+  const digits = yearGroup.replace(/\D/g, "");
+  return `Year ${digits || yearGroup}`;
+}
+
 const TYPE_BADGE_CLASSES: Record<RequestType, string> = {
   BEHAVIOUR: "bg-[var(--pill-error-bg)] text-[var(--pill-error-text)] ring-1 ring-inset ring-[var(--pill-error-ring)]",
   FIRST_AID: "bg-[var(--pill-neutral-bg)] text-[var(--pill-neutral-text)] ring-1 ring-inset ring-[var(--pill-neutral-ring)]",
@@ -97,7 +103,7 @@ export function OnCallInbox({
       ? timeAgo(
           openRequests.reduce((latest, r) =>
             new Date(r.createdAt) > new Date(latest.createdAt) ? r : latest
-          ).createdAt
+          , openRequests[0]).createdAt
         )
       : null;
 
@@ -199,7 +205,7 @@ export function OnCallInbox({
                         </div>
                       </td>
                       <td className="px-4 py-4 font-medium uppercase text-text">
-                        {r.student.yearGroup ? `Year ${r.student.yearGroup.replace(/\D/g, "") || r.student.yearGroup}` : "—"}
+                        {formatYearGroup(r.student.yearGroup)}
                       </td>
                       <td className="px-4 py-4">
                         <span

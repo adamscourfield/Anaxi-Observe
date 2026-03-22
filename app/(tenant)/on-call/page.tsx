@@ -42,8 +42,10 @@ export default async function OnCallHomePage() {
   const avgResponseMs =
     resolvedWithDuration.length > 0
       ? resolvedWithDuration.reduce(
-          (sum: number, r: { resolvedAt?: Date | string | null; createdAt: Date | string }) =>
-            sum + (new Date(r.resolvedAt!).getTime() - new Date(r.createdAt).getTime()),
+          (sum: number, r: { resolvedAt?: Date | string | null; createdAt: Date | string }) => {
+            const resolved = r.resolvedAt ? new Date(r.resolvedAt).getTime() : 0;
+            return sum + (resolved - new Date(r.createdAt).getTime());
+          },
           0
         ) / resolvedWithDuration.length
       : 0;
@@ -56,7 +58,7 @@ export default async function OnCallHomePage() {
       r.status === "RESOLVED" || r.status === "CANCELLED"
   ).length;
   const resolutionRate =
-    todayClosed > 0 ? Math.round((todayResolved / todayClosed) * 100) : 100;
+    todayClosed > 0 ? Math.round((todayResolved / todayClosed) * 100) : 0;
 
   return (
     <div className="space-y-6">
