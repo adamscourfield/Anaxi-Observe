@@ -199,7 +199,7 @@ function AreaModal({
                   <input
                     name="category"
                     defaultValue={area?.category ?? ""}
-                    placeholder="95"
+                    placeholder="e.g., 95"
                     maxLength={10}
                     className="field pr-8"
                   />
