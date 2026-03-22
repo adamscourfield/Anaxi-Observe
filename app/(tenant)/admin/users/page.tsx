@@ -28,15 +28,6 @@ function AddStaffIcon() {
   );
 }
 
-function TrendUpIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg">
-      <path d="M2 12l4-4 3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M10 6h4v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 export default async function AdminUsersPage() {
   const user = await requireAdminUser();
   const users = await (prisma as any).user.findMany({ where: { tenantId: user.tenantId }, orderBy: { fullName: "asc" } });
@@ -202,9 +193,8 @@ export default async function AdminUsersPage() {
               <p className="mt-1.5 text-[28px] font-bold leading-none tracking-[-0.02em] text-text">
                 {allUsers.length.toLocaleString()}
               </p>
-              <p className="mt-2 flex items-center gap-1 text-[12px] font-medium text-emerald-600">
-                <TrendUpIcon />
-                +12% vs last month
+              <p className="mt-2 text-[12px] text-muted">
+                {activeCount} active, {inactiveCount} inactive
               </p>
             </div>
           </div>

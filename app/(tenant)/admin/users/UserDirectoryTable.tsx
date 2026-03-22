@@ -235,7 +235,7 @@ export function UserDirectoryTable({
                         <form action={editAction} className="inline">
                           <input type="hidden" name="id" value={u.id} />
                           <button
-                            type="button"
+                            type="submit"
                             className="text-[12px] font-bold uppercase tracking-[0.06em] text-text calm-transition hover:text-muted"
                           >
                             EDIT
