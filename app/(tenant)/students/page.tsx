@@ -136,12 +136,12 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
             name="q"
             defaultValue={q}
             placeholder="Search by name or UPN…"
-            className="min-w-[180px] flex-1 rounded-lg border border-border bg-white px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/30"
+            className="min-w-[180px] flex-1 rounded-lg border border-border bg-surface-container-lowest px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
           <select
             name="yearGroup"
             defaultValue={yearGroup}
-            className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text"
+            className="rounded-lg border border-border bg-surface-container-lowest px-3 py-2 text-sm text-text"
           >
             <option value="">All years</option>
             {yearGroups.map((yg) => (
@@ -151,7 +151,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
           <select
             name="send"
             defaultValue={send}
-            className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text"
+            className="rounded-lg border border-border bg-surface-container-lowest px-3 py-2 text-sm text-text"
           >
             <option value="">SEND</option>
             <option value="true">SEND Yes</option>
@@ -160,7 +160,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
           <select
             name="pp"
             defaultValue={pp}
-            className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text"
+            className="rounded-lg border border-border bg-surface-container-lowest px-3 py-2 text-sm text-text"
           >
             <option value="">PP</option>
             <option value="true">PP Yes</option>
@@ -169,7 +169,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
           <select
             name="band"
             defaultValue={band}
-            className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text"
+            className="rounded-lg border border-border bg-surface-container-lowest px-3 py-2 text-sm text-text"
           >
             <option value="">Band</option>
             <option value="STABLE">Stable</option>
@@ -208,7 +208,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-border/80 text-left text-xs uppercase tracking-wide text-muted">
-                  <th className="sticky left-0 z-10 bg-white px-4 py-3 font-medium">Student</th>
+                  <th className="sticky left-0 z-10 bg-surface-container-lowest px-4 py-3 font-medium">Student</th>
                   <th className="px-4 py-3 font-medium text-center">Year</th>
                   <th className="px-4 py-3 font-medium text-center">Flags</th>
                   {hasBehaviourData && <th className="px-4 py-3 font-medium text-center">Band</th>}
@@ -221,8 +221,8 @@ export default async function StudentsPage({ searchParams }: { searchParams: Rec
                 {students.map((s) => {
                   const latest = s.snapshots[0];
                   return (
-                    <tr key={s.id} className="border-b border-border/50 last:border-0 hover:bg-[#f8fafc] calm-transition">
-                      <td className="sticky left-0 z-10 bg-white px-4 py-3">
+                    <tr key={s.id} className="border-b border-border/50 last:border-0 hover:bg-surface-container-low calm-transition">
+                      <td className="sticky left-0 z-10 bg-surface-container-lowest px-4 py-3">
                         <div className="flex items-center gap-3">
                           <Avatar name={s.fullName} size="sm" />
                           <Link

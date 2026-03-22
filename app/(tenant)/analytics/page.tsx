@@ -33,9 +33,9 @@ const STATUS_LABELS: Record<RiskStatus, string> = {
 };
 
 const STATUS_PILL: Record<RiskStatus, string> = {
-  SIGNIFICANT_DRIFT: "bg-red-100 text-red-700",
-  EMERGING_DRIFT: "bg-amber-100 text-amber-700",
-  STABLE: "bg-green-100 text-green-700",
+  SIGNIFICANT_DRIFT: "bg-risk-urgent-bg text-risk-urgent-text",
+  EMERGING_DRIFT: "bg-scale-some-light text-scale-some-text",
+  STABLE: "bg-risk-stable-bg text-risk-stable-text",
   LOW_COVERAGE: "bg-divider text-muted",
 };
 
@@ -47,15 +47,15 @@ const BAND_LABELS: Record<RiskBand, string> = {
 };
 
 const BAND_PILL: Record<RiskBand, string> = {
-  URGENT: "bg-red-100 text-red-700",
-  PRIORITY: "bg-amber-100 text-amber-700",
-  WATCH: "bg-yellow-100 text-yellow-700",
-  STABLE: "bg-green-100 text-green-700",
+  URGENT: "bg-risk-urgent-bg text-risk-urgent-text",
+  PRIORITY: "bg-scale-some-light text-scale-some-text",
+  WATCH: "bg-risk-watch-bg text-risk-watch-text",
+  STABLE: "bg-risk-stable-bg text-risk-stable-text",
 };
 
 const CONFIDENCE_PILL: Record<Confidence, string> = {
   HIGH: "bg-divider text-muted",
-  LOW: "bg-orange-100 text-orange-600",
+  LOW: "bg-risk-priority-bg text-risk-priority-text",
 };
 
 function TabBar({
@@ -77,7 +77,7 @@ function TabBar({
             href={`/analytics?${params.toString()}`}
             className={`rounded-md px-4 py-2 text-sm font-medium calm-transition ${
               tab === activeTab
-                ? "bg-accent text-white shadow-sm"
+                ? "bg-accent text-on-primary shadow-sm"
                 : "text-muted hover:bg-bg hover:text-text"
             }`}
           >
@@ -698,7 +698,7 @@ async function StudentsTab({
                         {row.drivers.map((d) => (
                           <span
                             key={d.metric}
-                            className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700"
+                            className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-scale-some-text"
                           >
                             {d.label}
                           </span>
@@ -710,7 +710,7 @@ async function StudentsTab({
                       {row.attendanceDelta !== null && (
                         <span
                           className={`ml-1 text-xs ${
-                            row.attendanceDelta < 0 ? "text-red-600" : "text-green-600"
+                            row.attendanceDelta < 0 ? "text-red-600" : "text-scale-strong-text"
                           }`}
                         >
                           ({row.attendanceDelta > 0 ? "+" : ""}
@@ -735,12 +735,12 @@ async function StudentsTab({
                     <td className="px-4 py-3">
                       <div className="flex gap-1">
                         {row.sendFlag && (
-                          <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700">
+                          <span className="rounded-full bg-cat-violet-bg px-2 py-0.5 text-xs text-cat-violet-text">
                             SEND
                           </span>
                         )}
                         {row.ppFlag && (
-                          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
+                          <span className="rounded-full bg-scale-consistent-light px-2 py-0.5 text-xs text-blue-700">
                             PP
                           </span>
                         )}

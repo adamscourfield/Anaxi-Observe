@@ -59,7 +59,7 @@ export default function ResetPasswordPage() {
       <nav className="fixed top-0 w-full z-50 flex items-center px-8 h-20 glass-surface">
         <div className="flex items-center gap-3">
           <Image src="/anaxi-logo.png" alt="Anaxi" width={32} height={32} priority className="h-8 w-8 object-contain" />
-          <div className="h-4 w-px mx-2" style={{ background: "rgba(198,198,205,0.30)" }} />
+          <div className="h-4 w-px mx-2" style={{ background: "var(--divider-subtle)" }} />
           <span className="text-[11px] font-semibold tracking-[0.12em] uppercase" style={{ color: "var(--on-surface-variant)" }}>
             Anaxi
           </span>
@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
               className="p-8 rounded-[1.375rem]"
               style={{
                 background: "var(--surface-container-lowest)",
-                border: "1px solid rgba(198,198,205,0.10)",
+                border: "1px solid color-mix(in srgb, var(--outline-variant) 10%, transparent)",
               }}
             >
               {missingToken ? (

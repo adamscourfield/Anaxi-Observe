@@ -19,9 +19,9 @@ const STATUS_LABELS: Record<RiskStatus, string> = {
 };
 
 const STATUS_PILL: Record<RiskStatus, string> = {
-  SIGNIFICANT_DRIFT: "bg-red-100 text-red-700",
-  EMERGING_DRIFT: "bg-amber-100 text-amber-700",
-  STABLE: "bg-green-100 text-green-700",
+  SIGNIFICANT_DRIFT: "bg-risk-urgent-bg text-risk-urgent-text",
+  EMERGING_DRIFT: "bg-scale-some-light text-scale-some-text",
+  STABLE: "bg-risk-stable-bg text-risk-stable-text",
   LOW_COVERAGE: "bg-divider text-muted",
 };
 
@@ -154,7 +154,7 @@ export default async function TeacherProfilePage({
                 <tr
                   key={sig.signalKey}
                   className={`border-b border-divider last:border-0 ${
-                    isDriver ? "border-l-2 border-l-amber-400 bg-amber-50/40" : ""
+                    isDriver ? "border-l-2 border-l-amber-400 bg-scale-some-bg/40" : ""
                   }`}
                 >
                   <td className="px-4 py-3 font-medium text-text">{sig.label}</td>
@@ -169,9 +169,9 @@ export default async function TeacherProfilePage({
                       sig.delta === null
                         ? "text-muted"
                         : sig.delta < 0
-                        ? "text-amber-600"
+                        ? "text-scale-some-text"
                         : sig.delta > 0
-                        ? "text-green-600"
+                        ? "text-scale-strong-text"
                         : "text-muted"
                     }`}
                   >

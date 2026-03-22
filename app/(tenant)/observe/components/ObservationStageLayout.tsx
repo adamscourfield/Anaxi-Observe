@@ -32,8 +32,8 @@ export function ObservationStageLayout({
             Institutional record for quality assurance and staff development.
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2 rounded-full border border-border/40 bg-white/80 px-3.5 py-1.5">
-          <span className="h-2 w-2 rounded-full bg-amber-400" />
+        <div className="flex shrink-0 items-center gap-2 rounded-full border border-border/40 bg-surface-container-lowest/80 px-3.5 py-1.5">
+          <span className="h-2 w-2 rounded-full bg-scale-some-bar" />
           <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-text">
             Draft Session
           </span>
@@ -53,9 +53,9 @@ export function ObservationStageLayout({
                 <span
                   className={`flex h-7 w-7 items-center justify-center rounded-full text-[0.75rem] font-bold ${
                     isActive
-                      ? "bg-[#1e293b] text-white"
+                      ? "bg-primary text-on-primary"
                       : isCompleted
-                      ? "bg-[#1e293b] text-white"
+                      ? "bg-primary text-on-primary"
                       : "bg-surface-container text-muted"
                   }`}
                 >
@@ -78,7 +78,7 @@ export function ObservationStageLayout({
               {!isLast && (
                 <div
                   className={`mx-4 h-[2px] w-16 rounded-full ${
-                    isCompleted ? "bg-[#1e293b]" : "bg-border/40"
+                    isCompleted ? "bg-primary" : "bg-border/40"
                   }`}
                 />
               )}

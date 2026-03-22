@@ -18,10 +18,10 @@ import {
 /* ─── Helpers ──────────────────────────────────────────────────────────────── */
 
 function meanToBgColor(mean: number): string {
-  if (mean >= 3.5) return "bg-emerald-500";
-  if (mean >= 2.5) return "bg-amber-400";
-  if (mean >= 1.5) return "bg-orange-400";
-  return "bg-rose-400";
+  if (mean >= 3.5) return "bg-scale-strong-bar";
+  if (mean >= 2.5) return "bg-scale-some-bar";
+  if (mean >= 1.5) return "bg-risk-priority-bg";
+  return "bg-scale-limited-bar";
 }
 
 const STATUS_LABELS: Record<RiskStatus, string> = {
@@ -74,8 +74,8 @@ function truncateLabel(label: string, max = 14): string {
 function formatDrift(value: number): { text: string; arrow: string; color: string } {
   const abs = Math.abs(value);
   const formatted = abs.toFixed(1);
-  if (value > 0.5) return { text: `+${formatted}`, arrow: "↗", color: "text-emerald-600" };
-  if (value < -0.5) return { text: `-${formatted}`, arrow: "↘", color: "text-rose-600" };
+  if (value > 0.5) return { text: `+${formatted}`, arrow: "↗", color: "text-scale-strong-text" };
+  if (value < -0.5) return { text: `-${formatted}`, arrow: "↘", color: "text-scale-limited-text" };
   const sign = value < 0 ? "-" : "+";
   return { text: `${sign}${formatted}`, arrow: "→", color: "text-muted" };
 }
@@ -122,7 +122,7 @@ function computeSignalBreakdown(rows: TeacherPivotRow[]): { category: SignalCate
     const avgMean = means.length > 0 ? means.reduce((a, b) => a + b, 0) / means.length : 0;
 
     // Generate colored dots based on category average
-    const dotColor = avgMean >= 3 ? "bg-emerald-600" : avgMean >= 2 ? "bg-amber-400" : "bg-rose-400";
+    const dotColor = avgMean >= 3 ? "bg-scale-strong-bar" : avgMean >= 2 ? "bg-scale-some-bar" : "bg-scale-limited-bar";
     const dots = [dotColor, dotColor];
     return { category: cat, dots };
   });
@@ -353,7 +353,7 @@ export default async function ExplorerTeachersPage({
             {departmentId && <input type="hidden" name="departmentId" value={departmentId} />}
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-lg bg-text px-5 py-2.5 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accent-hover"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:bg-primary-container"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeLinecap="round" strokeLinejoin="round" />
@@ -393,7 +393,7 @@ export default async function ExplorerTeachersPage({
               href={buildUrl({ mode: "pivot", page: "1" })}
               className={`rounded-full px-4 py-1.5 text-sm font-medium calm-transition ${
                 mode === "pivot"
-                  ? "bg-text text-white"
+                  ? "bg-primary text-on-primary"
                   : "text-muted hover:text-text"
               }`}
             >
@@ -403,7 +403,7 @@ export default async function ExplorerTeachersPage({
               href={buildUrl({ mode: "priorities", page: "1" })}
               className={`rounded-full px-4 py-1.5 text-sm font-medium calm-transition ${
                 mode === "priorities"
-                  ? "bg-text text-white"
+                  ? "bg-primary text-on-primary"
                   : "text-muted hover:text-text"
               }`}
             >
@@ -433,14 +433,14 @@ export default async function ExplorerTeachersPage({
           </select>
           <button
             type="submit"
-            className="rounded-full border border-border bg-surface px-5 py-2 text-[0.8125rem] font-semibold text-text calm-transition hover:bg-white"
+            className="rounded-full border border-border bg-surface px-5 py-2 text-[0.8125rem] font-semibold text-text calm-transition hover:bg-surface-container-lowest"
           >
             Apply Filters
           </button>
           {departmentId && (
             <Link
               href={buildUrl({ departmentId: "", page: "1" })}
-              className="rounded-full border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              className="rounded-full border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
             >
               Clear
             </Link>
@@ -462,11 +462,11 @@ export default async function ExplorerTeachersPage({
               <p className="mt-1 text-[0.8125rem] text-muted">Try adjusting the window or department filter.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+            <div className="overflow-hidden rounded-2xl glass-card">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-border/30 bg-white/40 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                    <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
                       <th className="px-5 py-3.5">
                         <Link href={sortUrl("name")} className="calm-transition hover:text-text">
                           Teacher{sortIndicator("name")}
@@ -493,7 +493,7 @@ export default async function ExplorerTeachersPage({
                       return (
                         <tr
                           key={row.teacherMembershipId}
-                          className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50"
+                          className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
                         >
                           {/* Teacher */}
                           <td className="whitespace-nowrap px-5 py-4">
@@ -540,7 +540,7 @@ export default async function ExplorerTeachersPage({
                               {HEATMAP_KEYS.map((key) => {
                                 const cell = row.signalData[key];
                                 const mean = cell?.currentMean;
-                                const bg = mean != null ? meanToBgColor(mean) : "bg-gray-200";
+                                const bg = mean != null ? meanToBgColor(mean) : "bg-surface-container-high";
                                 const label = SIGNAL_LABEL_MAP[key] ?? key;
                                 return (
                                   <div
@@ -577,11 +577,11 @@ export default async function ExplorerTeachersPage({
               <p className="mt-1 text-[0.8125rem] text-muted">Try adjusting the window or department filter.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+            <div className="overflow-hidden rounded-2xl glass-card">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-border/30 bg-white/40 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                    <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
                       <th className="px-5 py-3.5">
                         <Link href={sortUrl("name")} className="calm-transition hover:text-text">
                           Teacher{sortIndicator("name")}
@@ -609,7 +609,7 @@ export default async function ExplorerTeachersPage({
                       return (
                         <tr
                           key={row.teacherMembershipId}
-                          className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50"
+                          className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
                         >
                           <td className="whitespace-nowrap px-5 py-4">
                             <Link
@@ -653,8 +653,8 @@ export default async function ExplorerTeachersPage({
                                     key={d.signalKey}
                                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                                       isDrift
-                                        ? "bg-rose-100 text-rose-700"
-                                        : "bg-emerald-100 text-emerald-700"
+                                        ? "bg-scale-limited-light text-scale-limited-text"
+                                        : "bg-scale-strong-light text-scale-strong-text"
                                     }`}
                                   >
                                     {isDrift ? "↓" : "↑"} {label}
@@ -755,7 +755,7 @@ export default async function ExplorerTeachersPage({
       {mode === "pivot" && pivotRows.length > 0 && (
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_2fr]">
           {/* Signal Breakdown */}
-          <div className="rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+          <div className="rounded-2xl glass-card p-6">
             <h3 className="mb-4 text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-muted">
               Signal Breakdown
             </h3>
@@ -764,7 +764,7 @@ export default async function ExplorerTeachersPage({
                 <div key={item.category} className="flex items-center justify-between">
                   <span
                     className={`text-sm font-medium ${
-                      item.category === "Behaviour" ? "text-rose-600" : "text-text"
+                      item.category === "Behaviour" ? "text-scale-limited-text" : "text-text"
                     }`}
                   >
                     {item.category}
@@ -780,7 +780,7 @@ export default async function ExplorerTeachersPage({
           </div>
 
           {/* Observation Intelligence — static placeholder matching design spec */}
-          <div className="relative rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+          <div className="relative rounded-2xl glass-card p-6">
             <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full bg-text" />
             <div className="pl-4">
               <div className="flex items-start justify-between">

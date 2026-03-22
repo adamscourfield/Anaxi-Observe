@@ -35,7 +35,7 @@ function deltaClass(delta: number | null, inverted = false): string {
   if (delta === null) return "text-muted";
   if (delta === 0) return "text-muted";
   const isGood = inverted ? delta < 0 : delta > 0;
-  return isGood ? "text-green-600" : "text-amber-600";
+  return isGood ? "text-scale-strong-text" : "text-scale-some-text";
 }
 
 function fmtDelta(val: number | null, decimals = 2): string {
@@ -176,7 +176,7 @@ export default async function CohortsPage({
       />
 
       {/* ── Controls bar ────────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+      <div className="overflow-hidden rounded-2xl glass-card">
         <div className="border-b border-border/30 px-5 py-3">
           <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
         </div>
@@ -213,7 +213,7 @@ export default async function CohortsPage({
 
             <button
               type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
+              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-on-primary  calm-transition hover:bg-accentHover"
             >
               Apply
             </button>
@@ -222,7 +222,7 @@ export default async function CohortsPage({
           {hasActiveFilters && (
             <Link
               href={buildUrl({ yearGroup: undefined })}
-              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              className="rounded-lg border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
             >
               Clear
             </Link>
@@ -233,7 +233,7 @@ export default async function CohortsPage({
               <input type="hidden" name="windowDays" value={String(windowDays)} />
               <button
                 type="submit"
-                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+                className="rounded-lg border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
               >
                 Export CSV
               </button>
@@ -289,11 +289,11 @@ export default async function CohortsPage({
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="overflow-hidden rounded-2xl glass-card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
                   <th className="px-5 py-3">Year Group</th>
                   <th className="px-4 py-3 text-right">Students</th>
                   <th className="px-4 py-3 text-right">Attendance</th>
@@ -308,7 +308,7 @@ export default async function CohortsPage({
                 {rows.map((row) => (
                   <tr
                     key={row.yearGroup}
-                    className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50"
+                    className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
                   >
                     {/* Year Group (linked) */}
                     <td className="px-5 py-3 font-medium text-text">

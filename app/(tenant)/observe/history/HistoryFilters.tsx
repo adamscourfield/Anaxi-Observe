@@ -31,7 +31,7 @@ export function HistoryFilters({
   hasFilters,
 }: HistoryFiltersProps) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+    <div className="overflow-hidden rounded-2xl glass-card">
       <div className="border-b border-border/30 px-5 py-3">
         <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
       </div>
@@ -104,14 +104,14 @@ export function HistoryFilters({
           <div className="flex gap-2">
             <button
               type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
+              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-on-primary  calm-transition hover:bg-accentHover"
             >
               Apply
             </button>
             {hasFilters && (
               <Link
                 href="/observe/history"
-                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+                className="rounded-lg border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
               >
                 Clear
               </Link>

@@ -193,7 +193,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
         className={`group flex items-center gap-2.5 rounded-xl border px-4 py-2.5 text-sm font-medium calm-transition ${
           active
             ? "border-accent/30 bg-accent/[0.06] text-accent shadow-sm"
-            : "border-border bg-white text-muted hover:border-accent/20 hover:bg-accent/[0.03] hover:text-text"
+            : "border-border bg-surface-container-lowest text-muted hover:border-accent/20 hover:bg-accent/[0.03] hover:text-text"
         }`}
       >
         <span className={`shrink-0 ${active ? "text-accent" : "text-muted/60 group-hover:text-accent/60"}`}>
@@ -213,13 +213,13 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
       <Card>
         <SectionHeader title={title} subtitle={meta.description} />
         <div className="mb-1 mt-3 flex items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-status-approved-bg px-2.5 py-1 text-xs font-medium text-status-approved-text">
+            <span className="h-1.5 w-1.5 rounded-full bg-status-approved" />
             {activeCount} active
           </span>
           {inactiveCount > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-low px-2.5 py-1 text-xs font-medium text-on-surface-variant">
+              <span className="h-1.5 w-1.5 rounded-full bg-outline-variant" />
               {inactiveCount} inactive
             </span>
           )}
@@ -230,8 +230,8 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
               key={row.id}
               className={`flex flex-wrap items-center gap-2 rounded-xl border p-3 text-sm calm-transition ${
                 row.active
-                  ? "border-border/70 bg-white"
-                  : "border-border/40 bg-slate-50/60 opacity-70"
+                  ? "border-border/70 bg-surface-container-lowest"
+                  : "border-border/40 bg-surface-container-low/60 opacity-70"
               }`}
             >
               <form action={updateItem} className="flex min-w-0 flex-1 items-center gap-2">
@@ -239,7 +239,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
                 <input type="hidden" name="id" value={row.id} />
                 <span
                   className={`h-2 w-2 shrink-0 rounded-full ${
-                    row.active ? "bg-emerald-500" : "bg-slate-300"
+                    row.active ? "bg-scale-strong-bar" : "bg-outline-variant"
                   }`}
                 />
                 <input
@@ -260,8 +260,8 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
                   type="submit"
                   className={`rounded-lg px-3 py-1.5 text-xs font-medium calm-transition ${
                     row.active
-                      ? "bg-amber-50 text-amber-700 hover:bg-amber-100"
-                      : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      ? "bg-status-pending-bg text-status-pending-text hover:bg-status-pending-light"
+                      : "bg-status-approved-bg text-status-approved-text hover:bg-status-approved-light"
                   }`}
                 >
                   {row.active ? "Deactivate" : "Activate"}
@@ -286,7 +286,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
             <input type="hidden" name="type" value={type} />
             <input
               name="value"
-              className="flex-1 rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted/50 focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
+              className="flex-1 rounded-lg border border-border bg-surface-container-lowest px-3 py-2 text-sm placeholder:text-muted/50 focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
               placeholder={`Enter ${field === "email" ? "email address" : "name"}…`}
               required
             />
@@ -351,7 +351,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
               {(loaAuthorisers as any[]).map((row) => (
                 <div
                   key={row.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-white px-4 py-3 text-sm"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-surface-container-lowest px-4 py-3 text-sm"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-bold text-accent">
@@ -363,7 +363,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-status-approved-bg px-2.5 py-1 text-xs font-medium text-status-approved-text">
                       <svg viewBox="0 0 16 16" fill="none" className="h-3 w-3">
                         <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.2" />
                         <path d="M5 8.5l2 2 4-4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -396,7 +396,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
                 <input type="hidden" name="type" value="loa_authoriser" />
                 <select
                   name="value"
-                  className="flex-1 rounded-lg border border-border bg-white px-3 py-2 text-sm focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
+                  className="flex-1 rounded-lg border border-border bg-surface-container-lowest px-3 py-2 text-sm focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
                   required
                 >
                   <option value="">Select a staff member…</option>
@@ -422,10 +422,10 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
 
             <div className="mt-4 space-y-3">
               {Array.from(scopesByApprover.entries()).map(([approverId, { approver, targets }]) => (
-                <div key={approverId} className="rounded-xl border border-border/70 bg-white">
+                <div key={approverId} className="rounded-xl border border-border/70 bg-surface-container-lowest">
                   <div className="flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-status-pending-light text-xs font-bold text-status-pending-text">
                         {(approver?.fullName || "?").charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
@@ -434,7 +434,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-status-pending-bg px-2.5 py-1 text-xs font-medium text-status-pending-text">
                         <svg viewBox="0 0 16 16" fill="none" className="h-3 w-3">
                           <circle cx="6" cy="6" r="4" stroke="currentColor" strokeWidth="1.2" />
                           <circle cx="11" cy="11" r="4" stroke="currentColor" strokeWidth="1.2" />
@@ -460,7 +460,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
                           <input type="hidden" name="id" value={scope.id} />
                           <button
                             type="submit"
-                            className="group inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-slate-50 px-3 py-1.5 text-xs font-medium text-text calm-transition hover:border-error/30 hover:bg-error/5"
+                            className="group inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-surface-container-low px-3 py-1.5 text-xs font-medium text-text calm-transition hover:border-error/30 hover:bg-error/5"
                           >
                             {scope.targetUser?.fullName}
                             <svg viewBox="0 0 12 12" fill="none" className="h-3 w-3 text-muted/50 group-hover:text-error">
@@ -510,7 +510,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
               <form action={addScopedAuthoriser} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
                 <select
                   name="approverId"
-                  className="rounded-lg border border-border bg-white px-3 py-2 text-sm focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
+                  className="rounded-lg border border-border bg-surface-container-lowest px-3 py-2 text-sm focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
                   required
                 >
                   <option value="">Authoriser…</option>
@@ -522,7 +522,7 @@ export default async function AdminTaxonomiesPage({ searchParams }: { searchPara
                 </select>
                 <select
                   name="targetUserId"
-                  className="rounded-lg border border-border bg-white px-3 py-2 text-sm focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
+                  className="rounded-lg border border-border bg-surface-container-lowest px-3 py-2 text-sm focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
                   required
                 >
                   <option value="">Covered person…</option>

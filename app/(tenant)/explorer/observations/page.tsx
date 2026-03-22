@@ -152,7 +152,7 @@ export default async function ExplorerObservationsPage({
       />
 
       {/* ── Window selector + Filters ──────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+      <div className="overflow-hidden rounded-2xl glass-card">
         <div className="border-b border-border/30 px-5 py-3">
           <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
         </div>
@@ -210,14 +210,14 @@ export default async function ExplorerObservationsPage({
           <div className="flex items-end gap-2">
             <button
               type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-accentHover"
+              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-on-primary  calm-transition hover:bg-accentHover"
             >
               Apply
             </button>
             {hasFilters && (
               <Link
                 href={`/explorer/observations?windowDays=${windowDays}`}
-                className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+                className="rounded-lg border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
               >
                 Clear
               </Link>
@@ -233,7 +233,7 @@ export default async function ExplorerObservationsPage({
             {subject && <input type="hidden" name="subject" value={subject} />}
             <button
               type="submit"
-              className="rounded-lg border border-border bg-white/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              className="rounded-lg border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
             >
               Export CSV
             </button>
@@ -261,11 +261,11 @@ export default async function ExplorerObservationsPage({
           <p className="mt-1 text-[0.8125rem] text-muted">Try widening your filters or window period.</p>
         </div>
       ) : (
-        <div className="mt-4 overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="mt-4 overflow-hidden rounded-2xl glass-card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
                   <th className="px-5 py-3">Date</th>
                   <th className="px-4 py-3">Teacher</th>
                   <th className="px-4 py-3">Year Group</th>
@@ -288,7 +288,7 @@ export default async function ExplorerObservationsPage({
                   return (
                     <tr
                       key={obs.id}
-                      className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50"
+                      className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
                     >
                       {/* Date */}
                       <td className="px-5 py-3 whitespace-nowrap">
@@ -346,7 +346,7 @@ export default async function ExplorerObservationsPage({
                       <td className="pr-4 py-3 text-right">
                         <Link
                           href={`/observe/${obs.id}`}
-                          className="inline-flex items-center gap-1 rounded-lg border border-border bg-white/70 px-3 py-1.5 text-[0.75rem] font-medium text-muted calm-transition hover:text-accent hover:border-accent/30"
+                          className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-container-lowest/70 px-3 py-1.5 text-[0.75rem] font-medium text-muted calm-transition hover:text-accent hover:border-accent/30"
                         >
                           View
                         </Link>

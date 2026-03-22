@@ -37,22 +37,21 @@ function getPriorityLevel(row: CpdPriorityRow): "HIGH" | "MEDIUM" | "LOW" {
 }
 
 function getPriorityColor(level: "HIGH" | "MEDIUM" | "LOW") {
-  if (level === "HIGH") return { border: "border-l-[#f43f5e]", text: "text-[#991b1b]", bg: "bg-[#fee2e2]" };
-  if (level === "MEDIUM") return { border: "border-l-[#f59e0b]", text: "text-[#92400e]", bg: "bg-[#fef3c7]" };
-  return { border: "border-l-[#3b82f6]", text: "text-[#1d4ed8]", bg: "bg-[#dbeafe]" };
+  if (level === "HIGH") return { border: "border-l-scale-limited-bar", text: "text-scale-limited-text", bg: "bg-scale-limited-bg" };
+  if (level === "MEDIUM") return { border: "border-l-scale-some-bar", text: "text-scale-some-text", bg: "bg-scale-some-bg" };
+  return { border: "border-l-scale-consistent-bar", text: "text-scale-consistent-text", bg: "bg-scale-consistent-bg" };
 }
 
 function getImprovementLabel(index: number): { label: string; color: string } {
-  if (index >= 85) return { label: "Excellent", color: "text-[var(--success)]" };
-  if (index >= 70) return { label: "Good", color: "text-[var(--success)]" };
-  if (index >= 50) return { label: "Fair", color: "text-[var(--warning-text)]" };
-  return { label: "Needs Work", color: "text-[var(--error)]" };
+  if (index >= 85) return { label: "Excellent", color: "text-scale-strong-text" };
+  if (index >= 70) return { label: "Good", color: "text-scale-strong-text" };
+  if (index >= 50) return { label: "Fair", color: "text-scale-some-text" };
+  return { label: "Needs Work", color: "text-scale-limited-text" };
 }
 
 function getDriftBarColor(rate: number): string {
-  if (rate > 0.20) return "bg-[#fe9f9f]";
-  if (rate > 0.10) return "bg-[#1e293b]";
-  return "bg-[#1e293b]";
+  if (rate > 0.20) return "bg-coral";
+  return "bg-primary-container";
 }
 
 export default async function SignalsPage({
@@ -177,16 +176,16 @@ export default async function SignalsPage({
       </div>
 
       {/* ── Controls bar ───────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-white/60 bg-white/60 px-5 py-3 backdrop-blur-sm">
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl glass-card px-5 py-3">
         {/* Window toggle */}
-        <div className="inline-flex overflow-hidden rounded-lg border border-border/40 bg-white/80">
+        <div className="inline-flex overflow-hidden rounded-lg border border-border/40 bg-surface-container-lowest/80">
           {VALID_WINDOWS.map((w) => (
             <Link
               key={w}
               href={buildUrl({ windowDays: String(w) })}
               className={`px-3.5 py-1.5 text-[0.8125rem] font-medium calm-transition ${
                 w === windowDays
-                  ? "bg-[var(--primary)] text-white"
+                  ? "bg-primary text-on-primary"
                   : "text-muted hover:bg-[var(--surface-container-low)] hover:text-text"
               }`}
             >
@@ -211,7 +210,7 @@ export default async function SignalsPage({
             ))}
           </AutoSubmitSelect>
           <noscript>
-            <button type="submit" className="rounded-lg bg-accent px-3 py-1.5 text-[0.8125rem] font-medium text-white">
+            <button type="submit" className="rounded-lg bg-accent px-3 py-1.5 text-[0.8125rem] font-medium text-on-primary">
               Apply
             </button>
           </noscript>
@@ -221,7 +220,7 @@ export default async function SignalsPage({
           {/* More Filters button */}
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border/40 bg-white/80 px-4 py-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:border-border hover:text-text"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border/40 bg-surface-container-lowest/80 px-4 py-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:border-border hover:text-text"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
@@ -239,7 +238,7 @@ export default async function SignalsPage({
               )}
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 py-1.5 text-[0.8125rem] font-semibold text-white calm-transition hover:bg-[var(--accent-hover)]"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 py-1.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:bg-[var(--accent-hover)]"
               >
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -254,7 +253,7 @@ export default async function SignalsPage({
       {/* ── Summary stat cards ─────────────────────────────────── */}
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {/* Total Signals */}
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Total Signals</p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-[2rem] font-bold leading-none tracking-tight text-text">{totalSignals}</span>
@@ -267,7 +266,7 @@ export default async function SignalsPage({
         </div>
 
         {/* Critical Drift */}
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Critical Drift</p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-[2rem] font-bold leading-none tracking-tight text-text">{totalDrifting}</span>
@@ -278,7 +277,7 @@ export default async function SignalsPage({
         </div>
 
         {/* Avg. Drift Rate */}
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Avg. Drift Rate</p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-[2rem] font-bold leading-none tracking-tight text-text">{pct(avgDriftRate)}</span>
@@ -287,7 +286,7 @@ export default async function SignalsPage({
         </div>
 
         {/* Improvement Index */}
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-5">
           <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Improvement Index</p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-[2rem] font-bold leading-none tracking-tight text-text">{improvementIndex.toFixed(1)}</span>
@@ -308,11 +307,11 @@ export default async function SignalsPage({
           <p className="mt-1 text-[0.8125rem] text-muted">Try adjusting your window or department filter.</p>
         </div>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="mt-6 overflow-hidden rounded-2xl glass-card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
                   <th className="py-3 pl-5 pr-3">Signal</th>
                   <th className="px-3 py-3 text-right">Teachers</th>
                   <th className="px-3 py-3 text-right">Drifting</th>
@@ -331,7 +330,7 @@ export default async function SignalsPage({
                   return (
                     <tr
                       key={row.signalKey}
-                      className={`group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50 border-l-[3px] ${colors.border}`}
+                      className={`group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50 border-l-[3px] ${colors.border}`}
                     >
                       <td className="py-3.5 pl-4 pr-3 font-medium text-text">
                         <Link
@@ -352,7 +351,7 @@ export default async function SignalsPage({
                       </td>
                       <td className="px-3 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-100">
+                          <div className="h-2 w-16 overflow-hidden rounded-full bg-surface-container-low">
                             <div
                               className={`h-full rounded-full ${getDriftBarColor(row.driftRate)}`}
                               style={{ width: `${barWidth}%` }}
@@ -387,7 +386,7 @@ export default async function SignalsPage({
       {/* ── Bottom section: Drift Trend + Top Improving ────────── */}
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         {/* Overall Drift Trend */}
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-text">Overall Drift Trend</h2>
             <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">Last 7 Days</span>
@@ -405,7 +404,7 @@ export default async function SignalsPage({
                   <div className="flex h-28 w-full items-end justify-center">
                     <div
                       className={`w-full max-w-[36px] rounded-t-md ${
-                        isHighDrift ? "bg-[#fe9f9f]" : "bg-[#1e293b]"
+                        isHighDrift ? "bg-coral" : "bg-primary-container"
                       }`}
                       style={{ height: `${barHeight}%` }}
                     />
@@ -438,17 +437,17 @@ export default async function SignalsPage({
         </div>
 
         {/* Top Improving Signals */}
-        <div className="rounded-2xl border border-white/60 bg-white/60 p-6 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card p-6">
           <h2 className="text-lg font-semibold text-text">Top Improving Signals</h2>
           <div className="mt-4 space-y-3">
             {improving.length > 0 ? (
               improving.map((row) => (
                 <div
                   key={row.signalKey}
-                  className="flex items-center gap-4 rounded-xl border border-border/20 bg-white/50 p-4"
+                  className="flex items-center gap-4 rounded-xl border border-border/20 bg-surface-container-lowest/50 p-4"
                 >
                   {/* Arrow icon */}
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-scale-strong-bg">
                     <svg className="h-5 w-5 text-[var(--success)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
                     </svg>

@@ -36,7 +36,7 @@ export default async function MyActionsPage() {
         actions={
           <Link
             href="/meetings"
-            className="calm-transition inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-[0.8125rem] font-medium text-muted hover:border-[#c4c9d0] hover:text-text"
+            className="calm-transition inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-[0.8125rem] font-medium text-muted hover:border-outline-variant hover:text-text"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
               <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -52,10 +52,10 @@ export default async function MyActionsPage() {
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: "Open", value: openCount, stripe: "bg-accent", textColor: openCount > 0 ? "text-text" : "text-muted" },
-          { label: "Blocked", value: blockedCount, stripe: "bg-amber-400", textColor: blockedCount > 0 ? "text-amber-600" : "text-muted" },
-          { label: "Done", value: doneCount, stripe: "bg-emerald-500", textColor: doneCount > 0 ? "text-emerald-600" : "text-muted" },
+          { label: "Blocked", value: blockedCount, stripe: "bg-scale-some-bar", textColor: blockedCount > 0 ? "text-scale-some-text" : "text-muted" },
+          { label: "Done", value: doneCount, stripe: "bg-scale-strong-bar", textColor: doneCount > 0 ? "text-scale-strong-text" : "text-muted" },
         ].map((item) => (
-          <div key={item.label} className="relative overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+          <div key={item.label} className="relative overflow-hidden rounded-xl border border-border bg-surface-container-lowest shadow-sm">
             <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${item.stripe}`} />
             <div className="px-4 py-4 pl-5">
               <p className={`text-[1.625rem] font-bold leading-none tracking-[-0.03em] ${item.textColor}`}>

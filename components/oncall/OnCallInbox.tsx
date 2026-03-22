@@ -394,10 +394,10 @@ export function OnCallInbox({
             <span
               className={`inline-block h-3.5 w-3.5 rounded-full ${
                 healthLabel === "STABLE"
-                  ? "bg-emerald-400"
+                  ? "bg-scale-strong-bar"
                   : healthLabel === "WARNING"
-                    ? "bg-amber-400"
-                    : "bg-red-400"
+                    ? "bg-scale-some-bar"
+                    : "bg-scale-limited-bar"
               }`}
             />
           </div>

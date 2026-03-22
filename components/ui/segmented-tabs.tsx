@@ -25,7 +25,7 @@ export function SegmentedTabs({ tabs, activeKey, onChange }: SegmentedTabsProps)
             onClick={() => onChange(tab.key)}
             className={`rounded-lg px-3.5 py-1.5 text-sm font-medium calm-transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 ${
               active
-                ? "bg-white text-text shadow-sm"
+                ? "bg-surface-container-lowest text-text shadow-sm"
                 : "text-muted hover:text-text"
             }`}
           >

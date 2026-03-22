@@ -56,7 +56,7 @@ export default async function LeaveCalendarPage() {
         actions={
           <Link
             href="/leave/request"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white shadow-sm calm-transition hover:bg-accentHover"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-on-primary shadow-sm calm-transition hover:bg-accentHover"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -69,11 +69,11 @@ export default async function LeaveCalendarPage() {
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-5 text-xs text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400" />
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-scale-some-bar" />
           Pending approval
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" />
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-scale-strong-bg0" />
           Approved
         </span>
         <span className="flex items-center gap-1.5">
@@ -83,14 +83,14 @@ export default async function LeaveCalendarPage() {
       </div>
 
       {/* Calendar card */}
-      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/70 shadow-sm backdrop-blur-sm">
+      <div className="overflow-hidden rounded-2xl glass-card shadow-sm">
         {/* Day headers */}
-        <div className="grid grid-cols-7 border-b border-border/30 bg-white/50">
+        <div className="grid grid-cols-7 border-b border-border/30 bg-surface-container-lowest/50">
           {WEEKDAYS.map((wd, i) => (
             <div
               key={wd}
               className={`py-2.5 text-center text-[11px] font-semibold uppercase tracking-[0.07em] ${
-                i >= 5 ? "text-slate-400" : "text-muted"
+                i >= 5 ? "text-outline" : "text-muted"
               }`}
             >
               {wd}
@@ -104,7 +104,7 @@ export default async function LeaveCalendarPage() {
           {Array.from({ length: firstDayOfWeek }).map((_, i) => (
             <div
               key={`pad-${i}`}
-              className="min-h-[110px] border-b border-r border-border/20 bg-slate-50/30"
+              className="min-h-[110px] border-b border-r border-border/20 bg-surface-container-low/30"
             />
           ))}
 
@@ -128,8 +128,8 @@ export default async function LeaveCalendarPage() {
                   isToday
                     ? "bg-accent/[0.04]"
                     : isWeekend
-                    ? "bg-slate-50/60"
-                    : "bg-transparent hover:bg-white/40"
+                    ? "bg-surface-container-low/60"
+                    : "bg-transparent hover:bg-surface-container-lowest/40"
                 }`}
               >
                 {/* Date number + request button */}
@@ -137,10 +137,10 @@ export default async function LeaveCalendarPage() {
                   <span
                     className={`inline-flex h-[22px] w-[22px] items-center justify-center rounded-full text-[12px] font-semibold ${
                       isToday
-                        ? "bg-accent text-white"
+                        ? "bg-accent text-on-primary"
                         : isWeekend
-                        ? "text-slate-400"
-                        : "text-[#374151]"
+                        ? "text-outline"
+                        : "text-on-surface-variant"
                     }`}
                   >
                     {day.getDate()}
@@ -148,7 +148,7 @@ export default async function LeaveCalendarPage() {
                   {!isWeekend && (
                     <Link
                       href={`/leave/request?date=${key}`}
-                      className="hidden h-[18px] w-[18px] items-center justify-center rounded-full bg-accent/10 text-accent text-[15px] leading-none calm-transition group-hover:flex hover:bg-accent hover:text-white"
+                      className="hidden h-[18px] w-[18px] items-center justify-center rounded-full bg-accent/10 text-accent text-[15px] leading-none calm-transition group-hover:flex hover:bg-accent hover:text-on-primary"
                       title={`Request leave for ${day.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`}
                     >
                       +
@@ -164,8 +164,8 @@ export default async function LeaveCalendarPage() {
                       href={`/leave/${request.id}?from=calendar`}
                       className={`block truncate rounded px-1.5 py-[3px] text-[11px] font-medium leading-snug calm-transition ${
                         request.status === "APPROVED"
-                          ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                          : "bg-amber-100 text-amber-800 hover:bg-amber-200"
+                          ? "bg-scale-strong-light text-scale-strong-text hover:bg-scale-strong-bg"
+                          : "bg-scale-some-light text-scale-some-text hover:bg-scale-some-bg"
                       }`}
                     >
                       {manager
@@ -184,7 +184,7 @@ export default async function LeaveCalendarPage() {
           }).map((_, i) => (
             <div
               key={`trail-${i}`}
-              className="min-h-[110px] border-b border-r border-border/20 bg-slate-50/30"
+              className="min-h-[110px] border-b border-r border-border/20 bg-surface-container-low/30"
             />
           ))}
         </div>
@@ -194,14 +194,14 @@ export default async function LeaveCalendarPage() {
       <div className="flex flex-wrap gap-3">
         <Link
           href="/leave"
-          className="rounded-lg border border-border/60 bg-white/70 px-3.5 py-2 text-sm font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
+          className="rounded-lg border border-border/60 bg-surface-container-lowest/70 px-3.5 py-2 text-sm font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
         >
           ← All requests
         </Link>
         {manager && (
           <Link
             href="/leave/pending"
-            className="rounded-lg border border-border/60 bg-white/70 px-3.5 py-2 text-sm font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
+            className="rounded-lg border border-border/60 bg-surface-container-lowest/70 px-3.5 py-2 text-sm font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
           >
             Pending approvals
           </Link>

@@ -34,8 +34,8 @@ type Tab = (typeof TABS)[number];
 const TAB_DOT: Record<Tab, string> = {
   All: "",
   Open: "bg-accent",
-  Blocked: "bg-amber-400",
-  Done: "bg-emerald-500",
+  Blocked: "bg-scale-some-bar",
+  Done: "bg-scale-strong-bar",
 };
 
 export function MyActionsGrouped({ grouped: initial, currentUserId }: MyActionsGroupedProps) {
@@ -73,7 +73,7 @@ export function MyActionsGrouped({ grouped: initial, currentUserId }: MyActionsG
   return (
     <div className="space-y-4">
       {/* Tab bar */}
-      <div className="flex items-center gap-1 rounded-lg border border-border bg-white p-1 shadow-sm">
+      <div className="flex items-center gap-1 rounded-lg border border-border bg-surface-container-lowest p-1 shadow-sm">
         {TABS.map((tab) => {
           const count = countForTab(tab);
           const isActive = activeTab === tab;

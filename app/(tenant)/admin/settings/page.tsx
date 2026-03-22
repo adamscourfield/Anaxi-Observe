@@ -89,7 +89,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
     <Link
       key={value}
       href={`/admin/settings?tab=${value}`}
-      className={`rounded-lg border px-3 py-1.5 text-sm calm-transition ${tab === value ? "border-transparent bg-primaryBtn text-white" : "border-border bg-surface text-text hover:bg-bg/80"}`}
+      className={`rounded-lg border px-3 py-1.5 text-sm calm-transition ${tab === value ? "border-transparent bg-primary text-on-primary" : "border-border bg-surface text-text hover:bg-bg/80"}`}
     >
       {label}
     </Link>
@@ -187,11 +187,11 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
                       </div>
                       <div
                         className={`relative mt-0.5 inline-block h-[22px] w-[40px] shrink-0 rounded-full transition-colors duration-200 ${
-                          feature.enabled ? "bg-accent" : "bg-slate-200"
+                          feature.enabled ? "bg-accent" : "bg-surface-container-high"
                         }`}
                       >
                         <span
-                          className={`absolute top-[3px] h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${
+                          className={`absolute top-[3px] h-4 w-4 rounded-full bg-surface-container-lowest shadow transition-transform duration-200 ${
                             feature.enabled ? "translate-x-[20px]" : "translate-x-[3px]"
                           }`}
                         />

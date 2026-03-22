@@ -9,10 +9,10 @@ type Signal = { key: string; order: number; displayNameDefault: string };
 type LabelMap = Record<string, { displayName: string; description?: string }>;
 
 const SCALE_DISPLAY: Record<string, { label: string; color: string; dot: string }> = {
-  LIMITED:    { label: "Limited",    color: "bg-rose-100 text-rose-700",    dot: "bg-rose-500" },
-  SOME:       { label: "Some",       color: "bg-amber-100 text-amber-700",   dot: "bg-amber-500" },
-  CONSISTENT: { label: "Consistent", color: "bg-blue-100 text-blue-700",     dot: "bg-blue-600" },
-  STRONG:     { label: "Strong",     color: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-600" },
+  LIMITED:    { label: "Limited",    color: "bg-scale-limited-light text-scale-limited-text",       dot: "bg-scale-limited-bar" },
+  SOME:       { label: "Some",       color: "bg-scale-some-light text-scale-some-text",             dot: "bg-scale-some-bar" },
+  CONSISTENT: { label: "Consistent", color: "bg-scale-consistent-light text-scale-consistent-text", dot: "bg-scale-consistent-bar" },
+  STRONG:     { label: "Strong",     color: "bg-scale-strong-light text-scale-strong-text",         dot: "bg-scale-strong-bar" },
 };
 
 export function ReviewList({
@@ -51,7 +51,7 @@ export function ReviewList({
         <input type="hidden" name="observedAt" value={draft.context.observedAt} />
 
         {/* Main Card */}
-        <div className="rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+        <div className="rounded-2xl glass-card">
           <div className="px-8 py-7">
             {/* Stage Header */}
             <div className="mb-6">
@@ -71,7 +71,7 @@ export function ReviewList({
                   </p>
                 </div>
                 {/* Completion summary */}
-                <div className="shrink-0 rounded-xl border border-white/60 bg-white/70 px-4 py-3 text-center backdrop-blur-sm">
+                <div className="shrink-0 rounded-xl glass-card px-4 py-3 text-center">
                   <div className="text-[1.375rem] font-bold tabular-nums text-text">{rated}</div>
                   <div className="text-[0.6875rem] font-medium text-muted">rated</div>
                   {skipped > 0 && <div className="mt-0.5 text-[0.6875rem] text-muted">{skipped} skipped</div>}
@@ -92,7 +92,7 @@ export function ReviewList({
                 .map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-border/50 bg-white/60 px-2.5 py-0.5 text-[0.6875rem] font-medium text-muted"
+                    className="rounded-full border border-border/50 bg-surface-container-lowest/60 px-2.5 py-0.5 text-[0.6875rem] font-medium text-muted"
                   >
                     {tag}
                   </span>
@@ -100,7 +100,7 @@ export function ReviewList({
             </div>
 
             {/* Signal rows */}
-            <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-sm">
+            <div className="overflow-hidden rounded-2xl glass-card">
               {orderedSignals.map((signal, index) => {
                 const state = draft.signalState[signal.key];
                 const displayName = labelMap[signal.key]?.displayName || signal.displayNameDefault;
@@ -114,13 +114,13 @@ export function ReviewList({
                     key={signal.key}
                     type="button"
                     onClick={() => router.push(`/observe/new/signals?index=${index}`)}
-                    className={`group flex w-full items-center gap-4 px-5 py-3.5 text-left calm-transition hover:bg-white/50 ${!isLast ? "border-b border-border/30" : ""}`}
+                    className={`group flex w-full items-center gap-4 px-5 py-3.5 text-left calm-transition hover:bg-surface-container-lowest/50 ${!isLast ? "border-b border-border/30" : ""}`}
                   >
                     {/* Status dot */}
                     <span className={`h-2 w-2 shrink-0 rounded-full ${
                       display ? display.dot :
-                      isSkipped ? "bg-slate-300" :
-                      "bg-amber-400"
+                      isSkipped ? "bg-outline-variant" :
+                      "bg-scale-some-bar"
                     }`} />
 
                     {/* Name */}
@@ -129,8 +129,8 @@ export function ReviewList({
                     {/* Rating badge or status */}
                     <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[0.75rem] font-semibold ${
                       display ? display.color :
-                      isSkipped ? "bg-slate-100 text-slate-500" :
-                      "bg-amber-50 text-amber-700"
+                      isSkipped ? "bg-surface-container-low text-on-surface-variant" :
+                      "bg-scale-some-bg text-scale-some-text"
                     }`}>
                       {display ? display.label : isSkipped ? "Skipped" : "Tap to rate"}
                     </span>
@@ -182,7 +182,7 @@ export function ReviewList({
             <button
               type="submit"
               disabled={!allDone}
-              className="flex items-center gap-2 rounded-xl bg-[#1e293b] px-6 py-3 text-[0.875rem] font-semibold text-white shadow-sm calm-transition hover:bg-[#334155] disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-[0.875rem] font-semibold text-on-primary shadow-sm calm-transition hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-40"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
@@ -194,12 +194,12 @@ export function ReviewList({
 
         {/* Warning */}
         {!allDone && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <svg className="h-4 w-4 shrink-0 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-scale-some-border bg-scale-some-bg px-4 py-3">
+            <svg className="h-4 w-4 shrink-0 text-scale-some-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
               <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-            <p className="text-[0.8125rem] text-amber-800">
+            <p className="text-[0.8125rem] text-scale-some-text">
               {orderedSignals.length - completed} signal{orderedSignals.length - completed !== 1 ? "s" : ""} still need a rating or skip.
             </p>
           </div>

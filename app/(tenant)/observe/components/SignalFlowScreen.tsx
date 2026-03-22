@@ -143,7 +143,7 @@ export function SignalFlowScreen({
   return (
     <ObservationStageLayout currentStep={2}>
       {/* Main Card */}
-      <div className="rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+      <div className="rounded-2xl glass-card">
         <div className="px-8 py-7">
           {/* Stage Header */}
           <div className="mb-6">
@@ -192,7 +192,7 @@ export function SignalFlowScreen({
                 <div
                   key={i}
                   className={`h-1.5 flex-1 rounded-full calm-transition ${
-                    i <= currentIndex ? "bg-[#1e293b]" : "bg-border/40"
+                    i <= currentIndex ? "bg-primary" : "bg-border/40"
                   }`}
                 />
               ))}
@@ -212,7 +212,7 @@ export function SignalFlowScreen({
               .map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-border/50 bg-white/60 px-2.5 py-0.5 text-[0.6875rem] font-medium text-muted"
+                  className="rounded-full border border-border/50 bg-surface-container-lowest/60 px-2.5 py-0.5 text-[0.6875rem] font-medium text-muted"
                 >
                   {tag}
                 </span>
@@ -226,7 +226,7 @@ export function SignalFlowScreen({
               <button
                 type="button"
                 onClick={() => setHelpOpen(true)}
-                className="mt-0.5 flex shrink-0 items-center gap-1.5 rounded-lg border border-border/60 bg-white/70 px-2.5 py-1.5 text-[0.75rem] font-medium text-muted calm-transition hover:border-accent/30 hover:text-accent"
+                className="mt-0.5 flex shrink-0 items-center gap-1.5 rounded-lg border border-border/60 bg-surface-container-lowest/70 px-2.5 py-1.5 text-[0.75rem] font-medium text-muted calm-transition hover:border-accent/30 hover:text-accent"
               >
                 <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
                   <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" />
@@ -260,7 +260,7 @@ export function SignalFlowScreen({
             }}
             className={`flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-[0.8125rem] font-medium calm-transition ${
               pendingNotObserved
-                ? "border-[#1e293b]/40 bg-[#1e293b]/5 text-[#1e293b]"
+                ? "border-primary/40 bg-primary/5 text-primary"
                 : "border-dashed border-border bg-transparent text-muted hover:border-muted hover:text-text"
             }`}
           >
@@ -304,7 +304,7 @@ export function SignalFlowScreen({
               type="button"
               disabled={!hasSelection}
               onClick={confirmAndAdvance}
-              className="flex items-center gap-2 rounded-xl bg-[#1e293b] px-6 py-3 text-[0.875rem] font-semibold text-white shadow-sm calm-transition hover:bg-[#334155] disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-[0.875rem] font-semibold text-on-primary shadow-sm calm-transition hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-40"
             >
               {isLastSignal ? "Review & Submit" : "Next Signal"}
               <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4">

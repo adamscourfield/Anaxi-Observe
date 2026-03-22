@@ -229,9 +229,9 @@ export default async function CpdSignalDrilldownPage({
                         row.delta === null
                           ? "text-muted"
                           : row.delta < 0
-                          ? "text-amber-600"
+                          ? "text-scale-some-text"
                           : row.delta > 0
-                          ? "text-green-600"
+                          ? "text-scale-strong-text"
                           : "text-muted"
                       }`}
                     >

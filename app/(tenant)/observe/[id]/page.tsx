@@ -10,10 +10,10 @@ import { formatPhaseLabel } from "@/modules/observations/phaseLabel";
 import { ClearDraftOnSuccess } from "../components/ClearDraftOnSuccess";
 
 const SCALE_DISPLAY: Record<string, { label: string; color: string; dot: string; bar: string }> = {
-  LIMITED:    { label: "Limited",    color: "bg-rose-50 text-rose-700 border-rose-200",     dot: "bg-rose-500",    bar: "bg-rose-400" },
-  SOME:       { label: "Some",       color: "bg-amber-50 text-amber-700 border-amber-200",   dot: "bg-amber-500",   bar: "bg-amber-400" },
-  CONSISTENT: { label: "Consistent", color: "bg-blue-50 text-blue-700 border-blue-200",      dot: "bg-blue-600",    bar: "bg-blue-500" },
-  STRONG:     { label: "Strong",     color: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-600", bar: "bg-emerald-500" },
+  LIMITED:    { label: "Limited",    color: "bg-scale-limited-bg text-scale-limited-text",         dot: "bg-scale-limited-bar",    bar: "bg-scale-limited-bar" },
+  SOME:       { label: "Some",       color: "bg-scale-some-bg text-scale-some-text",               dot: "bg-scale-some-bar",       bar: "bg-scale-some-bar" },
+  CONSISTENT: { label: "Consistent", color: "bg-scale-consistent-bg text-scale-consistent-text",   dot: "bg-scale-consistent-bar", bar: "bg-scale-consistent-bar" },
+  STRONG:     { label: "Strong",     color: "bg-scale-strong-bg text-scale-strong-text",           dot: "bg-scale-strong-bar",     bar: "bg-scale-strong-bar" },
 };
 
 const SCALE_WIDTH: Record<string, string> = {
@@ -21,10 +21,10 @@ const SCALE_WIDTH: Record<string, string> = {
 };
 
 const PHASE_BADGE: Record<string, string> = {
-  INSTRUCTION:           "bg-indigo-50 text-indigo-700 border-indigo-200",
-  GUIDED_PRACTICE:       "bg-emerald-50 text-emerald-700 border-emerald-200",
-  INDEPENDENT_PRACTICE:  "bg-violet-50 text-violet-700 border-violet-200",
-  UNKNOWN:               "bg-slate-50 text-slate-600 border-slate-200",
+  INSTRUCTION:           "bg-phase-instruction-bg text-phase-instruction-text",
+  GUIDED_PRACTICE:       "bg-phase-guided-bg text-phase-guided-text",
+  INDEPENDENT_PRACTICE:  "bg-phase-independent-bg text-phase-independent-text",
+  UNKNOWN:               "bg-surface-container-low text-on-surface-variant",
 };
 
 export default async function ObservationDetailPage({ params }: { params: { id: string } }) {
@@ -88,7 +88,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
       </Link>
 
       {/* Hero card */}
-      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-sm">
+      <div className="overflow-hidden rounded-2xl glass-card">
         <div className="bg-gradient-to-r from-accent/5 to-transparent px-6 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -132,7 +132,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
             ].map(({ icon, text }) => (
               <span
                 key={text}
-                className="flex items-center gap-1.5 rounded-full border border-border/40 bg-white/70 px-3 py-1 text-[0.75rem] font-medium text-text"
+                className="flex items-center gap-1.5 rounded-full border border-border/40 bg-surface-container-lowest/70 px-3 py-1 text-[0.75rem] font-medium text-text"
               >
                 {icon}
                 {text}
@@ -142,7 +142,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
 
           {/* Context note */}
           {observation.contextNote && (
-            <div className="mt-4 rounded-xl border border-border/40 bg-white/60 px-4 py-3">
+            <div className="mt-4 rounded-xl border border-border/40 bg-surface-container-lowest/60 px-4 py-3">
               <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">Observer note</p>
               <p className="mt-1 text-[0.875rem] leading-relaxed text-text">{observation.contextNote}</p>
             </div>
@@ -155,7 +155,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
             const d = SCALE_DISPLAY[key];
             return (
               <div key={key} className="flex flex-col items-center py-3">
-                <span className={`text-[1.125rem] font-bold tabular-nums ${key === "LIMITED" ? "text-rose-700" : key === "SOME" ? "text-amber-700" : key === "CONSISTENT" ? "text-blue-700" : "text-emerald-700"}`}>
+                <span className={`text-[1.125rem] font-bold tabular-nums ${key === "LIMITED" ? "text-scale-limited-text" : key === "SOME" ? "text-scale-some-text" : key === "CONSISTENT" ? "text-scale-consistent-text" : "text-scale-strong-text"}`}>
                   {scaleCounts[key]}
                 </span>
                 <span className="mt-0.5 text-[0.6875rem] font-medium text-muted">{d.label}</span>
@@ -170,7 +170,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
         <div className="flex flex-wrap gap-2">
           <Link
             href={`/observe/history?teacherId=${observation.observedTeacherId}`}
-            className="rounded-lg border border-border/60 bg-white/70 px-3.5 py-2 text-[0.8125rem] font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
+            className="rounded-lg border border-border/60 bg-surface-container-lowest/70 px-3.5 py-2 text-[0.8125rem] font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
           >
             All observations for this teacher →
           </Link>
@@ -186,7 +186,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
       {/* Signals */}
       <div>
         <h2 className="mb-3 text-[0.875rem] font-semibold uppercase tracking-[0.07em] text-muted">Signal records</h2>
-        <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-sm">
+        <div className="overflow-hidden rounded-2xl glass-card">
           {(SIGNAL_DEFINITIONS as any[]).map((signal, idx) => {
             const override = (labelMap as any)[signal.key];
             const displayName = override?.displayName || signal.displayNameDefault;
@@ -205,7 +205,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
                 <div className="flex items-start gap-4">
                   {/* Left: dot + name */}
                   <div className="flex min-w-0 flex-1 items-start gap-3">
-                    <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${display?.dot ?? (isSkipped ? "bg-slate-300" : "bg-slate-200")}`} />
+                    <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${display?.dot ?? (isSkipped ? "bg-outline-variant" : "bg-surface-container-high")}`} />
                     <div className="min-w-0">
                       <p className="text-[0.875rem] font-semibold leading-snug text-text">{displayName}</p>
                       <p className="mt-0.5 text-[0.75rem] leading-relaxed text-muted line-clamp-2">{description}</p>
@@ -220,7 +220,7 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
                           {display.label}
                         </span>
                         {/* Mini bar */}
-                        <div className="mt-1.5 h-1 w-16 overflow-hidden rounded-full bg-slate-100">
+                        <div className="mt-1.5 h-1 w-16 overflow-hidden rounded-full bg-surface-container-low">
                           <div className={`h-1 rounded-full calm-transition ${display.bar} ${SCALE_WIDTH[scaleKey!] ?? "w-0"}`} />
                         </div>
                       </div>

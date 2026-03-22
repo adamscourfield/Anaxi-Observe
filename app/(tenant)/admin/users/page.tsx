@@ -309,7 +309,7 @@ export default async function AdminUsersPage() {
                                 <input type="hidden" name="targetUserId" value={targetUserId} />
                                 <button
                                   type="submit"
-                                  className="inline-flex items-center gap-1 rounded-full bg-[var(--pill-info-bg)] px-2.5 py-1 text-[11px] font-medium text-[var(--pill-info-text)] ring-1 ring-inset ring-[var(--pill-info-ring)] calm-transition hover:bg-red-50 hover:text-red-600 hover:ring-red-200"
+                                  className="inline-flex items-center gap-1 rounded-full bg-[var(--pill-info-bg)] px-2.5 py-1 text-[11px] font-medium text-[var(--pill-info-text)] ring-1 ring-inset ring-[var(--pill-info-ring)] calm-transition hover:bg-error-container/50 hover:text-on-error-container hover:ring-error/20"
                                   title={`Remove ${target?.fullName || targetUserId}`}
                                 >
                                   <span className="max-w-[100px] truncate">{target?.fullName || targetUserId}</span>
@@ -367,8 +367,8 @@ export default async function AdminUsersPage() {
                               type="submit"
                               className={`rounded-md px-2.5 py-1.5 text-[11px] font-medium calm-transition ${
                                 u.isActive
-                                  ? "text-muted hover:bg-red-50 hover:text-red-600"
-                                  : "text-muted hover:bg-emerald-50 hover:text-emerald-600"
+                                  ? "text-muted hover:bg-error-container/50 hover:text-on-error-container"
+                                  : "text-muted hover:bg-scale-strong-bg hover:text-scale-strong-text"
                               }`}
                               title={u.isActive ? "Deactivate user" : "Activate user"}
                             >

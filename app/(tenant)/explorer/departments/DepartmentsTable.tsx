@@ -27,13 +27,13 @@ type Props = {
 
 const STATUS_STYLES: Record<string, string> = {
   STABLE:
-    "border-emerald-300 bg-emerald-50 text-emerald-700",
+    "bg-risk-stable-bg text-risk-stable-text",
   WARNING:
-    "border-amber-300 bg-amber-50 text-amber-700",
+    "bg-risk-watch-bg text-risk-watch-text",
   DRIFTING:
-    "border-rose-300 bg-rose-50 text-rose-700",
+    "bg-risk-priority-bg text-risk-priority-text",
   "CRITICAL DRIFT":
-    "border-slate-800 bg-slate-900 text-white",
+    "bg-risk-urgent-bg text-risk-urgent-text",
 };
 
 /* ------------------------------------------------------------------ */
@@ -48,11 +48,11 @@ export function DepartmentsTable({ rows, pageSize = 5 }: Props) {
   return (
     <>
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm">
+      <div className="overflow-hidden rounded-2xl glass-card">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border/30 bg-white/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+              <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
                 <th className="px-5 py-3.5">Department Name</th>
                 <th className="px-4 py-3.5 text-center">Teachers</th>
                 <th className="px-4 py-3.5 text-center">Obs</th>
@@ -64,7 +64,7 @@ export function DepartmentsTable({ rows, pageSize = 5 }: Props) {
               {visible.map((row) => (
                 <tr
                   key={row.departmentId}
-                  className="group border-b border-border/20 last:border-0 calm-transition hover:bg-white/50"
+                  className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
                 >
                   {/* Department name + faculty */}
                   <td className="px-5 py-4">
@@ -94,12 +94,12 @@ export function DepartmentsTable({ rows, pageSize = 5 }: Props) {
                           key={dot.key}
                           className={`inline-block h-3.5 w-3.5 rounded-full ${
                             dot.color === "green"
-                              ? "bg-emerald-500"
+                              ? "bg-severity-medium-dot"
                               : dot.color === "amber"
-                                ? "bg-amber-400"
+                                ? "bg-severity-high-dot"
                                 : dot.color === "red"
-                                  ? "bg-rose-500"
-                                  : "bg-gray-300"
+                                  ? "bg-severity-critical-dot"
+                                  : "bg-surface-container-high"
                           }`}
                           title={dot.label}
                         />
@@ -110,7 +110,7 @@ export function DepartmentsTable({ rows, pageSize = 5 }: Props) {
                   {/* Status badge */}
                   <td className="px-4 py-4 text-right">
                     <span
-                      className={`inline-flex items-center rounded-full border px-3 py-1 text-[0.6875rem] font-semibold ${STATUS_STYLES[row.status] ?? STATUS_STYLES.STABLE}`}
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-[0.6875rem] font-semibold ${STATUS_STYLES[row.status] ?? STATUS_STYLES.STABLE}`}
                     >
                       {row.status}
                     </span>
