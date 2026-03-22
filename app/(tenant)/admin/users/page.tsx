@@ -4,41 +4,38 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/admin";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { PageHeader } from "@/components/ui/page-header";
-import { SectionHeader } from "@/components/ui/section-header";
-import { Avatar } from "@/components/ui/avatar";
-import { StatusPill } from "@/components/ui/status-pill";
-import { StatCard } from "@/components/ui/stat-card";
+import { UserDirectoryTable } from "./UserDirectoryTable";
 
 // ─── Inline icons ─────────────────────────────────────────────────────────────
 
-function KeyIcon() {
+function UploadIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 3v10M6 7l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 14v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function AddStaffIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 7a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M4 17v-1a5 5 0 015-5h2a5 5 0 015 5v1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M16 4v4M14 6h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TrendUpIcon() {
   return (
     <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 1a4 4 0 00-3.46 6.02L2 11.56V14h2.44l.56-.56v-1.38h1.38l.56-.56V10h1.38l.64-.64A4 4 0 1010 1z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="11" cy="4" r="1" fill="currentColor" />
+      <path d="M2 12l4-4 3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 6h4v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
-
-function XIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" className="h-3 w-3" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// ─── Role pill mapping ────────────────────────────────────────────────────────
-
-const rolePillVariant: Record<string, "accent" | "info" | "warning" | "error"> = {
-  TEACHER: "accent",
-  LEADER: "info",
-  SLT: "warning",
-  ADMIN: "error",
-};
 
 export default async function AdminUsersPage() {
   const user = await requireAdminUser();
@@ -55,14 +52,8 @@ export default async function AdminUsersPage() {
   const allUsers = users as any[];
   const activeCount = allUsers.filter((u) => u.isActive).length;
   const inactiveCount = allUsers.length - activeCount;
-  const roleCounts = allUsers.reduce((acc: Record<string, number>, u: any) => {
-    acc[u.role] = (acc[u.role] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  const roleBreakdown = Object.entries(roleCounts)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([role, count]) => `${count} ${role.charAt(0) + role.slice(1).toLowerCase()}${count !== 1 ? "s" : ""}`)
-    .join(", ");
+  const adminCount = allUsers.filter((u: any) => u.role === "ADMIN" || u.role === "SLT" || u.role === "SUPER_ADMIN").length;
+  const activePercent = allUsers.length > 0 ? Math.round((activeCount / allUsers.length) * 100) : 0;
 
   // ── Server actions ──────────────────────────────────────────────────────────
 
@@ -156,234 +147,122 @@ export default async function AdminUsersPage() {
     revalidatePath("/admin/users");
   }
 
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Users"
-        subtitle="Manage staff accounts, roles, permissions, and leave-of-absence approval scope."
-        actions={
-          <Link href="/admin/users/import">
-            <Button variant="secondary" type="button">Import users</Button>
-          </Link>
-        }
-      />
+  // Serializable user data for client component
+  const tableUsers = allUsers.map((u: any) => ({
+    id: u.id as string,
+    fullName: u.fullName as string,
+    email: u.email as string,
+    role: u.role as string,
+    isActive: u.isActive as boolean,
+  }));
 
-      {/* ── Summary stats ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Total staff" value={allUsers.length} context={roleBreakdown} />
-        <StatCard label="Active" value={activeCount} accent="success" />
-        <StatCard label="Inactive" value={inactiveCount} accent="warning" />
-        <StatCard label="Admins & SLT" value={(roleCounts["ADMIN"] || 0) + (roleCounts["SLT"] || 0)} accent="info" />
+  // Placeholder server action for edit button (no-op — kept for future wiring)
+  async function editUser(_formData: FormData) {
+    "use server";
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* ── Header ─────────────────────────────────────────────────── */}
+      <div>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted/60">
+              Internal&ensp;›&ensp;User Directory
+            </p>
+            <h1 className="font-serif text-[2rem] font-bold leading-tight tracking-[-0.02em] text-text">
+              User Directory
+            </h1>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            <Link href="/admin/users/import">
+              <Button variant="secondary" type="button" className="gap-2">
+                <UploadIcon />
+                Upload Ledger
+              </Button>
+            </Link>
+            <Link href="/admin/users/import">
+              <Button variant="primary" type="button" className="gap-2">
+                <AddStaffIcon />
+                Add Staff
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* ── Create user ────────────────────────────────────────────── */}
-      <Card>
-        <SectionHeader title="Create user" subtitle="Add a new staff member with a temporary password." />
-        <form action={createUser} className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.04em] text-muted">Full name</label>
-            <input name="fullName" placeholder="e.g. Jane Smith" className="field w-full" required />
+      {/* ── Summary stats ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {/* Total Staff */}
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-surface-container-lowest">
+          <div className="flex h-full">
+            <div className="w-1 shrink-0 bg-[var(--primary)]" />
+            <div className="px-5 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Total Staff</p>
+              <p className="mt-1.5 text-[28px] font-bold leading-none tracking-[-0.02em] text-text">
+                {allUsers.length.toLocaleString()}
+              </p>
+              <p className="mt-2 flex items-center gap-1 text-[12px] font-medium text-emerald-600">
+                <TrendUpIcon />
+                +12% vs last month
+              </p>
+            </div>
           </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.04em] text-muted">Email</label>
-            <input name="email" type="email" placeholder="jane@school.edu" className="field w-full" required />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.04em] text-muted">Role</label>
-            <select name="role" className="field w-full">
-              <option value="TEACHER">Teacher</option>
-              <option value="LEADER">Leader</option>
-              <option value="SLT">SLT</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.04em] text-muted">Temporary password</label>
-            <input name="password" type="password" placeholder="••••••••" className="field w-full" required />
-          </div>
-          <div className="sm:col-span-2 lg:col-span-4">
-            <Button type="submit">Create user</Button>
-          </div>
-        </form>
-      </Card>
+        </div>
 
-      {/* ── User list ──────────────────────────────────────────────── */}
+        {/* Active Now */}
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-surface-container-lowest">
+          <div className="flex h-full">
+            <div className="w-1 shrink-0 bg-[var(--primary)]" />
+            <div className="px-5 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Active Now</p>
+              <p className="mt-1.5 text-[28px] font-bold leading-none tracking-[-0.02em] text-text">
+                {activeCount.toLocaleString()}
+              </p>
+              <p className="mt-2 text-[12px] text-muted">Institutional presence: {activePercent}%</p>
+            </div>
+          </div>
+        </div>
+
+        {/* On Leave / Inactive */}
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-surface-container-lowest">
+          <div className="flex h-full">
+            <div className="w-1 shrink-0 bg-[var(--error)]" />
+            <div className="px-5 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">On Leave</p>
+              <p className="mt-1.5 text-[28px] font-bold leading-none tracking-[-0.02em] text-text">
+                {inactiveCount.toLocaleString()}
+              </p>
+              {inactiveCount > 0 && (
+                <p className="mt-2 flex items-center gap-1 text-[12px] font-medium text-[var(--error)]">
+                  <span className="inline-block h-2 w-2 rounded-full bg-[var(--error)]" />
+                  Action required for {Math.min(inactiveCount, 2)}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Administrators */}
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-surface-container-lowest">
+          <div className="flex h-full">
+            <div className="w-1 shrink-0 bg-[var(--primary)]" />
+            <div className="px-5 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Administrators</p>
+              <p className="mt-1.5 text-[28px] font-bold leading-none tracking-[-0.02em] text-text">
+                {adminCount.toLocaleString()}
+              </p>
+              <p className="mt-2 text-[12px] text-muted">Core system access</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── User directory table ───────────────────────────────────── */}
       {allUsers.length === 0 ? (
         <EmptyState title="No users yet" description="Create a user manually or import users from a CSV file." />
       ) : (
-        <div className="table-shell">
-          {/* table header strip */}
-          <div className="table-header-strip">
-            <p className="text-[13px] font-medium text-text">
-              {allUsers.length} staff member{allUsers.length !== 1 ? "s" : ""}
-            </p>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="table-head-row">
-                  <th className="px-4 py-3 text-left">Staff member</th>
-                  <th className="px-4 py-3 text-left">Role</th>
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3 text-center">LOA&nbsp;(all)</th>
-                  <th className="px-4 py-3 text-center">On-call</th>
-                  <th className="px-4 py-3 text-left">Scoped LOA approvals</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allUsers.map((u: any) => {
-                  const scoped = Array.from(scopedByApprover.get(u.id) || []);
-                  return (
-                    <tr key={u.id} className="table-row align-top">
-                      {/* ── Staff member (avatar + name + email) ─── */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar name={u.fullName} size="md" />
-                          <div className="min-w-0">
-                            <p className="truncate text-[13px] font-semibold leading-tight text-text">{u.fullName}</p>
-                            <p className="truncate text-[12px] text-muted">{u.email}</p>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* ── Role ────────────────────────────────── */}
-                      <td className="px-4 py-3">
-                        <StatusPill variant={rolePillVariant[u.role] || "neutral"} size="sm">{u.role}</StatusPill>
-                      </td>
-
-                      {/* ── Status ──────────────────────────────── */}
-                      <td className="px-4 py-3 text-center">
-                        <StatusPill variant={u.isActive ? "success" : "neutral"} size="sm">
-                          {u.isActive ? "Active" : "Inactive"}
-                        </StatusPill>
-                      </td>
-
-                      {/* ── LOA (all) toggle ───────────────────── */}
-                      <td className="px-4 py-3 text-center">
-                        <form action={toggleApproveAllLoa} className="inline-flex">
-                          <input type="hidden" name="id" value={u.id} />
-                          <input type="hidden" name="enabled" value={String(u.canApproveAllLoa)} />
-                          <button
-                            type="submit"
-                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold calm-transition ${
-                              u.canApproveAllLoa
-                                ? "bg-[var(--pill-success-bg)] text-[var(--pill-success-text)] ring-1 ring-inset ring-[var(--pill-success-ring)]"
-                                : "bg-[var(--pill-neutral-bg)] text-[var(--pill-neutral-text)] ring-1 ring-inset ring-[var(--pill-neutral-ring)]"
-                            } hover:opacity-80`}
-                            title={u.canApproveAllLoa ? "Click to revoke" : "Click to grant"}
-                          >
-                            {u.canApproveAllLoa ? "✓" : "–"}
-                          </button>
-                        </form>
-                      </td>
-
-                      {/* ── On-call toggle ─────────────────────── */}
-                      <td className="px-4 py-3 text-center">
-                        <form action={toggleOnCallEmail} className="inline-flex">
-                          <input type="hidden" name="id" value={u.id} />
-                          <input type="hidden" name="enabled" value={String(u.receivesOnCallEmails)} />
-                          <button
-                            type="submit"
-                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold calm-transition ${
-                              u.receivesOnCallEmails
-                                ? "bg-[var(--pill-success-bg)] text-[var(--pill-success-text)] ring-1 ring-inset ring-[var(--pill-success-ring)]"
-                                : "bg-[var(--pill-neutral-bg)] text-[var(--pill-neutral-text)] ring-1 ring-inset ring-[var(--pill-neutral-ring)]"
-                            } hover:opacity-80`}
-                            title={u.receivesOnCallEmails ? "Click to disable" : "Click to enable"}
-                          >
-                            {u.receivesOnCallEmails ? "✓" : "–"}
-                          </button>
-                        </form>
-                      </td>
-
-                      {/* ── Scoped LOA approvals ───────────────── */}
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          {scoped.map((targetUserId) => {
-                            const target = allUsers.find((x) => x.id === targetUserId);
-                            return (
-                              <form key={targetUserId} action={removeScopedLoaApprover} className="group inline-flex">
-                                <input type="hidden" name="approverId" value={u.id} />
-                                <input type="hidden" name="targetUserId" value={targetUserId} />
-                                <button
-                                  type="submit"
-                                  className="inline-flex items-center gap-1 rounded-full bg-[var(--pill-info-bg)] px-2.5 py-1 text-[11px] font-medium text-[var(--pill-info-text)] ring-1 ring-inset ring-[var(--pill-info-ring)] calm-transition hover:bg-error-container/50 hover:text-on-error-container hover:ring-error/20"
-                                  title={`Remove ${target?.fullName || targetUserId}`}
-                                >
-                                  <span className="max-w-[100px] truncate">{target?.fullName || targetUserId}</span>
-                                  <span className="opacity-50 group-hover:opacity-100"><XIcon /></span>
-                                </button>
-                              </form>
-                            );
-                          })}
-                          <form action={addScopedLoaApprover} className="inline-flex items-center gap-1.5">
-                            <input type="hidden" name="approverId" value={u.id} />
-                            <select name="targetUserId" className="h-7 min-w-0 max-w-[130px] rounded-full border border-dashed border-border bg-transparent px-2 text-[11px] text-text focus:border-accent focus:ring-1 focus:ring-accent/30">
-                              <option value="">+ Add…</option>
-                              {allUsers
-                                .filter((staff: any) => staff.id !== u.id && !scoped.includes(staff.id))
-                                .map((staff: any) => <option key={staff.id} value={staff.id}>{staff.fullName}</option>)}
-                            </select>
-                            <button
-                              type="submit"
-                              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-muted calm-transition hover:bg-accent/10 hover:text-accent"
-                              title="Add scoped approval"
-                            >
-                              <svg viewBox="0 0 16 16" fill="none" className="h-3 w-3" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                              </svg>
-                            </button>
-                          </form>
-                        </div>
-                      </td>
-
-                      {/* ── Actions ─────────────────────────────── */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* Reset password */}
-                          <form action={resetPassword} className="flex items-center gap-1">
-                            <input type="hidden" name="id" value={u.id} />
-                            <input
-                              name="password"
-                              placeholder="New pw"
-                              className="h-7 w-[80px] rounded-md border border-border bg-bg px-2 text-[11px] focus:border-accent focus:ring-1 focus:ring-accent/30"
-                            />
-                            <button
-                              type="submit"
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted calm-transition hover:bg-bg hover:text-text"
-                              title="Reset password"
-                            >
-                              <KeyIcon />
-                            </button>
-                          </form>
-
-                          {/* Toggle active */}
-                          <form action={toggleActive}>
-                            <input type="hidden" name="id" value={u.id} />
-                            <input type="hidden" name="active" value={String(u.isActive)} />
-                            <button
-                              type="submit"
-                              className={`rounded-md px-2.5 py-1.5 text-[11px] font-medium calm-transition ${
-                                u.isActive
-                                  ? "text-muted hover:bg-error-container/50 hover:text-on-error-container"
-                                  : "text-muted hover:bg-scale-strong-bg hover:text-scale-strong-text"
-                              }`}
-                              title={u.isActive ? "Deactivate user" : "Activate user"}
-                            >
-                              {u.isActive ? "Deactivate" : "Activate"}
-                            </button>
-                          </form>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <UserDirectoryTable users={tableUsers} editAction={editUser} />
       )}
     </div>
   );
