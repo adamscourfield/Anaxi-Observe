@@ -104,7 +104,7 @@ export default async function LeaveRequestPage() {
             {/* Reason for leave */}
             <div className="rounded-2xl border border-white/60 bg-white/70 px-6 py-6 backdrop-blur-sm">
               <div className="space-y-3">
-                <label htmlFor="loa-reason-text" className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
+                <label htmlFor="loa-reason" className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
                   <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
