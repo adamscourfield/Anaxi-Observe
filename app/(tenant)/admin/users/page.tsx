@@ -145,11 +145,55 @@ export default async function AdminUsersPage() {
     email: u.email as string,
     role: u.role as string,
     isActive: u.isActive as boolean,
+    receivesOnCallEmails: u.receivesOnCallEmails as boolean,
+    canApproveAllLoa: u.canApproveAllLoa as boolean,
   }));
 
-  // Placeholder server action for edit button (no-op — kept for future wiring)
-  async function editUser(_formData: FormData) {
+  // All teachers for scoping dropdowns
+  const allTeachers = allUsers
+    .filter((u: any) => u.isActive)
+    .map((u: any) => ({ id: u.id as string, fullName: u.fullName as string }));
+
+  // Scoped LOA approval targets grouped by approver user id
+  const scopedLoaByUser: Record<string, string[]> = {};
+  for (const [approverId, targetIds] of scopedByApprover.entries()) {
+    scopedLoaByUser[approverId] = Array.from(targetIds);
+  }
+
+  // Comprehensive update server action
+  async function updateUser(formData: FormData) {
     "use server";
+    const admin = await requireAdminUser();
+    const userId = String(formData.get("userId") || "");
+    const role = String(formData.get("role") || "");
+    const receivesOnCallEmails = String(formData.get("receivesOnCallEmails")) === "true";
+    const canApproveAllLoa = String(formData.get("canApproveAllLoa")) === "true";
+    const scopedLoaRaw = String(formData.get("scopedLoaTargetIds") || "");
+    const scopedLoaTargetIds = scopedLoaRaw ? scopedLoaRaw.split(",").filter(Boolean) : [];
+
+    if (!userId) return;
+
+    // Update user fields
+    await (prisma as any).user.updateMany({
+      where: { id: userId, tenantId: admin.tenantId },
+      data: { role, receivesOnCallEmails, canApproveAllLoa },
+    });
+
+    // Sync LOA approval scopes: remove old, add new
+    await (prisma as any).lOAApprovalScope.deleteMany({
+      where: { tenantId: admin.tenantId, approverId: userId },
+    });
+    if (!canApproveAllLoa && scopedLoaTargetIds.length > 0) {
+      await (prisma as any).lOAApprovalScope.createMany({
+        data: scopedLoaTargetIds.map((targetUserId) => ({
+          tenantId: admin.tenantId,
+          approverId: userId,
+          targetUserId,
+        })),
+      });
+    }
+
+    revalidatePath("/admin/users");
   }
 
   return (
@@ -252,7 +296,12 @@ export default async function AdminUsersPage() {
       {allUsers.length === 0 ? (
         <EmptyState title="No users yet" description="Create a user manually or import users from a CSV file." />
       ) : (
-        <UserDirectoryTable users={tableUsers} editAction={editUser} />
+        <UserDirectoryTable
+          users={tableUsers}
+          allTeachers={allTeachers}
+          scopedLoaByUser={scopedLoaByUser}
+          saveAction={updateUser}
+        />
       )}
     </div>
   );
