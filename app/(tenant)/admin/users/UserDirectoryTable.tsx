@@ -159,9 +159,9 @@ export function UserDirectoryTable({
   return (
     <div className="space-y-0">
       {/* ── Search + Filter + Sort bar ──────────────────────────────── */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="filter-bar mb-6">
         <div className="relative flex-1">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">
             <SearchIcon />
           </span>
           <input
@@ -169,19 +169,19 @@ export function UserDirectoryTable({
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Search by name, email, or institutional role..."
-            className="field w-full pl-11 pr-4"
+            className="field w-full !rounded-lg !py-1.5 pl-10 pr-4"
           />
         </div>
         <button
           type="button"
-          className="inline-flex items-center gap-2 rounded-[0.75rem] border border-border px-5 py-2.5 text-sm font-medium text-text calm-transition hover:bg-[var(--surface-container-low)]"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border/40 bg-surface-container-lowest px-4 py-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:bg-surface-container-low hover:text-text"
         >
           <FilterIcon />
           Filter
         </button>
         <button
           type="button"
-          className="inline-flex items-center gap-2 rounded-[0.75rem] border border-border px-5 py-2.5 text-sm font-medium text-text calm-transition hover:bg-[var(--surface-container-low)]"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border/40 bg-surface-container-lowest px-4 py-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:bg-surface-container-low hover:text-text"
         >
           <SortIcon />
           Sort

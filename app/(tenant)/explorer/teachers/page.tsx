@@ -367,49 +367,34 @@ export default async function ExplorerTeachersPage({
       </div>
 
       {/* ── Controls bar ────────────────────────────────────────────────────── */}
-      <div className="mb-6 flex flex-wrap items-center gap-3">
+      <div className="mb-6 filter-bar">
         {/* Window selector */}
-        <div className="inline-flex items-center rounded-full border border-border/80 bg-surface p-1">
+        <div className="filter-period-toggle">
           {VALID_WINDOWS.map((w) => (
             <Link
               key={w}
               href={buildUrl({ windowDays: String(w), page: "1" })}
-              className={`rounded-full px-3.5 py-1 text-sm calm-transition ${
-                w === windowDays
-                  ? "font-bold text-text"
-                  : "font-medium text-muted hover:text-text"
-              }`}
+              className={`filter-period-btn ${w === windowDays ? "filter-period-btn-active" : ""}`}
             >
-              {w}d
+              {w}D
             </Link>
           ))}
         </div>
 
         {/* Mode toggle */}
-        <div className="inline-flex items-center gap-1">
-          <span className="mr-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted">View:</span>
-          <div className="inline-flex items-center rounded-full border border-border/80 bg-surface p-1">
-            <Link
-              href={buildUrl({ mode: "pivot", page: "1" })}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium calm-transition ${
-                mode === "pivot"
-                  ? "bg-primary text-on-primary"
-                  : "text-muted hover:text-text"
-              }`}
-            >
-              Performance view
-            </Link>
-            <Link
-              href={buildUrl({ mode: "priorities", page: "1" })}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium calm-transition ${
-                mode === "priorities"
-                  ? "bg-primary text-on-primary"
-                  : "text-muted hover:text-text"
-              }`}
-            >
-              Priority view
-            </Link>
-          </div>
+        <div className="filter-period-toggle">
+          <Link
+            href={buildUrl({ mode: "pivot", page: "1" })}
+            className={`filter-period-btn ${mode === "pivot" ? "filter-period-btn-active" : ""}`}
+          >
+            Performance view
+          </Link>
+          <Link
+            href={buildUrl({ mode: "priorities", page: "1" })}
+            className={`filter-period-btn ${mode === "priorities" ? "filter-period-btn-active" : ""}`}
+          >
+            Priority view
+          </Link>
         </div>
 
         {/* Department filter */}
@@ -422,9 +407,9 @@ export default async function ExplorerTeachersPage({
           <select
             name="departmentId"
             defaultValue={departmentId ?? ""}
-            className="field min-w-[160px] rounded-full"
+            className="field min-w-[160px] !rounded-lg !py-1.5 !text-[0.8125rem]"
           >
-            <option value="">All departments</option>
+            <option value="">All Departments</option>
             {scopedDepartments.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name}
@@ -433,14 +418,14 @@ export default async function ExplorerTeachersPage({
           </select>
           <button
             type="submit"
-            className="rounded-lg bg-primary px-4 py-2 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:opacity-90"
+            className="rounded-lg bg-primary px-4 py-1.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:opacity-90"
           >
             Apply
           </button>
           {departmentId && (
             <Link
               href={buildUrl({ departmentId: "", page: "1" })}
-              className="rounded-full border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              className="rounded-lg border border-border/40 bg-surface-container-lowest px-4 py-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:bg-surface-container-low hover:text-text"
             >
               Clear
             </Link>
@@ -462,11 +447,11 @@ export default async function ExplorerTeachersPage({
               <p className="mt-1 text-[0.8125rem] text-muted">Try adjusting the window or department filter.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl glass-card">
+            <div className="table-shell">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                    <tr className="table-head-row">
                       <th className="px-5 py-3.5">
                         <Link href={sortUrl("name")} className="calm-transition hover:text-text">
                           Teacher{sortIndicator("name")}
@@ -493,7 +478,7 @@ export default async function ExplorerTeachersPage({
                       return (
                         <tr
                           key={row.teacherMembershipId}
-                          className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
+                          className="group table-row calm-transition"
                         >
                           {/* Teacher */}
                           <td className="whitespace-nowrap px-5 py-4">
@@ -577,11 +562,11 @@ export default async function ExplorerTeachersPage({
               <p className="mt-1 text-[0.8125rem] text-muted">Try adjusting the window or department filter.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl glass-card">
+            <div className="table-shell">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                    <tr className="table-head-row">
                       <th className="px-5 py-3.5">
                         <Link href={sortUrl("name")} className="calm-transition hover:text-text">
                           Teacher{sortIndicator("name")}
@@ -609,7 +594,7 @@ export default async function ExplorerTeachersPage({
                       return (
                         <tr
                           key={row.teacherMembershipId}
-                          className="group border-b border-border/20 last:border-0 calm-transition hover:bg-[var(--surface-container-low)] cursor-pointer"
+                          className="group table-row calm-transition cursor-pointer"
                           onClick={() => window.location.href = `/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`}
                         >
                           <td className="whitespace-nowrap px-5 py-4">

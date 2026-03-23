@@ -189,18 +189,14 @@ export default async function SignalsPage({
       </div>
 
       {/* ── Controls bar ───────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl glass-card px-4 py-2.5">
+      <div className="filter-bar">
         {/* Window toggle */}
-        <div className="inline-flex overflow-hidden rounded-lg border border-border/40 bg-surface-container-lowest/80">
+        <div className="filter-period-toggle">
           {VALID_WINDOWS.map((w) => (
             <Link
               key={w}
               href={buildUrl({ windowDays: String(w) })}
-              className={`px-3.5 py-1.5 text-[0.8125rem] font-medium calm-transition ${
-                w === windowDays
-                  ? "bg-primary text-on-primary"
-                  : "text-muted hover:bg-[var(--surface-container-low)] hover:text-text"
-              }`}
+              className={`filter-period-btn ${w === windowDays ? "filter-period-btn-active" : ""}`}
             >
               {w}D
             </Link>
@@ -233,7 +229,7 @@ export default async function SignalsPage({
           {/* More Filters button */}
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border/40 bg-surface-container-lowest/80 px-4 py-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:border-border hover:text-text"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border/40 bg-surface-container-lowest px-4 py-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:border-border hover:bg-surface-container-low hover:text-text"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
@@ -251,7 +247,7 @@ export default async function SignalsPage({
               )}
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 py-1.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:bg-[var(--accent-hover)]"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:bg-[var(--accent-hover)]"
               >
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -320,11 +316,11 @@ export default async function SignalsPage({
           <p className="mt-1 text-[0.8125rem] text-muted">Try adjusting your window or department filter.</p>
         </div>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-2xl glass-card">
+        <div className="mt-6 table-shell">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                <tr className="table-head-row text-left">
                   <th className="py-3 pl-5 pr-3">Signal</th>
                   <th className="px-3 py-3 text-right">Teachers</th>
                   <th className="px-3 py-3 text-right">Drifting</th>
@@ -343,7 +339,7 @@ export default async function SignalsPage({
                   return (
                     <tr
                       key={row.signalKey}
-                      className={`group border-b border-border/20 last:border-0 calm-transition hover:bg-[var(--surface-container-low)] cursor-pointer border-l-[3px] ${colors.border}`}
+                      className={`group table-row calm-transition cursor-pointer border-l-[3px] ${colors.border}`}
                       onClick={() => window.location.href = `/analysis/cpd/${encodeURIComponent(row.signalKey)}`}
                     >
                       <td className="py-3.5 pl-4 pr-3 font-medium text-text">
