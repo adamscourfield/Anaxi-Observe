@@ -33,10 +33,10 @@ export function SignalTileGroup({
             key={option.key}
             type="button"
             onClick={() => onSelect(option.key)}
-            className={`relative w-full rounded-2xl p-4 text-left calm-transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+            className={`relative w-full rounded-2xl p-5 text-left calm-transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent border ${
               isSelected
-                ? "bg-primary text-on-primary"
-                : "bg-surface-container text-text hover:bg-surface-container-high"
+                ? "bg-tertiary-container border-tertiary-container"
+                : "bg-surface-container-lowest border-border/40 hover:bg-surface-container-low hover:border-border"
             }`}
           >
             {/* Top row: Level badge + radio/check circle */}
@@ -44,8 +44,8 @@ export function SignalTileGroup({
               <span
                 className={`rounded-md px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-widest ${
                   isSelected
-                    ? "bg-white/15 text-on-primary/90"
-                    : "bg-surface-container-high text-muted"
+                    ? "bg-white/10 text-on-tertiary-container"
+                    : "bg-surface-container text-muted"
                 }`}
               >
                 Level {idx + 1}
@@ -53,13 +53,13 @@ export function SignalTileGroup({
               <div
                 className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
                   isSelected
-                    ? "border-on-primary/50 bg-on-primary/20"
+                    ? "border-on-tertiary-container/40 bg-white/10"
                     : "border-border/60 bg-transparent"
                 }`}
               >
                 {isSelected && (
                   <svg
-                    className="h-3 w-3 text-on-primary"
+                    className="h-3 w-3 text-on-tertiary-container"
                     viewBox="0 0 12 12"
                     fill="none"
                     stroke="currentColor"
@@ -76,7 +76,7 @@ export function SignalTileGroup({
             {/* Title */}
             <p
               className={`text-[1rem] font-bold leading-tight ${
-                isSelected ? "text-on-primary" : "text-text"
+                isSelected ? "text-on-tertiary-container" : "text-text"
               }`}
             >
               {label}
@@ -86,7 +86,7 @@ export function SignalTileGroup({
             {option.guidance && (
               <p
                 className={`mt-1.5 text-[0.8125rem] leading-relaxed ${
-                  isSelected ? "text-on-primary/75" : "text-muted"
+                  isSelected ? "text-on-tertiary-container/70" : "text-muted"
                 }`}
               >
                 {option.guidance}
