@@ -27,8 +27,8 @@ export function HistoryFilters({
   hasFilters,
 }: HistoryFiltersProps) {
   return (
-    <div className="rounded-2xl bg-surface-container-low/60 px-5 py-5">
-      <form className="flex flex-wrap items-end gap-4">
+    <div className="filter-bar">
+      <form className="flex flex-wrap items-end gap-4 w-full">
         {showTeacherFilters && (
           <>
             <label className="flex flex-col gap-1.5 min-w-[140px]">
@@ -79,17 +79,17 @@ export function HistoryFilters({
           <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">To Date</span>
           <input name="to" type="date" defaultValue={defaults.to} className="field" />
         </label>
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-2 ml-auto">
           <button
             type="submit"
-            className="rounded-xl bg-accent px-5 py-2.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:bg-accentHover"
+            className="rounded-lg bg-primary px-5 py-2 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:opacity-90"
           >
             Apply Filters
           </button>
           {hasFilters && (
             <Link
               href="/observe/history"
-              className="rounded-xl border border-border bg-surface-container-lowest/70 px-4 py-2.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              className="rounded-lg border border-border/40 bg-surface-container-lowest px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:bg-surface-container-low hover:text-text"
             >
               Clear
             </Link>

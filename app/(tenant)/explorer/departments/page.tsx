@@ -266,18 +266,14 @@ export default async function DepartmentsPage({
       </div>
 
       {/* ── Filter bar ─────────────────────────────────────────── */}
-      <div className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl glass-card px-5 py-3">
+      <div className="mb-6 filter-bar">
         {/* Window toggle buttons */}
-        <div className="inline-flex overflow-hidden rounded-lg border border-border">
+        <div className="filter-period-toggle">
           {WINDOW_OPTIONS.map((w) => (
             <Link
               key={w}
               href={buildUrl({ windowDays: String(w) })}
-              className={`px-3.5 py-1.5 text-[0.75rem] font-semibold calm-transition ${
-                windowDays === w
-                  ? "bg-primary text-on-primary"
-                  : "bg-surface-container-lowest text-muted hover:bg-surface-container-low hover:text-text"
-              }`}
+              className={`filter-period-btn ${windowDays === w ? "filter-period-btn-active" : ""}`}
             >
               {w}D
             </Link>
@@ -291,7 +287,7 @@ export default async function DepartmentsPage({
           <AutoSubmitSelect
             name="departmentId"
             defaultValue={rawDeptId ?? ""}
-            className="field min-w-[180px] rounded-lg border border-border bg-surface-container-lowest px-3 py-1.5 text-[0.8125rem] font-semibold text-text"
+            className="field min-w-[180px] !rounded-lg !py-1.5 !text-[0.8125rem]"
           >
             <option value="">All Departments</option>
             {selectableDepts.map((d) => (

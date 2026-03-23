@@ -385,11 +385,11 @@ export default async function StudentsPage({
           </p>
         </div>
       ) : (
-        <div className="mt-4 overflow-hidden rounded-2xl glass-card">
+        <div className="mt-4 table-shell">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                <tr className="table-head-row text-left">
                   <th className="px-5 py-3">Name</th>
                   <th className="px-4 py-3">Year</th>
                   <th className="px-4 py-3">Flags</th>
@@ -403,7 +403,7 @@ export default async function StudentsPage({
                 {pageRows.map((row) => (
                   <tr
                     key={row.studentId}
-                    className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
+                    className="group table-row calm-transition"
                   >
                     {/* Name with initials avatar */}
                     <td className="px-5 py-4">
