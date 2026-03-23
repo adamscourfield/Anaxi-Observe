@@ -6,8 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { canViewObservation } from "@/modules/authz";
 import { SIGNAL_DEFINITIONS } from "@/modules/observations/signalDefinitions";
 import { getTenantSignalLabels } from "@/modules/observations/tenantSignalLabels";
-import { formatPhaseLabel } from "@/modules/observations/phaseLabel";
 import { ClearDraftOnSuccess } from "../components/ClearDraftOnSuccess";
+import { PrintExportButtons } from "../components/PrintExportButtons";
 
 const SCALE_DISPLAY: Record<string, { label: string; color: string; dot: string; bar: string }> = {
   LIMITED:    { label: "Limited",    color: "bg-scale-limited-bg text-scale-limited-text",         dot: "bg-scale-limited-bar",    bar: "bg-scale-limited-bar" },
@@ -16,16 +16,13 @@ const SCALE_DISPLAY: Record<string, { label: string; color: string; dot: string;
   STRONG:     { label: "Strong",     color: "bg-scale-strong-bg text-scale-strong-text",           dot: "bg-scale-strong-bar",     bar: "bg-scale-strong-bar" },
 };
 
-const SCALE_WIDTH: Record<string, string> = {
-  LIMITED: "w-1/4", SOME: "w-2/4", CONSISTENT: "w-3/4", STRONG: "w-full",
-};
+function initials(name: string) {
+  return name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
+}
 
-const PHASE_BADGE: Record<string, string> = {
-  INSTRUCTION:           "bg-phase-instruction-bg text-phase-instruction-text",
-  GUIDED_PRACTICE:       "bg-phase-guided-bg text-phase-guided-text",
-  INDEPENDENT_PRACTICE:  "bg-phase-independent-bg text-phase-independent-text",
-  UNKNOWN:               "bg-surface-container-low text-on-surface-variant",
-};
+function formatRole(role: string) {
+  return role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export default async function ObservationDetailPage({ params }: { params: { id: string } }) {
   const user = await getSessionUserOrThrow();
@@ -40,7 +37,10 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
   const [hodMemberships, coachAssignments, observedDeptMemberships] = await Promise.all([
     (prisma as any).departmentMembership.findMany({ where: { userId: user.id, isHeadOfDepartment: true } }),
     (prisma as any).coachAssignment.findMany({ where: { coachUserId: user.id } }),
-    (prisma as any).departmentMembership.findMany({ where: { userId: observation.observedTeacherId } }),
+    (prisma as any).departmentMembership.findMany({
+      where: { userId: observation.observedTeacherId },
+      include: { department: true },
+    }),
   ]);
 
   const viewer = {
@@ -61,179 +61,259 @@ export default async function ObservationDetailPage({ params }: { params: { id: 
   const signalMap = new Map((observation.signals as any[]).map((s: any) => [s.signalKey, s]));
   const draftKey = `observation-draft:${user.tenantId}:${user.id}`;
 
-  const phase = observation.phase as string;
-  const phaseBadge = PHASE_BADGE[phase] ?? PHASE_BADGE.UNKNOWN;
+  // Teacher department name
+  const teacherDept = (observedDeptMemberships as any[])[0]?.department?.fullName ?? null;
+  const teacherName: string = observation.observedTeacher?.fullName ?? "Unknown Teacher";
+  const observerName: string = observation.observer?.fullName ?? "—";
 
   // Summary stats
-  const ratedSignals = (SIGNAL_DEFINITIONS as any[]).filter((sig) => signalMap.get(sig.key)?.valueKey);
   const scaleCounts = { LIMITED: 0, SOME: 0, CONSISTENT: 0, STRONG: 0 };
-  for (const sig of ratedSignals) {
+  for (const sig of SIGNAL_DEFINITIONS as any[]) {
     const v = signalMap.get(sig.key)?.valueKey as keyof typeof scaleCounts;
     if (v && v in scaleCounts) scaleCounts[v]++;
   }
 
+  const observedAt = new Date(observation.observedAt);
+  const dateLabel = observedAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const dateTimeLabel = observedAt.toLocaleDateString("en-GB", {
+    day: "2-digit", month: "short", year: "numeric",
+  }).toUpperCase() + " · " + observedAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) + " GMT";
+
+  const sessionLabel = [observation.subject, observation.yearGroup ? `Year ${observation.yearGroup}` : null]
+    .filter(Boolean).join(" — ");
+
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6 pb-12">
       <ClearDraftOnSuccess draftKey={draftKey} />
 
-      {/* Back */}
-      <Link
-        href="/observe/history"
-        className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-      >
-        <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
-          <path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        Observation history
-      </Link>
+      {/* Page header */}
+      <div>
+        <Link
+          href="/observe/history"
+          className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text print:hidden"
+        >
+          <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
+            <path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Observation history
+        </Link>
 
-      {/* Hero card */}
-      <div className="overflow-hidden rounded-2xl glass-card">
-        <div className="bg-gradient-to-r from-accent/5 to-transparent px-6 py-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              {/* Teacher */}
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[13px] font-bold text-accent">
-                  {(observation.observedTeacher?.fullName ?? "?")
-                    .split(" ")
-                    .slice(0, 2)
-                    .map((n: string) => n[0])
-                    .join("")
-                    .toUpperCase()}
-                </div>
-                <div>
-                  <h1 className="text-[1.25rem] font-bold leading-tight text-text">
-                    {observation.observedTeacher?.fullName ?? "Unknown teacher"}
-                  </h1>
-                  <p className="text-[0.8125rem] text-muted">
-                    Observed by {observation.observer?.fullName ?? "—"}
-                  </p>
-                </div>
-              </div>
+        <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-[1.625rem] font-bold leading-tight text-text">
+              Observation Review — {dateLabel}
+            </h1>
+            <p className="mt-1 text-[0.875rem] text-muted">
+              {observation.subject}{observation.classCode ? ` · ${observation.classCode}` : ""}
+              {observation.yearGroup ? ` · Year ${observation.yearGroup}` : ""}
+            </p>
+          </div>
+          <PrintExportButtons />
+        </div>
+      </div>
+
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_288px]">
+
+        {/* ── Left: main content ── */}
+        <div className="space-y-6 min-w-0">
+
+          {/* Signal Summary */}
+          <div className="overflow-hidden rounded-2xl glass-card">
+            <div className="border-b border-border/20 px-6 py-4">
+              <h2 className="text-[0.875rem] font-semibold text-text">Signal Summary</h2>
             </div>
 
-            {/* Phase badge */}
-            <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[0.75rem] font-semibold ${phaseBadge}`}>
-              {formatPhaseLabel(phase)}
-            </span>
+            {/* Two-column signal table */}
+            <div className="grid grid-cols-1 sm:grid-cols-2">
+              {(SIGNAL_DEFINITIONS as any[]).map((signal, idx) => {
+                const override = (labelMap as any)[signal.key];
+                const displayName = override?.displayName || signal.displayNameDefault;
+                const value = signalMap.get(signal.key);
+                const scaleKey = value?.valueKey as string | undefined;
+                const display = scaleKey ? SCALE_DISPLAY[scaleKey] : null;
+                const isSkipped = value?.notObserved && !value?.valueKey;
+
+                const total = (SIGNAL_DEFINITIONS as any[]).length;
+                const isEven = idx % 2 === 0;
+                const lastRowStart = total % 2 === 0 ? total - 2 : total - 1;
+                const isLastRow = idx >= lastRowStart;
+
+                return (
+                  <div
+                    key={signal.key}
+                    className={[
+                      "flex items-center justify-between gap-3 px-5 py-3",
+                      !isLastRow ? "border-b border-border/20" : "",
+                      isEven ? "sm:border-r sm:border-border/20" : "",
+                    ].join(" ")}
+                  >
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${
+                        display?.dot ?? (isSkipped ? "bg-outline-variant" : "bg-surface-container-high")
+                      }`} />
+                      <span className="truncate text-[0.8125rem] font-medium text-text">{displayName}</span>
+                    </div>
+                    <div className="shrink-0">
+                      {display ? (
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[0.6875rem] font-bold uppercase tracking-wide ${display.color}`}>
+                          {display.label}
+                        </span>
+                      ) : isSkipped ? (
+                        <span className="text-[0.75rem] text-muted">Skipped</span>
+                      ) : (
+                        <span className="text-[0.75rem] text-muted">—</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Scale count summary row */}
+            <div className="grid grid-cols-4 divide-x divide-border/30 border-t border-border/30">
+              {(["STRONG", "CONSISTENT", "SOME", "LIMITED"] as const).map((key) => {
+                const d = SCALE_DISPLAY[key];
+                return (
+                  <div key={key} className="flex flex-col items-center py-3">
+                    <span className={`text-[1.125rem] font-bold tabular-nums ${
+                      key === "LIMITED" ? "text-scale-limited-text" :
+                      key === "SOME" ? "text-scale-some-text" :
+                      key === "CONSISTENT" ? "text-scale-consistent-text" :
+                      "text-scale-strong-text"
+                    }`}>
+                      {scaleCounts[key]}
+                    </span>
+                    <span className="mt-0.5 text-[0.6875rem] font-medium text-muted">{d.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Metadata chips */}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {[
-              {
-                icon: <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>,
-                text: new Date(observation.observedAt).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "long", year: "numeric" }),
-              },
-              { icon: null, text: observation.subject },
-              { icon: null, text: `Year ${observation.yearGroup}` },
-              ...(observation.classCode ? [{ icon: null, text: observation.classCode }] : []),
-            ].map(({ icon, text }) => (
-              <span
-                key={text}
-                className="flex items-center gap-1.5 rounded-full border border-border/40 bg-surface-container-lowest/70 px-3 py-1 text-[0.75rem] font-medium text-text"
-              >
-                {icon}
-                {text}
-              </span>
-            ))}
-          </div>
-
-          {/* Context note */}
+          {/* Concluding Reflections */}
           {observation.contextNote && (
-            <div className="mt-4 rounded-xl border border-border/40 bg-surface-container-lowest/60 px-4 py-3">
-              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">Observer note</p>
-              <p className="mt-1 text-[0.875rem] leading-relaxed text-text">{observation.contextNote}</p>
+            <div className="overflow-hidden rounded-2xl glass-card">
+              <div className="border-b border-border/20 px-6 py-4">
+                <h2 className="text-[0.875rem] font-semibold text-text">Concluding Reflections</h2>
+              </div>
+              <div className="px-6 py-5">
+                <blockquote className="border-l-2 border-accent/40 pl-4 text-[0.9375rem] leading-relaxed text-text italic">
+                  &ldquo;{observation.contextNote}&rdquo;
+                </blockquote>
+
+                {/* Observer sign-off */}
+                <div className="mt-5 flex items-center gap-3 border-t border-border/20 pt-4">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[0.6875rem] font-bold text-accent">
+                    {initials(observerName)}
+                  </div>
+                  <div>
+                    <p className="text-[0.8125rem] font-semibold text-text">
+                      {observerName} · Observed &amp; Authenticated
+                    </p>
+                    <p className="text-[0.75rem] text-muted">{dateTimeLabel}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Score summary bar */}
-        <div className="grid grid-cols-4 divide-x divide-border/30 border-t border-border/30">
-          {(["STRONG", "CONSISTENT", "SOME", "LIMITED"] as const).map((key) => {
-            const d = SCALE_DISPLAY[key];
-            return (
-              <div key={key} className="flex flex-col items-center py-3">
-                <span className={`text-[1.125rem] font-bold tabular-nums ${key === "LIMITED" ? "text-scale-limited-text" : key === "SOME" ? "text-scale-some-text" : key === "CONSISTENT" ? "text-scale-consistent-text" : "text-scale-strong-text"}`}>
-                  {scaleCounts[key]}
-                </span>
-                <span className="mt-0.5 text-[0.6875rem] font-medium text-muted">{d.label}</span>
+        {/* ── Right: Sidebar ── */}
+        <div className="space-y-4">
+
+          {/* Teacher profile card */}
+          <div className="overflow-hidden rounded-2xl bg-on-surface/5 ring-1 ring-border/40">
+            <div className="px-5 pt-5 pb-4">
+              {/* Avatar + name */}
+              <div className="mb-4 flex flex-col items-center text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent/15 text-[0.9375rem] font-bold text-accent ring-2 ring-accent/20">
+                  {initials(teacherName)}
+                </div>
+                <h3 className="mt-3 text-[0.9375rem] font-bold leading-tight text-text">{teacherName}</h3>
+                {teacherDept && (
+                  <p className="mt-0.5 text-[0.75rem] text-muted">
+                    {formatRole(observation.observedTeacher?.role ?? "Teacher")} · {teacherDept}
+                  </p>
+                )}
+                {!teacherDept && (
+                  <p className="mt-0.5 text-[0.75rem] text-muted">
+                    {formatRole(observation.observedTeacher?.role ?? "Teacher")}
+                  </p>
+                )}
               </div>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* Next steps */}
-      {user.role !== "TEACHER" && (
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={`/observe/history?teacherId=${observation.observedTeacherId}`}
-            className="rounded-lg border border-border/60 bg-surface-container-lowest/70 px-3.5 py-2 text-[0.8125rem] font-medium text-muted backdrop-blur-sm calm-transition hover:border-accent/30 hover:text-accent"
-          >
-            All observations for this teacher →
-          </Link>
-          <Link
-            href="/observe/new"
-            className="rounded-lg border border-accent/30 bg-accent/5 px-3.5 py-2 text-[0.8125rem] font-medium text-accent calm-transition hover:bg-accent/10"
-          >
-            New observation →
-          </Link>
-        </div>
-      )}
-
-      {/* Signals */}
-      <div>
-        <h2 className="mb-3 text-[0.875rem] font-semibold uppercase tracking-[0.07em] text-muted">Signal records</h2>
-        <div className="overflow-hidden rounded-2xl glass-card">
-          {(SIGNAL_DEFINITIONS as any[]).map((signal, idx) => {
-            const override = (labelMap as any)[signal.key];
-            const displayName = override?.displayName || signal.displayNameDefault;
-            const description = override?.description || signal.descriptionDefault;
-            const value = signalMap.get(signal.key);
-            const scaleKey = value?.valueKey as string | undefined;
-            const display = scaleKey ? SCALE_DISPLAY[scaleKey] : null;
-            const isSkipped = value?.notObserved && !value?.valueKey;
-            const isLast = idx === (SIGNAL_DEFINITIONS as any[]).length - 1;
-
-            return (
-              <div
-                key={signal.key}
-                className={`px-5 py-4 ${!isLast ? "border-b border-border/20" : ""}`}
+              {/* View Full Dossier */}
+              <Link
+                href={`/explorer/teachers?teacherId=${observation.observedTeacherId}`}
+                className="flex w-full items-center justify-center rounded-lg border border-border/50 bg-surface-container-lowest/60 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:border-accent/30 hover:text-accent"
               >
-                <div className="flex items-start gap-4">
-                  {/* Left: dot + name */}
-                  <div className="flex min-w-0 flex-1 items-start gap-3">
-                    <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${display?.dot ?? (isSkipped ? "bg-outline-variant" : "bg-surface-container-high")}`} />
-                    <div className="min-w-0">
-                      <p className="text-[0.875rem] font-semibold leading-snug text-text">{displayName}</p>
-                      <p className="mt-0.5 text-[0.75rem] leading-relaxed text-muted line-clamp-2">{description}</p>
-                    </div>
-                  </div>
+                View Full Dossier
+              </Link>
+            </div>
 
-                  {/* Right: rating */}
-                  <div className="shrink-0 text-right">
-                    {display ? (
-                      <div>
-                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[0.75rem] font-semibold ${display.color}`}>
-                          {display.label}
-                        </span>
-                        {/* Mini bar */}
-                        <div className="mt-1.5 h-1 w-16 overflow-hidden rounded-full bg-surface-container-low">
-                          <div className={`h-1 rounded-full calm-transition ${display.bar} ${SCALE_WIDTH[scaleKey!] ?? "w-0"}`} />
-                        </div>
-                      </div>
-                    ) : isSkipped ? (
-                      <span className="text-[0.75rem] text-muted">Skipped</span>
-                    ) : (
-                      <span className="text-[0.75rem] text-muted">—</span>
-                    )}
+            {/* Session Context */}
+            <div className="border-t border-border/20 px-5 py-4">
+              <p className="mb-3 text-[0.5625rem] font-bold uppercase tracking-[0.1em] text-muted">
+                Session Context
+              </p>
+              <div className="space-y-2.5">
+                <div>
+                  <p className="text-[0.5625rem] font-semibold uppercase tracking-wider text-muted">Class</p>
+                  <p className="mt-0.5 text-[0.8125rem] font-semibold text-text">{sessionLabel}</p>
+                </div>
+                <div>
+                  <p className="text-[0.5625rem] font-semibold uppercase tracking-wider text-muted">Observer</p>
+                  <p className="mt-0.5 text-[0.8125rem] font-semibold text-text">{observerName}</p>
+                </div>
+                <div>
+                  <p className="text-[0.5625rem] font-semibold uppercase tracking-wider text-muted">Status</p>
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-scale-strong-bar" />
+                    <span className="text-[0.8125rem] font-semibold text-scale-strong-text">Completed</span>
                   </div>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          </div>
+
+          {/* Internal Links */}
+          <div className="overflow-hidden rounded-2xl glass-card">
+            <div className="border-b border-border/20 px-5 py-3">
+              <p className="text-[0.5625rem] font-bold uppercase tracking-[0.1em] text-muted">Internal Links</p>
+            </div>
+            <div className="divide-y divide-border/20">
+              <Link
+                href={`/observe/history?teacherId=${observation.observedTeacherId}`}
+                className="flex items-center justify-between px-5 py-3 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              >
+                Previous Observations
+                <svg className="h-3.5 w-3.5 shrink-0 text-border" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+              {user.role !== "TEACHER" && (
+                <Link
+                  href="/observe/new"
+                  className="flex items-center justify-between px-5 py-3 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+                >
+                  New Observation
+                  <svg className="h-3.5 w-3.5 shrink-0 text-border" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              )}
+              <Link
+                href={`/explorer/observations`}
+                className="flex items-center justify-between px-5 py-3 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
+              >
+                Observation Explorer
+                <svg className="h-3.5 w-3.5 shrink-0 text-border" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

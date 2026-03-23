@@ -509,3 +509,47 @@ textarea:focus-visible {
 :root {
   --divider-subtle: color-mix(in srgb, var(--outline-variant) 30%, transparent);
 }
+
+/* ── Print / PDF export styles ─────────────────────────────────── */
+@media print {
+  /* Hide nav, sidebars, and interactive elements */
+  nav,
+  aside,
+  header,
+  [data-sidebar],
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Reset backgrounds for print clarity */
+  body {
+    background: white !important;
+    color: #111 !important;
+  }
+
+  .glass-card {
+    background: white !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+  }
+
+  /* Preserve scale badge colors in print */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Remove link underlines */
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+
+  /* Page breaks */
+  .glass-card,
+  section {
+    break-inside: avoid;
+  }
+}
