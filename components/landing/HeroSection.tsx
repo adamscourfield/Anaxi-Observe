@@ -45,7 +45,7 @@ export default function HeroSection() {
             {/* Arch photo container */}
             <div className="relative w-full max-w-[480px] h-[400px] lg:h-[480px] rounded-2xl overflow-hidden shadow-xl">
               <Image
-                src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=960&q=85&auto=format&fit=crop"
+                src="/hero-image.png"
                 alt="Architectural arches representing institutional structure"
                 fill
                 className="object-cover"
