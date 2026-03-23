@@ -14,6 +14,7 @@ interface FormSelectProps {
   placeholder?: string;
   className?: string;
   searchable?: boolean;
+  onChange?: (value: string) => void;
 }
 
 export function FormSelect({
@@ -23,6 +24,7 @@ export function FormSelect({
   placeholder = "Select…",
   className = "",
   searchable = false,
+  onChange,
 }: FormSelectProps) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(defaultValue);
@@ -115,6 +117,7 @@ export function FormSelect({
                   }`}
                   onClick={() => {
                     setSelected(option.value);
+                    onChange?.(option.value);
                     setOpen(false);
                     setQuery("");
                   }}
