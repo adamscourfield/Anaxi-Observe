@@ -510,48 +510,46 @@ textarea:focus-visible {
   --divider-subtle: color-mix(in srgb, var(--outline-variant) 30%, transparent);
 }
 
-/* ── Filter bar ─────────────────────────────────────────────────── */
-/* Standard filter/toolbar strip that sits above tables.             */
-/* Replaces glass-card on filter sections for a clean, flat look.    */
-.filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--surface-container-lowest);
-  border: 1px solid color-mix(in srgb, var(--outline-variant) 25%, transparent);
-  border-radius: var(--radius-lg);
-  padding: 0.5rem 1rem;
-  box-shadow: var(--shadow-sm);
-}
+/* ── Print / PDF export styles ─────────────────────────────────── */
+@media print {
+  /* Hide nav, sidebars, and interactive elements */
+  nav,
+  aside,
+  header,
+  [data-sidebar],
+  .print\:hidden {
+    display: none !important;
+  }
 
-/* ── Period/window toggle pill ──────────────────────────────────── */
-/* Grouped inline button set for time-window selectors (7D/21D/…).   */
-.filter-period-toggle {
-  display: inline-flex;
-  overflow: hidden;
-  border-radius: 0.5rem;
-  border: 1px solid color-mix(in srgb, var(--outline-variant) 30%, transparent);
-  background: var(--surface-container-low);
-}
+  /* Reset backgrounds for print clarity */
+  body {
+    background: white !important;
+    color: #111 !important;
+  }
 
-/* Individual period button — inactive state */
-.filter-period-btn {
-  padding: 0.375rem 0.875rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--on-surface-variant);
-  transition: background-color 150ms cubic-bezier(0.4,0,0.2,1),
-              color 150ms cubic-bezier(0.4,0,0.2,1);
-}
+  .glass-card {
+    background: white !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+  }
 
-.filter-period-btn:hover {
-  background: var(--surface-container);
-  color: var(--on-surface);
-}
+  /* Preserve scale badge colors in print */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 
-/* Active period button — bold text only, no background fill */
-.filter-period-btn-active {
-  font-weight: 700;
-  color: var(--on-surface);
+  /* Remove link underlines */
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+
+  /* Page breaks */
+  .glass-card,
+  section {
+    break-inside: avoid;
+  }
 }
