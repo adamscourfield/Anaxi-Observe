@@ -69,6 +69,9 @@ export default async function LeavePendingPage() {
 
   return (
     <div className="space-y-6">
+      <div className="mb-2">
+        <Link href="/leave" className="text-sm text-accent hover:underline">← Back to Leave of Absence</Link>
+      </div>
       <PageHeader
         title="Pending Approvals"
         subtitle={

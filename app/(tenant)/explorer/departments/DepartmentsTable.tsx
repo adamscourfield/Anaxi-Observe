@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -40,7 +41,7 @@ const STATUS_STYLES: Record<string, string> = {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function DepartmentsTable({ rows, pageSize = 5 }: Props) {
+export function DepartmentsTable({ rows, pageSize = 10 }: Props) {
   const [page, setPage] = useState(0);
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
   const visible = rows.slice(page * pageSize, page * pageSize + pageSize);
@@ -64,7 +65,8 @@ export function DepartmentsTable({ rows, pageSize = 5 }: Props) {
               {visible.map((row) => (
                 <tr
                   key={row.departmentId}
-                  className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
+                  className="group border-b border-border/20 last:border-0 calm-transition hover:bg-[var(--surface-container-low)] cursor-pointer"
+                  onClick={() => window.location.href = `/explorer/departments/${row.departmentId}`}
                 >
                   {/* Department name + faculty */}
                   <td className="px-5 py-4">

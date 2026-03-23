@@ -200,6 +200,22 @@ export function LiveMeetingView({
     [meetingId],
   );
 
+  /* ── End meeting ───────────────────────────────────────────────── */
+  async function handleEndMeeting() {
+    if (!confirm("End this meeting? This will mark it as completed.")) return;
+    try {
+      const now = new Date().toISOString();
+      await fetch(`/api/meetings/${meetingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "CANCELLED", endDateTime: now }),
+      });
+      window.location.href = "/meetings";
+    } catch {
+      // ignore
+    }
+  }
+
   /* ── Save draft (manual) ───────────────────────────────────────── */
   async function handleSaveDraft() {
     setSaveStatus("saving");
@@ -303,7 +319,7 @@ export function LiveMeetingView({
               </svg>
               Save Draft
             </button>
-            <Button variant="danger" className="rounded-xl px-5">
+            <Button variant="danger" className="rounded-xl px-5" onClick={handleEndMeeting}>
               End Meeting
             </Button>
           </div>

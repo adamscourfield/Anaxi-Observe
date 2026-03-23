@@ -1,0 +1,62 @@
+import { NextResponse } from "next/server";
+import { getSessionUserOrThrow } from "@/lib/auth";
+import { requireFeature } from "@/lib/guards";
+import { getMeetingDetail } from "@/modules/meetings/service";
+
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  try {
+    const user = await getSessionUserOrThrow();
+    await requireFeature(user.tenantId, "MEETINGS");
+
+    const meeting = await getMeetingDetail(user.tenantId, params.id);
+
+    const isAttendee = meeting.attendees.some((a: any) => a.userId === user.id);
+    const isCreator = meeting.createdByUserId === user.id;
+    if (!isCreator && !isAttendee) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const start = new Date(meeting.startDateTime);
+    const dateStr = start.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    const timeStr = start.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+
+    const attendeeNames = meeting.attendees.map((a: any) => a.user.fullName).join(", ");
+    const actions = (meeting.actions ?? [])
+      .map((a: any) => `  - ${a.description} (Owner: ${a.owner.fullName}, Due: ${a.dueDate ? new Date(a.dueDate).toLocaleDateString("en-GB") : "N/A"}, Status: ${a.status})`)
+      .join("\n");
+
+    const content = [
+      `MEETING MINUTES`,
+      `===============`,
+      ``,
+      `Title: ${meeting.title}`,
+      `Date: ${dateStr} at ${timeStr}`,
+      `Type: ${meeting.type}`,
+      `Status: ${meeting.status}`,
+      meeting.location ? `Location: ${meeting.location}` : null,
+      `Attendees: ${attendeeNames}`,
+      ``,
+      `NOTES`,
+      `-----`,
+      meeting.notes || "(No notes recorded)",
+      ``,
+      actions ? `ACTION ITEMS\n------------\n${actions}` : null,
+    ]
+      .filter((line) => line !== null)
+      .join("\n");
+
+    const filename = `${meeting.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${start.toISOString().slice(0, 10)}.txt`;
+
+    return new NextResponse(content, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+      },
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    if (message === "UNAUTHENTICATED") return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    if (message === "meeting not found") return NextResponse.json({ error: message }, { status: 404 });
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}

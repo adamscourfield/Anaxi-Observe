@@ -64,7 +64,7 @@ export default async function OnCallHomePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-text uppercase">
+        <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-text">
           On Call
         </h1>
         <div className="flex shrink-0 flex-wrap items-center gap-2">

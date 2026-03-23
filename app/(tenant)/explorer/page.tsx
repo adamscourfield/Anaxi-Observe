@@ -348,20 +348,36 @@ export default async function ExplorerPage() {
         </Link>
       </div>
 
+      {/* ── Priorities Card ────────────────────────────────────────────────── */}
+      <div className="mt-4">
+        <Link href="/analytics" className="block">
+          <div className="relative flex items-center justify-between rounded-2xl bg-[var(--primary)] p-5 shadow-ambient calm-transition hover:opacity-90">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-on-primary/70">Analysis</p>
+              <p className="mt-1 text-lg font-bold text-on-primary">Priorities</p>
+              <p className="mt-1 text-sm text-on-primary/70">CPD &amp; Student priorities in one view</p>
+            </div>
+            <svg className="h-8 w-8 text-on-primary/60" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+            </svg>
+          </div>
+        </Link>
+      </div>
+
       {/* ── Pastoral Pulse: Behaviour & Welfare ────────────────────────────── */}
       {canSeeBehaviour && (
         <div className="mt-12">
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--on-surface-variant)]">
             Pastoral Pulse
           </p>
-          <h2 className="mt-1 font-serif text-[28px] font-bold leading-tight tracking-[-0.02em] text-[var(--on-surface)]">
+          <h2 className="mt-1 text-[28px] font-bold leading-tight tracking-[-0.02em] text-[var(--on-surface)]">
             Behaviour &amp; Welfare
           </h2>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 items-stretch">
             {/* Students Card */}
             <Link href="/explorer/students" className="block">
-              <div className="relative overflow-hidden rounded-2xl bg-[var(--surface-container-lowest)] p-6 shadow-ambient calm-transition hover:shadow-md">
+              <div className="relative h-full overflow-hidden rounded-2xl bg-[var(--surface-container-lowest)] p-6 shadow-ambient calm-transition hover:shadow-md hover:bg-[var(--surface-container-low)]">
                 <WatermarkGradCap />
                 <p className="text-lg font-semibold text-[var(--on-surface)]">Students</p>
                 <div className="mt-3 flex items-baseline gap-3">
@@ -374,7 +390,7 @@ export default async function ExplorerPage() {
                   </div>
                 </div>
                 <div className="mt-5 flex gap-3">
-                  <div className="rounded-xl border border-[var(--outline-variant)]/40 bg-[var(--surface-container-low)] px-4 py-3">
+                  <div className="rounded-xl border border-[var(--outline-variant)]/40 bg-[var(--surface-container-low)] px-4 py-3 calm-transition hover:bg-[var(--surface-container)]">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--on-tertiary-container)]">Urgent Action</p>
                     <div className="mt-1 flex items-baseline gap-1.5">
                       <span className="text-xl font-bold text-[var(--on-surface)]">{urgentStudents}</span>
@@ -394,7 +410,7 @@ export default async function ExplorerPage() {
 
             {/* Cohorts Card */}
             <Link href="/explorer/cohorts" className="block">
-              <div className="relative overflow-hidden rounded-2xl bg-[var(--surface-container-lowest)] p-6 shadow-ambient calm-transition hover:shadow-md">
+              <div className="relative h-full overflow-hidden rounded-2xl bg-[var(--surface-container-lowest)] p-6 shadow-ambient calm-transition hover:shadow-md hover:bg-[var(--surface-container-low)]">
                 <WatermarkDiamond />
                 <p className="text-lg font-semibold text-[var(--on-surface)]">Cohorts</p>
                 <div className="mt-3 flex items-baseline gap-3">
@@ -438,7 +454,11 @@ export default async function ExplorerPage() {
           </div>
           <div className="divide-y divide-[var(--surface-container)] overflow-hidden rounded-b-2xl bg-[var(--surface-container-lowest)] shadow-ambient">
             {displayedLogs.map((entry) => (
-              <div key={entry.id} className="flex items-center gap-4 px-6 py-4">
+              <Link
+                key={entry.id}
+                href={entry.icon === "observation" ? `/observe/${entry.id}` : `/explorer/signals`}
+                className="flex items-center gap-4 px-6 py-4 calm-transition hover:bg-[var(--surface-container-low)]"
+              >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-container-low)] text-[var(--on-surface-variant)]">
                   {entry.icon === "observation" ? (
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -463,7 +483,7 @@ export default async function ExplorerPage() {
                 >
                   {entry.tag}
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

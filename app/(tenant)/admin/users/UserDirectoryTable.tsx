@@ -98,7 +98,7 @@ function statusInfo(user: UserRow): { label: string; color: string; dotClass: st
   return { label: "Inactive", color: "text-text", dotClass: "bg-gray-400" };
 }
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 20;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 

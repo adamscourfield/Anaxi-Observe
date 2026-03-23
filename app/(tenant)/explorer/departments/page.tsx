@@ -313,7 +313,7 @@ export default async function DepartmentsPage({
         {/* Legend */}
         <div className="flex items-center gap-4 text-[0.75rem] font-medium text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 rounded-full bg-scale-strong-bg0" />
+            <span className="inline-block h-3 w-3 rounded-full bg-risk-stable-text" />
             Stable
           </span>
           <span className="flex items-center gap-1.5">

@@ -164,6 +164,19 @@ export default async function SignalsPage({
   // ── render ──────────────────────────────────────────────────────
   return (
     <>
+      {/* Back link */}
+      <div className="mb-4">
+        <Link
+          href="/explorer"
+          className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:text-accent"
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back to Explorer
+        </Link>
+      </div>
+
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="mb-8">
         <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-text">
@@ -176,7 +189,7 @@ export default async function SignalsPage({
       </div>
 
       {/* ── Controls bar ───────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-4 rounded-2xl glass-card px-5 py-3">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl glass-card px-4 py-2.5">
         {/* Window toggle */}
         <div className="inline-flex overflow-hidden rounded-lg border border-border/40 bg-surface-container-lowest/80">
           {VALID_WINDOWS.map((w) => (
@@ -330,7 +343,8 @@ export default async function SignalsPage({
                   return (
                     <tr
                       key={row.signalKey}
-                      className={`group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50 border-l-[3px] ${colors.border}`}
+                      className={`group border-b border-border/20 last:border-0 calm-transition hover:bg-[var(--surface-container-low)] cursor-pointer border-l-[3px] ${colors.border}`}
+                      onClick={() => window.location.href = `/analysis/cpd/${encodeURIComponent(row.signalKey)}`}
                     >
                       <td className="py-3.5 pl-4 pr-3 font-medium text-text">
                         <Link
