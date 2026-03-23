@@ -6,6 +6,7 @@ import { hasPermission } from "@/lib/rbac";
 import { getMeetingDetail } from "@/modules/meetings/service";
 import { MEETING_TYPE_LABELS } from "@/modules/meetings/types";
 import { LiveMeetingView } from "@/components/meetings/LiveMeetingView";
+import { prisma } from "@/lib/prisma";
 
 export default async function MeetingDetailPage({ params }: { params: { id: string } }) {
   const user = await getSessionUserOrThrow();
@@ -28,6 +29,34 @@ export default async function MeetingDetailPage({ params }: { params: { id: stri
 
   const typeLabel = MEETING_TYPE_LABELS[meeting.type] ?? meeting.type;
 
+  // ── Historical stats for Efficiency Index ────────────────────────────────
+  let avgActionsForType = 0;
+  try {
+    const pastMeetings = await (prisma as any).meeting.findMany({
+      where: {
+        tenantId: user.tenantId,
+        type: meeting.type,
+        status: "CANCELLED",
+        id: { not: meeting.id },
+      },
+      select: {
+        _count: { select: { actions: true } },
+        notes: true,
+      },
+      orderBy: { startDateTime: "desc" },
+      take: 20,
+    });
+    if (pastMeetings.length > 0) {
+      const totalActions = pastMeetings.reduce(
+        (sum: number, m: any) => sum + (m._count?.actions ?? 0),
+        0,
+      );
+      avgActionsForType = Math.round(totalActions / pastMeetings.length);
+    }
+  } catch {
+    // Non-critical — fall back to 0
+  }
+
   return (
     <div>
       <div className="mb-4">
@@ -46,6 +75,7 @@ export default async function MeetingDetailPage({ params }: { params: { id: stri
         canEdit={canEdit}
         canAddActions={canAddActions}
         currentUserId={user.id}
+        avgActionsForType={avgActionsForType}
       />
     </div>
   );

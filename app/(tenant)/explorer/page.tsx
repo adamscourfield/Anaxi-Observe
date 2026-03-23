@@ -326,7 +326,7 @@ export default async function ExplorerPage() {
         </Link>
 
         {/* Observations */}
-        <Link href="/explorer/observations" className="block">
+        <Link href="/observe/history" className="block">
           <div className="relative flex h-full flex-col justify-between rounded-2xl bg-[var(--surface-container-lowest)] p-5 shadow-ambient calm-transition hover:bg-[var(--surface-container-low)] hover:shadow-md">
             <div className="flex items-start justify-between">
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-container-low)] text-[var(--on-surface-variant)]">

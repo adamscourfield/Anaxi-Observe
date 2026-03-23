@@ -1,11 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { hasOnCallPermission } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { OnCallRequestForm } from "@/components/oncall/OnCallRequestForm";
-import { Button } from "@/components/ui/button";
 
 export default async function OnCallNewPage() {
   const user = await getSessionUserOrThrow();
@@ -21,28 +19,61 @@ export default async function OnCallNewPage() {
     select: { id: true, fullName: true, upn: true, yearGroup: true },
   });
 
+  // ── On-Call Density: hourly counts for the last 8 hours ─────────────────
+  const now = new Date();
+  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+
+  const recentRequests = await (prisma as any).onCallRequest.findMany({
+    where: {
+      tenantId: user.tenantId,
+      createdAt: { gte: eightHoursAgo },
+    },
+    select: { createdAt: true },
+  });
+
+  // Build hourly buckets [0..7] where 0 = 8 hours ago, 7 = most recent hour
+  const hourlyBuckets = Array(8).fill(0) as number[];
+  for (const req of recentRequests as { createdAt: Date }[]) {
+    const hoursAgo = Math.floor((now.getTime() - new Date(req.createdAt).getTime()) / (1000 * 60 * 60));
+    if (hoursAgo >= 0 && hoursAgo < 8) {
+      hourlyBuckets[7 - hoursAgo]++;
+    }
+  }
+
+  // ── Today's volume ───────────────────────────────────────────────────────
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+
+  const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+
+  const [todayCount, yesterdayCount] = await Promise.all([
+    (prisma as any).onCallRequest.count({
+      where: { tenantId: user.tenantId, createdAt: { gte: todayStart } },
+    }),
+    (prisma as any).onCallRequest.count({
+      where: {
+        tenantId: user.tenantId,
+        createdAt: { gte: yesterdayStart, lt: todayStart },
+      },
+    }),
+  ]);
+
+  // Day-of-week label for context
+  const dayLabel = now.toLocaleDateString("en-GB", { weekday: "long" });
+
+  // Peak activity flag: if current hour bucket is above average
+  const avgPerHour = hourlyBuckets.reduce((a, b) => a + b, 0) / 8;
+  const currentBucket = hourlyBuckets[7];
+  const isPeakActivity = currentBucket > avgPerHour && currentBucket > 0;
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-text uppercase">
-            New Request
-          </h1>
-          <p className="mt-1 text-[13px] text-muted">
-            Designed for fast submission — under 15 seconds.
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <Link href="/on-call">
-            <Button variant="secondary">Cancel</Button>
-          </Link>
-        </div>
-      </div>
-
-      <hr className="border-border/60" />
-
-      <OnCallRequestForm students={students} />
-    </div>
+    <OnCallRequestForm
+      students={students}
+      hourlyBuckets={hourlyBuckets}
+      todayCount={todayCount as number}
+      yesterdayCount={yesterdayCount as number}
+      dayLabel={dayLabel}
+      isPeakActivity={isPeakActivity}
+    />
   );
 }

@@ -64,7 +64,7 @@ export default async function StrategyPage() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-text">
-            Active Strategic Ledger
+            Strategy Board
           </h1>
           <p className="mt-1 text-[0.875rem] text-muted">
             {activeAreas} active · {completedAreas} complete · {totalAreas} total
