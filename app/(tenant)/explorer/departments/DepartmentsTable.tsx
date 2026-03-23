@@ -49,11 +49,11 @@ export function DepartmentsTable({ rows, pageSize = 10 }: Props) {
   return (
     <>
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl glass-card">
+      <div className="table-shell">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+              <tr className="table-head-row text-left">
                 <th className="px-5 py-3.5">Department Name</th>
                 <th className="px-4 py-3.5 text-center">Teachers</th>
                 <th className="px-4 py-3.5 text-center">Obs</th>
@@ -65,7 +65,7 @@ export function DepartmentsTable({ rows, pageSize = 10 }: Props) {
               {visible.map((row) => (
                 <tr
                   key={row.departmentId}
-                  className="group border-b border-border/20 last:border-0 calm-transition hover:bg-[var(--surface-container-low)] cursor-pointer"
+                  className="group table-row calm-transition cursor-pointer"
                   onClick={() => window.location.href = `/explorer/departments/${row.departmentId}`}
                 >
                   {/* Department name + faculty */}

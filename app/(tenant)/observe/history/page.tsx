@@ -206,12 +206,12 @@ export default async function ObservationHistoryPage({
           <p className="mt-1 text-[0.8125rem] text-muted">Try widening your filters.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl glass-card">
+        <div className="table-shell">
           {/* Desktop table (≥ md) */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/30 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                <tr className="table-head-row text-left">
                   <th className="px-5 py-3.5">Teacher</th>
                   {user.role !== "TEACHER" && <th className="px-4 py-3.5">Observer</th>}
                   <th className="px-4 py-3.5">Subject / Year</th>
@@ -227,7 +227,7 @@ export default async function ObservationHistoryPage({
                   const phaseBadge = PHASE_BADGE[phase] ?? PHASE_BADGE.UNKNOWN;
 
                   return (
-                    <tr key={obs.id} className="group border-b border-border/20 last:border-0 calm-transition hover:bg-accent/[0.04]">
+                    <tr key={obs.id} className="group table-row calm-transition">
                       {/* Teacher */}
                       <td className="px-5 py-4">
                         <Link href={`/observe/${obs.id}`} className="flex items-center gap-3 min-w-0">

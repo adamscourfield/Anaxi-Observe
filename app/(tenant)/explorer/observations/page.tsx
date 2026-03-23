@@ -152,94 +152,84 @@ export default async function ExplorerObservationsPage({
       />
 
       {/* ── Window selector + Filters ──────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-2xl glass-card">
-        <div className="border-b border-border/30 px-5 py-3">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted">Filters</p>
+      <form className="filter-bar">
+        {/* Window selector */}
+        <div className="filter-period-toggle">
+          {VALID_WINDOWS.map((w) => (
+            <button
+              key={w}
+              type="submit"
+              name="windowDays"
+              value={String(w)}
+              className={`filter-period-btn ${windowDays === w ? "filter-period-btn-active" : ""}`}
+            >
+              {w}D
+            </button>
+          ))}
         </div>
-        <form className="flex flex-wrap items-end gap-3 p-4">
-          {/* Window selector */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Window</span>
-            <select name="windowDays" defaultValue={String(windowDays)} className="field min-w-[100px]">
-              {VALID_WINDOWS.map((w) => (
-                <option key={w} value={String(w)}>
-                  {w} days
-                </option>
-              ))}
-            </select>
-          </label>
 
-          {/* Department */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Department</span>
-            <select name="departmentId" defaultValue={departmentId} className="field min-w-[160px]">
-              <option value="">All departments</option>
-              {(departments as any[]).map((d: any) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </label>
+        {/* Department */}
+        <select name="departmentId" defaultValue={departmentId} className="field min-w-[160px] !rounded-lg !py-1.5 !text-[0.8125rem]">
+          <option value="">All Departments</option>
+          {(departments as any[]).map((d: any) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
 
-          {/* Year Group */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Year Group</span>
-            <input
-              name="yearGroup"
-              type="text"
-              defaultValue={yearGroup}
-              placeholder="e.g. 10"
-              className="field min-w-[90px]"
-            />
-          </label>
+        {/* Year Group */}
+        <input
+          name="yearGroup"
+          type="text"
+          defaultValue={yearGroup}
+          placeholder="Year Group (e.g. 10)"
+          className="field min-w-[150px] !rounded-lg !py-1.5 !text-[0.8125rem]"
+        />
 
-          {/* Subject */}
-          <label className="flex flex-col gap-1">
-            <span className="text-[0.6875rem] font-medium text-muted">Subject</span>
-            <input
-              name="subject"
-              type="text"
-              defaultValue={subject}
-              placeholder="e.g. Maths"
-              className="field min-w-[120px]"
-            />
-          </label>
+        {/* Subject */}
+        <input
+          name="subject"
+          type="text"
+          defaultValue={subject}
+          placeholder="Subject (e.g. Maths)"
+          className="field min-w-[150px] !rounded-lg !py-1.5 !text-[0.8125rem]"
+        />
 
-          {/* Buttons */}
-          <div className="flex items-end gap-2">
+        <div className="ml-auto flex items-center gap-2">
+          {/* Apply */}
+          <button
+            type="submit"
+            className="rounded-lg bg-primary px-4 py-1.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:opacity-90"
+          >
+            Apply
+          </button>
+          {hasFilters && (
+            <Link
+              href={`/explorer/observations?windowDays=${windowDays}`}
+              className="rounded-lg border border-border/40 bg-surface-container-lowest px-4 py-1.5 text-[0.8125rem] font-medium text-muted calm-transition hover:bg-surface-container-low hover:text-text"
+            >
+              Clear
+            </Link>
+          )}
+          {/* Export */}
+          {showExport && (
             <button
               type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-[0.8125rem] font-semibold text-on-primary  calm-transition hover:bg-accentHover"
+              formAction="/api/explorer/export"
+              formMethod="POST"
+              name="view"
+              value="observations"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:opacity-90"
             >
-              Apply
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Export Data
             </button>
-            {hasFilters && (
-              <Link
-                href={`/explorer/observations?windowDays=${windowDays}`}
-                className="rounded-lg border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-              >
-                Clear
-              </Link>
-            )}
-          </div>
-        </form>
-        {showExport && (
-          <form action="/api/explorer/export" method="POST" className="inline px-4 pb-4">
-            <input type="hidden" name="view" value="observations" />
-            <input type="hidden" name="windowDays" value={String(windowDays)} />
-            {departmentId && <input type="hidden" name="departmentId" value={departmentId} />}
-            {yearGroup && <input type="hidden" name="yearGroup" value={yearGroup} />}
-            {subject && <input type="hidden" name="subject" value={subject} />}
-            <button
-              type="submit"
-              className="rounded-lg border border-border bg-surface-container-lowest/70 px-4 py-2 text-[0.8125rem] font-medium text-muted calm-transition hover:text-text"
-            >
-              Export CSV
-            </button>
-          </form>
-        )}
-      </div>
+          )}
+        </div>
+      </form>
 
       {/* ── Result count ───────────────────────────────────────────────────── */}
       <p className="mt-4 text-[0.8125rem] text-muted">
@@ -261,11 +251,11 @@ export default async function ExplorerObservationsPage({
           <p className="mt-1 text-[0.8125rem] text-muted">Try widening your filters or window period.</p>
         </div>
       ) : (
-        <div className="mt-4 overflow-hidden rounded-2xl glass-card">
+        <div className="mt-4 table-shell">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/30 bg-surface-container-lowest/40 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">
+                <tr className="table-head-row text-left">
                   <th className="px-5 py-3">Date</th>
                   <th className="px-4 py-3">Teacher</th>
                   <th className="px-4 py-3">Year Group</th>
@@ -288,7 +278,7 @@ export default async function ExplorerObservationsPage({
                   return (
                     <tr
                       key={obs.id}
-                      className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
+                      className="group table-row calm-transition"
                     >
                       {/* Date */}
                       <td className="px-5 py-3 whitespace-nowrap">
