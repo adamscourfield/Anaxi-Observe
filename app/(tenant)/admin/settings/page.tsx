@@ -112,11 +112,11 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
             <div className="grid max-w-2xl gap-3 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.04em] text-muted">School name</label>
-                <input name="schoolName" defaultValue={settings?.schoolName ?? ""} placeholder="My School" className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm" />
+                <input name="schoolName" defaultValue={settings?.schoolName ?? ""} placeholder="My School" className="field" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.04em] text-muted">Timezone</label>
-                <select name="timezone" defaultValue={settings?.timezone ?? "Europe/London"} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm">
+                <select name="timezone" defaultValue={settings?.timezone ?? "Europe/London"} className="field">
                   <option value="Europe/London">Europe/London</option>
                   <option value="Europe/Dublin">Europe/Dublin</option>
                   <option value="America/New_York">America/New_York</option>
@@ -127,7 +127,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.04em] text-muted">Default insight window</label>
-                <select name="defaultInsightWindowDays" defaultValue={String(settings?.defaultInsightWindowDays ?? 21)} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm">
+                <select name="defaultInsightWindowDays" defaultValue={String(settings?.defaultInsightWindowDays ?? 21)} className="field">
                   <option value="7">7 days</option>
                   <option value="21">21 days</option>
                   <option value="28">28 days</option>
@@ -140,15 +140,15 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
               <div className="mt-3 grid max-w-2xl gap-3 sm:grid-cols-3">
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.04em] text-muted">Drift delta</label>
-                  <input type="number" step="0.01" name="driftDeltaThreshold" defaultValue={settings?.driftDeltaThreshold ?? 0.15} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm" />
+                  <input type="number" step="0.01" name="driftDeltaThreshold" defaultValue={settings?.driftDeltaThreshold ?? 0.15} className="field" />
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.04em] text-muted">Min observations</label>
-                  <input type="number" name="minObservationCount" defaultValue={settings?.minObservationCount ?? 3} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm" />
+                  <input type="number" name="minObservationCount" defaultValue={settings?.minObservationCount ?? 3} className="field" />
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.04em] text-muted">Behaviour spike %</label>
-                  <input type="number" step="1" name="behaviourSpikePercent" defaultValue={settings?.behaviourSpikePercent ?? 50} className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm" />
+                  <input type="number" step="1" name="behaviourSpikePercent" defaultValue={settings?.behaviourSpikePercent ?? 50} className="field" />
                 </div>
               </div>
             </details>

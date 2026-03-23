@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { StatusPill } from "@/components/ui/status-pill";
-import { MetaText } from "@/components/ui/typography";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   createStrategyArea,
@@ -43,11 +41,11 @@ interface Props {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PRIORITY_PILL: Record<Priority, "error" | "warning" | "success" | "neutral"> = {
-  critical: "error",
-  high:     "warning",
-  medium:   "success",
-  low:      "neutral",
+const PRIORITY_CHIP: Record<Priority, string> = {
+  critical: "bg-[#3d0a0a] text-[#f8b4b4]",
+  high:     "bg-[#3d0a0a] text-[#f8b4b4]",
+  medium:   "bg-[#0a2e2e] text-[#6ee7d4]",
+  low:      "bg-[var(--surface-container-high)] text-[var(--on-surface-variant)]",
 };
 
 const PRIORITY_LABEL: Record<Priority, string> = {
@@ -56,20 +54,6 @@ const PRIORITY_LABEL: Record<Priority, string> = {
   medium:   "Medium Priority",
   low:      "Low Priority",
 };
-
-const STRIPE_COLOR: Record<Priority, string> = {
-  critical: "bg-scale-limited-bar",
-  high:     "bg-scale-some-bar",
-  medium:   "bg-scale-strong-bar",
-  low:      "bg-outline-variant",
-};
-
-function fmtDate(ts: Date | string) {
-  return new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
-function fmtShort(ts: Date | string) {
-  return new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
 
 // ─── Staff search input ───────────────────────────────────────────────────────
 
@@ -195,18 +179,13 @@ function AreaModal({
                 <label className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
                   Target Metric
                 </label>
-                <div className="relative">
-                  <input
-                    name="category"
-                    defaultValue={area?.category ?? ""}
-                    placeholder="e.g., 95"
-                    maxLength={10}
-                    className="field pr-8"
-                  />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted">
-                    %
-                  </span>
-                </div>
+                <input
+                  name="category"
+                  defaultValue={area?.category ?? ""}
+                  placeholder="e.g., 97.5% or Gold Standard"
+                  maxLength={30}
+                  className="field"
+                />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-muted">
@@ -270,7 +249,176 @@ function AreaModal({
   );
 }
 
-// ─── Tile ─────────────────────────────────────────────────────────────────────
+// ─── Three-dot menu ───────────────────────────────────────────────────────────
+
+function ActionMenu({
+  area,
+  canManage,
+  onEdit,
+}: {
+  area: StrategyArea;
+  canManage: boolean;
+  onEdit: (area: StrategyArea) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  if (!canManage) return null;
+
+  function handleToggleComplete() {
+    setOpen(false);
+    startTransition(() => toggleStrategyAreaComplete(area.id));
+  }
+
+  function handleDelete() {
+    setOpen(false);
+    if (!confirm("Remove this strategy area?")) return;
+    startTransition(() => deleteStrategyArea(area.id));
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        disabled={pending}
+        className="calm-transition flex h-7 w-7 items-center justify-center rounded-lg text-muted hover:bg-surface-container-low hover:text-text disabled:opacity-40"
+        title="Options"
+      >
+        <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+          <circle cx="10" cy="4" r="1.5" /><circle cx="10" cy="10" r="1.5" /><circle cx="10" cy="16" r="1.5" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-50 mt-1 min-w-[160px] overflow-hidden rounded-xl border border-border/70 bg-surface-container-lowest shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
+          <button
+            type="button"
+            className="calm-transition flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-text hover:bg-surface-container-low"
+            onMouseDown={() => { onEdit(area); setOpen(false); }}
+          >
+            <svg className="h-3.5 w-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Edit strategy
+          </button>
+          <button
+            type="button"
+            className="calm-transition flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-text hover:bg-surface-container-low"
+            onMouseDown={handleToggleComplete}
+          >
+            <svg className="h-3.5 w-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            {area.completed ? "Mark active" : "Mark complete"}
+          </button>
+          <div className="my-1 border-t border-border/40" />
+          <button
+            type="button"
+            className="calm-transition flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-error hover:bg-surface-container-low"
+            onMouseDown={handleDelete}
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+              <path d="M10 11v6M14 11v6M9 6V4h6v2" />
+            </svg>
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Action item row ──────────────────────────────────────────────────────────
+
+function ActionItem({ note, canManage }: { note: StrategyNote; canManage: boolean }) {
+  const [pending, startTransition] = useTransition();
+
+  // Support "Action text | Assignee" format in note text
+  const parts = note.text.split(" | ");
+  const actionText = parts[0]?.trim() ?? note.text;
+  const assignee = parts[1]?.trim() ?? null;
+
+  function handleDelete() {
+    startTransition(() => deleteStrategyNote(note.id));
+  }
+
+  return (
+    <div className="group flex items-center justify-between gap-2 py-1.5">
+      <span className="min-w-0 flex-1 truncate text-[0.8125rem] text-text">{actionText}</span>
+      <div className="flex shrink-0 items-center gap-1.5">
+        {assignee && (
+          <span className="rounded-md bg-surface-container-high px-2 py-0.5 text-[0.6875rem] font-medium text-muted">
+            {assignee}
+          </span>
+        )}
+        {canManage && (
+          <button
+            onClick={handleDelete}
+            disabled={pending}
+            className="calm-transition opacity-0 group-hover:opacity-100 text-muted hover:text-error disabled:opacity-40"
+          >
+            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Add action inline ────────────────────────────────────────────────────────
+
+function AddActionInline({
+  areaId,
+  onClose,
+}: {
+  areaId: string;
+  onClose: () => void;
+}) {
+  const [text, setText] = useState("");
+  const [pending, startTransition] = useTransition();
+
+  function handleSave() {
+    const t = text.trim();
+    if (!t) return;
+    startTransition(async () => {
+      await createStrategyNote(areaId, t);
+      setText("");
+      onClose();
+    });
+  }
+
+  return (
+    <div className="mt-1 flex gap-1.5">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder='e.g. "Home Visit Protocol | M. Davies"'
+        autoFocus
+        className="field flex-1 text-[0.8rem]"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSave();
+          if (e.key === "Escape") onClose();
+        }}
+      />
+      <button
+        onClick={handleSave}
+        disabled={!text.trim() || pending}
+        className="calm-transition rounded-lg bg-accent px-3 py-1.5 text-[0.75rem] font-semibold text-on-primary hover:bg-accentHover disabled:opacity-50"
+      >
+        Add
+      </button>
+    </div>
+  );
+}
+
+// ─── Strategy tile ────────────────────────────────────────────────────────────
 
 function StrategyTile({
   area,
@@ -281,192 +429,101 @@ function StrategyTile({
   canManage: boolean;
   onEdit: (area: StrategyArea) => void;
 }) {
-  const [showNoteInput, setShowNoteInput] = useState(false);
-  const [noteText, setNoteText] = useState("");
-  const [pending, startTransition] = useTransition();
-
-  function handleToggleComplete() {
-    startTransition(() => toggleStrategyAreaComplete(area.id));
-  }
-
-  function handleDelete() {
-    if (!confirm("Remove this strategy area?")) return;
-    startTransition(() => deleteStrategyArea(area.id));
-  }
-
-  function handleSaveNote() {
-    const text = noteText.trim();
-    if (!text) return;
-    startTransition(async () => {
-      await createStrategyNote(area.id, text);
-      setNoteText("");
-      setShowNoteInput(false);
-    });
-  }
-
-  function handleDeleteNote(noteId: string) {
-    startTransition(() => deleteStrategyNote(noteId));
-  }
+  const [showAddAction, setShowAddAction] = useState(false);
 
   return (
     <div
-      className={`panel flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+      className={`flex flex-col rounded-2xl border border-border/30 bg-surface-container-lowest p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
         area.completed ? "opacity-50" : ""
       }`}
     >
-      {/* Priority stripe */}
-      <div className={`h-[3px] w-full flex-shrink-0 ${STRIPE_COLOR[area.priority]}`} />
+      {/* Top row: priority badge + menu */}
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <span
+          className={`inline-flex items-center rounded-md px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.08em] ${PRIORITY_CHIP[area.priority]}`}
+        >
+          {PRIORITY_LABEL[area.priority]}
+        </span>
+        <ActionMenu area={area} canManage={canManage} onEdit={onEdit} />
+      </div>
 
-      {/* Body */}
-      <div className="p-4 pb-3">
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            {area.category && (
-              <span className="text-[0.8125rem] font-semibold text-accent">{area.category}%</span>
-            )}
-          </div>
-          <StatusPill variant={PRIORITY_PILL[area.priority]} size="sm">
-            {PRIORITY_LABEL[area.priority]}
-          </StatusPill>
-        </div>
+      {/* Title */}
+      <h3 className={`mb-2 text-[0.9375rem] font-bold leading-snug tracking-tight text-text ${area.completed ? "line-through text-muted" : ""}`}>
+        {area.title}
+      </h3>
 
-        <div className="mb-2 flex items-start gap-2.5">
-          {canManage && (
-            <button
-              onClick={handleToggleComplete}
-              disabled={pending}
-              title={area.completed ? "Mark active" : "Mark complete"}
-              className={`calm-transition mt-0.5 flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full border-[1.5px] p-0 ${
-                area.completed
-                  ? "border-scale-strong-bar bg-scale-strong-bg"
-                  : "border-border hover:border-scale-strong-bar"
-              }`}
-            >
-              <svg className={`h-[9px] w-[9px] ${area.completed ? "opacity-100" : "opacity-0"}`} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </button>
-          )}
-          <span className={`text-[0.9rem] font-semibold leading-snug tracking-tight text-text ${area.completed ? "line-through text-muted" : ""}`}>
-            {area.title}
+      {/* Target metric */}
+      {area.category && (
+        <div className="mb-2 flex items-center gap-1.5 text-[0.8125rem] text-muted">
+          <svg className="h-3.5 w-3.5 shrink-0 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+          </svg>
+          <span>
+            <span className="font-medium text-muted">Target:</span>{" "}
+            <span className="font-semibold text-text">{area.category}</span>
           </span>
         </div>
+      )}
 
-        {area.description && (
-          <p className="text-[0.8125rem] leading-relaxed text-muted">{area.description}</p>
-        )}
-      </div>
+      {/* Description */}
+      {area.description && (
+        <p className="mb-3 text-[0.8125rem] leading-relaxed text-muted">{area.description}</p>
+      )}
 
-      {/* Notes */}
-      <div className="flex-1 px-4">
-        <div className="flex items-center justify-between border-t border-divider py-2">
-          <MetaText>Notes{area.notes.length > 0 ? ` · ${area.notes.length}` : ""}</MetaText>
-          {canManage && (
-            <button
-              onClick={() => setShowNoteInput((v) => !v)}
-              className="calm-transition text-[0.75rem] font-medium text-accent hover:text-accentHover"
-            >
-              + Add note
-            </button>
-          )}
-        </div>
-
-        {/* Note input */}
-        {showNoteInput && (
-          <div className="mb-2 flex gap-1.5">
-            <textarea
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              placeholder="Add a note, update or action…"
-              rows={2}
-              autoFocus
-              className="field flex-1 resize-none text-[0.8rem]"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSaveNote();
-                if (e.key === "Escape") { setShowNoteInput(false); setNoteText(""); }
-              }}
-            />
-            <div className="flex flex-col gap-1">
-              <button
-                onClick={handleSaveNote}
-                disabled={!noteText.trim() || pending}
-                className="calm-transition rounded-md bg-accent px-2.5 py-1.5 text-[0.75rem] font-semibold text-on-primary hover:bg-accentHover disabled:opacity-50"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => { setShowNoteInput(false); setNoteText(""); }}
-                className="calm-transition rounded-md border border-border bg-bg px-2.5 py-1.5 text-[0.75rem] text-muted hover:text-text"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Notes list */}
-        {area.notes.length > 0 && (
-          <div className="mb-2 flex flex-col gap-1.5 pb-1">
-            {area.notes.map((note) => (
-              <div
-                key={note.id}
-                className="group flex items-start gap-2 rounded-md border-l-2 border-accent/20 bg-bg px-2.5 py-2"
-              >
-                <span className="flex-1 text-[0.8rem] leading-relaxed text-text">{note.text}</span>
-                <span className="flex-shrink-0 pt-0.5 text-[0.6875rem] text-muted">{fmtShort(note.createdAt)}</span>
-                {canManage && (
-                  <button
-                    onClick={() => handleDeleteNote(note.id)}
-                    className="calm-transition flex-shrink-0 opacity-0 group-hover:opacity-100 text-muted hover:text-error"
-                  >
-                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-between gap-2 border-t border-divider px-4 py-2.5">
-        <div className="flex min-w-0 items-center gap-2">
-          <MetaText>{fmtDate(area.createdAt)}</MetaText>
-          {area.owner && (
-            <span className="truncate rounded-full border border-divider bg-bg px-2 py-0.5 text-[0.6875rem] font-medium text-muted max-w-[130px]">
-              {area.owner}
+      {/* Active Actions */}
+      <div className="mt-auto">
+        <div className="border-t border-divider pt-3">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[0.625rem] font-bold uppercase tracking-[0.1em] text-muted">
+              Active Actions{area.notes.length > 0 ? ` · ${area.notes.length}` : ""}
             </span>
+            {canManage && !showAddAction && (
+              <button
+                onClick={() => setShowAddAction(true)}
+                className="calm-transition text-[0.6875rem] font-medium text-accent hover:text-accentHover"
+              >
+                + Add
+              </button>
+            )}
+          </div>
+
+          {showAddAction && (
+            <AddActionInline areaId={area.id} onClose={() => setShowAddAction(false)} />
+          )}
+
+          {area.notes.length === 0 && !showAddAction ? (
+            <p className="text-[0.75rem] text-muted/60 italic">No active actions</p>
+          ) : (
+            <div className="divide-y divide-divider">
+              {area.notes.map((note) => (
+                <ActionItem key={note.id} note={note} canManage={canManage} />
+              ))}
+            </div>
           )}
         </div>
-        {canManage && (
-          <div className="flex flex-shrink-0 gap-0.5">
-            <button
-              onClick={() => onEdit(area)}
-              className="calm-transition rounded-md p-1.5 text-muted hover:bg-bg hover:text-text"
-              title="Edit"
-            >
-              <svg className="h-[15px] w-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </button>
-            <button
-              onClick={handleDelete}
-              className="calm-transition rounded-md p-1.5 text-muted hover:bg-bg hover:text-error"
-              title="Delete"
-            >
-              <svg className="h-[15px] w-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                <path d="M10 11v6M14 11v6M9 6V4h6v2" />
-              </svg>
-            </button>
-          </div>
-        )}
       </div>
     </div>
+  );
+}
+
+// ─── Propose placeholder tile ─────────────────────────────────────────────────
+
+function ProposeTile({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex min-h-[180px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border/50 bg-transparent text-muted calm-transition hover:border-accent/40 hover:text-accent"
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-current calm-transition group-hover:scale-105">
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </div>
+      <span className="text-[0.8125rem] font-semibold">Propose New Strategy</span>
+    </button>
   );
 }
 
@@ -475,7 +532,6 @@ function StrategyTile({
 export function StrategyBoardClient({ areas, canManage, staffList }: Props) {
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingArea, setEditingArea] = useState<StrategyArea | null | undefined>(undefined);
-  // undefined = modal closed, null = creating new, StrategyArea = editing
 
   const visible = areas.filter((a) => showCompleted || !a.completed);
 
@@ -503,28 +559,16 @@ export function StrategyBoardClient({ areas, canManage, staffList }: Props) {
           </span>
           Show completed
         </label>
-
-        {canManage && (
-          <button
-            onClick={() => setEditingArea(null)}
-            className="calm-transition inline-flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-[0.8125rem] font-semibold text-on-primary  hover:bg-accentHover"
-          >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Propose New Strategy
-          </button>
-        )}
       </div>
 
       {/* Grid */}
-      {visible.length === 0 ? (
+      {visible.length === 0 && !canManage ? (
         <div className="panel p-8">
           <EmptyState
             title={areas.length === 0 ? "No strategies proposed yet" : "All strategies complete"}
             description={
               areas.length === 0
-                ? canManage ? "Click Propose New Strategy to get started." : "No strategies have been proposed yet."
+                ? "No strategies have been proposed yet."
                 : "Toggle Show completed to review them."
             }
           />
@@ -539,6 +583,9 @@ export function StrategyBoardClient({ areas, canManage, staffList }: Props) {
               onEdit={setEditingArea}
             />
           ))}
+          {canManage && (
+            <ProposeTile onClick={() => setEditingArea(null)} />
+          )}
         </div>
       )}
 

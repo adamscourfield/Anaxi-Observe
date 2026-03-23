@@ -244,7 +244,7 @@ export default async function AdminLeaveApprovalsPage() {
                     )}
                     <form action={addApprover} className="flex gap-2">
                       <input type="hidden" name="groupId" value={group.id} />
-                      <select name="approverUserId" className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm">
+                      <select name="approverUserId" className="field flex-1">
                         <option value="">Add approver…</option>
                         {(allUsers as any[])
                           .filter((u: any) => !approverIds.has(u.id))
@@ -285,7 +285,7 @@ export default async function AdminLeaveApprovalsPage() {
                       )}
                       <form action={addScope} className="flex gap-2">
                         <input type="hidden" name="groupId" value={group.id} />
-                        <select name="subjectUserId" className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm">
+                        <select name="subjectUserId" className="field flex-1">
                           <option value="">Add staff member…</option>
                           {(allUsers as any[])
                             .filter((u: any) => !scopeIds.has(u.id))

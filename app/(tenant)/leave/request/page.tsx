@@ -3,6 +3,7 @@ import { getSessionUserOrThrow } from "@/lib/auth";
 import { requireFeature } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { createLoaRequest } from "../actions";
+import { FormSelect } from "@/components/ui/form-select";
 
 function businessDays(start: Date, end: Date): number {
   let count = 0;
@@ -112,12 +113,11 @@ export default async function LeaveRequestPage() {
                   </svg>
                   Reason for leave
                 </label>
-                <select id="loa-reason" required name="reasonId" className="field">
-                  <option value="">Select leave type…</option>
-                  {reasons.map((reason: any) => (
-                    <option key={reason.id} value={reason.id}>{reason.label}</option>
-                  ))}
-                </select>
+                <FormSelect
+                  name="reasonId"
+                  placeholder="Select leave type…"
+                  options={reasons.map((reason: any) => ({ value: reason.id, label: reason.label }))}
+                />
                 <textarea
                   id="loa-reason-text"
                   name="reasonText"

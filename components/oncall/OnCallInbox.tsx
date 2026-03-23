@@ -144,10 +144,16 @@ export function OnCallInbox({
 
         {/* Alert banner */}
         {openCount >= 3 && (
-          <div className="mb-4 flex items-center gap-4 rounded-2xl border border-error/20 bg-[var(--pill-error-bg)] px-5 py-3.5">
-            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-error/10 text-base">⚠️</span>
+          <div className="mb-4 flex items-center gap-4 rounded-2xl border border-[var(--pill-error-ring)] bg-[var(--pill-error-bg)] px-5 py-3.5">
+            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--pill-error-ring)]">
+              <svg className="h-4 w-4 text-[var(--pill-error-text)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </span>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-text">
+              <p className="text-sm font-semibold text-[var(--pill-error-text)]">
                 {openCount} high priority incidents requiring immediate response
               </p>
               <p className="text-xs text-muted">
@@ -156,7 +162,7 @@ export function OnCallInbox({
             </div>
             <button
               type="button"
-              className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--pill-error-text)] hover:underline"
+              className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--pill-error-text)] hover:underline calm-transition"
             >
               View priority log
             </button>
