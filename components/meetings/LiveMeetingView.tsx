@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { StatusPill } from "@/components/ui/status-pill";
 import { MetaText } from "@/components/ui/typography";
 
 /* ── Types ─────────────────────────────────────────────────────────────── */
@@ -34,6 +33,7 @@ interface LiveMeetingViewProps {
   canEdit: boolean;
   canAddActions: boolean;
   currentUserId: string;
+  avgActionsForType?: number;
 }
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
@@ -88,7 +88,7 @@ function useElapsedTimer(startDateTime: string) {
   const hrs = String(Math.floor(elapsed / 3600)).padStart(2, "0");
   const mins = String(Math.floor((elapsed % 3600) / 60)).padStart(2, "0");
   const secs = String(elapsed % 60).padStart(2, "0");
-  return `${hrs}:${mins}:${secs}`;
+  return { formatted: `${hrs}:${mins}:${secs}`, seconds: elapsed };
 }
 
 /* ── Avatar Stack ────────────────────────────────────────────────────── */
@@ -132,20 +132,111 @@ function AvatarStack({ attendees }: { attendees: Attendee[] }) {
 
 /* ── Formatting Toolbar ──────────────────────────────────────────────── */
 
-function FormattingToolbar() {
+function FormattingToolbar({
+  textareaRef,
+  value,
+  onChange,
+}: {
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  function insertFormatting(prefix: string, suffix: string, placeholder: string) {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = value.slice(start, end) || placeholder;
+    const newValue = value.slice(0, start) + prefix + selected + suffix + value.slice(end);
+    onChange(newValue);
+    // Restore focus and selection
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+    });
+  }
+
+  function insertList() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    // Find start of current line
+    const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+    const newValue = value.slice(0, lineStart) + "- " + value.slice(lineStart);
+    onChange(newValue);
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(start + 2, start + 2);
+    });
+  }
+
+  function insertLink() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = value.slice(start, end) || "link text";
+    const url = prompt("Enter URL:");
+    if (!url) return;
+    const formatted = `[${selected}](${url})`;
+    const newValue = value.slice(0, start) + formatted + value.slice(end);
+    onChange(newValue);
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(start, start + formatted.length);
+    });
+  }
+
   return (
     <div className="flex items-center gap-1">
-      <button type="button" className="rounded-md p-1.5 text-muted hover:bg-[var(--surface-container)] hover:text-text calm-transition" title="Bold">
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6V4zm0 8h9a4 4 0 014 4 4 4 0 01-4 4H6v-8z" stroke="currentColor" strokeWidth="2" fill="none" /></svg>
+      <button
+        type="button"
+        onClick={() => insertFormatting("**", "**", "bold text")}
+        className="rounded-md p-1.5 text-muted hover:bg-[var(--surface-container)] hover:text-text calm-transition"
+        title="Bold"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6V4z" />
+          <path d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6v-8z" />
+        </svg>
       </button>
-      <button type="button" className="rounded-md p-1.5 text-muted hover:bg-[var(--surface-container)] hover:text-text calm-transition" title="Italic">
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="4" x2="10" y2="4" /><line x1="14" y1="20" x2="5" y2="20" /><line x1="15" y1="4" x2="9" y2="20" /></svg>
+      <button
+        type="button"
+        onClick={() => insertFormatting("*", "*", "italic text")}
+        className="rounded-md p-1.5 text-muted hover:bg-[var(--surface-container)] hover:text-text calm-transition"
+        title="Italic"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="19" y1="4" x2="10" y2="4" />
+          <line x1="14" y1="20" x2="5" y2="20" />
+          <line x1="15" y1="4" x2="9" y2="20" />
+        </svg>
       </button>
-      <button type="button" className="rounded-md p-1.5 text-muted hover:bg-[var(--surface-container)] hover:text-text calm-transition" title="List">
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+      <button
+        type="button"
+        onClick={insertList}
+        className="rounded-md p-1.5 text-muted hover:bg-[var(--surface-container)] hover:text-text calm-transition"
+        title="Bullet List"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="8" y1="6" x2="21" y2="6" />
+          <line x1="8" y1="12" x2="21" y2="12" />
+          <line x1="8" y1="18" x2="21" y2="18" />
+          <line x1="3" y1="6" x2="3.01" y2="6" />
+          <line x1="3" y1="12" x2="3.01" y2="12" />
+          <line x1="3" y1="18" x2="3.01" y2="18" />
+        </svg>
       </button>
-      <button type="button" className="rounded-md p-1.5 text-muted hover:bg-[var(--surface-container)] hover:text-text calm-transition" title="Link">
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+      <button
+        type="button"
+        onClick={insertLink}
+        className="rounded-md p-1.5 text-muted hover:bg-[var(--surface-container)] hover:text-text calm-transition"
+        title="Insert Link"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+        </svg>
       </button>
     </div>
   );
@@ -161,15 +252,20 @@ export function LiveMeetingView({
   startDateTime,
   attendees,
   initialNotes,
-  actions,
+  actions: initialActions,
   canEdit,
   canAddActions,
   currentUserId,
+  avgActionsForType = 0,
 }: LiveMeetingViewProps) {
-  const timer = useElapsedTimer(startDateTime);
+  const { formatted: timer, seconds: elapsedSeconds } = useElapsedTimer(startDateTime);
   const [notes, setNotes] = useState(initialNotes);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  /* ── Local actions state (so new actions appear immediately) ───── */
+  const [localActions, setLocalActions] = useState<Action[]>(initialActions);
 
   /* ── Action form state ─────────────────────────────────────────── */
   const [taskDesc, setTaskDesc] = useState("");
@@ -210,7 +306,7 @@ export function LiveMeetingView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "CANCELLED", endDateTime: now }),
       });
-      window.location.href = "/meetings";
+      window.location.href = "/";
     } catch {
       // ignore
     }
@@ -251,6 +347,19 @@ export function LiveMeetingView({
         const json = await res.json();
         setFormError(json.error ?? "Failed to create action");
       } else {
+        const newAction = await res.json();
+        // Add the new action to the local list immediately
+        setLocalActions((prev) => [
+          ...prev,
+          {
+            id: newAction.id,
+            description: newAction.description,
+            ownerUserId: newAction.ownerUserId,
+            owner: newAction.owner,
+            dueDate: newAction.dueDate ?? null,
+            status: newAction.status,
+          },
+        ]);
         setTaskDesc("");
         setDueDate("");
       }
@@ -261,9 +370,49 @@ export function LiveMeetingView({
     }
   }
 
+  const isEnded = status === "CANCELLED";
   const isInProgress = status === "CONFIRMED" || status === "PENDING";
-  const totalActions = actions.length;
-  const openActions = actions.filter((a) => a.status === "OPEN");
+  const openActions = localActions.filter((a) => a.status === "OPEN");
+  const totalActions = localActions.length;
+
+  /* ── Efficiency Index calculation ──────────────────────────────── */
+  const elapsedMinutes = Math.max(1, Math.floor(elapsedSeconds / 60));
+  const actionsPerHour = totalActions > 0 ? Math.round((totalActions / elapsedMinutes) * 60) : 0;
+  const notesPerMinute = Math.round(notes.length / elapsedMinutes);
+
+  let efficiencyMessage = "";
+  let efficiencyDetail = "";
+
+  if (avgActionsForType > 0) {
+    const pctDiff = Math.round(((totalActions - avgActionsForType) / avgActionsForType) * 100);
+    if (totalActions === 0) {
+      efficiencyMessage = `No action items captured yet.`;
+      efficiencyDetail = `Typical ${type} meetings generate ${avgActionsForType} action item${avgActionsForType !== 1 ? "s" : ""}.`;
+    } else if (pctDiff > 0) {
+      efficiencyMessage = `${pctDiff}% more action items than typical.`;
+      efficiencyDetail = `This session has ${totalActions} action item${totalActions !== 1 ? "s" : ""} vs avg ${avgActionsForType} for ${type} meetings.`;
+    } else if (pctDiff < 0) {
+      efficiencyMessage = `${Math.abs(pctDiff)}% fewer action items than typical.`;
+      efficiencyDetail = `${totalActions} captured so far vs avg ${avgActionsForType} for ${type} meetings.`;
+    } else {
+      efficiencyMessage = `On track with typical ${type} meetings.`;
+      efficiencyDetail = `${totalActions} action item${totalActions !== 1 ? "s" : ""} — matching the average.`;
+    }
+  } else if (elapsedMinutes >= 5) {
+    if (actionsPerHour >= 4) {
+      efficiencyMessage = `High action capture rate.`;
+      efficiencyDetail = `${actionsPerHour} action items/hour · ${notesPerMinute} chars/min in minutes.`;
+    } else if (notes.length > 100) {
+      efficiencyMessage = `Notes progressing well.`;
+      efficiencyDetail = `${notes.length} characters captured · ${openActions.length} open action item${openActions.length !== 1 ? "s" : ""}.`;
+    } else {
+      efficiencyMessage = `Session in early stages.`;
+      efficiencyDetail = `${totalActions} action item${totalActions !== 1 ? "s" : ""} · ${notes.length} chars in minutes so far.`;
+    }
+  } else {
+    efficiencyMessage = `Session just started.`;
+    efficiencyDetail = `Efficiency index will calculate after 5 minutes.`;
+  }
 
   const saveStatusLabel =
     saveStatus === "saving"
@@ -280,10 +429,16 @@ export function LiveMeetingView({
           <span className="rounded-md bg-[var(--primary-container)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-on-primary">
             Anaxi Core
           </span>
-          {isInProgress && (
+          {isInProgress && !isEnded && (
             <span className="flex items-center gap-1.5 text-sm font-semibold text-scale-strong-text">
               <span className="inline-block h-2 w-2 rounded-full bg-scale-strong-bg0" />
               IN PROGRESS
+            </span>
+          )}
+          {isEnded && (
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-muted">
+              <span className="inline-block h-2 w-2 rounded-full bg-muted" />
+              ENDED
             </span>
           )}
         </div>
@@ -295,7 +450,6 @@ export function LiveMeetingView({
             </h1>
             <div className="flex flex-wrap items-center gap-4">
               <span className="flex items-center gap-1.5 font-mono text-sm text-muted">
-                {/* Record dot icon */}
                 <svg className="h-3.5 w-3.5 text-text" viewBox="0 0 16 16" fill="currentColor">
                   <circle cx="8" cy="8" r="6" />
                 </svg>
@@ -311,7 +465,6 @@ export function LiveMeetingView({
               onClick={handleSaveDraft}
               className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-text calm-transition hover:bg-[var(--surface-container-low)]"
             >
-              {/* Floppy disk icon */}
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                 <polyline points="17 21 17 13 7 13 7 21" />
@@ -319,9 +472,11 @@ export function LiveMeetingView({
               </svg>
               Save Draft
             </button>
-            <Button variant="danger" className="rounded-xl px-5" onClick={handleEndMeeting}>
-              End Meeting
-            </Button>
+            {!isEnded && (
+              <Button variant="danger" className="rounded-xl px-5" onClick={handleEndMeeting}>
+                End Meeting
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -342,11 +497,18 @@ export function LiveMeetingView({
               </svg>
               <h2 className="text-lg font-bold text-text">Live Minutes</h2>
             </div>
-            <FormattingToolbar />
+            {canEdit && (
+              <FormattingToolbar
+                textareaRef={textareaRef}
+                value={notes}
+                onChange={(v) => handleNotesChange(v)}
+              />
+            )}
           </div>
 
           {/* Notes textarea */}
           <textarea
+            ref={textareaRef}
             value={notes}
             onChange={(e) => canEdit && handleNotesChange(e.target.value)}
             readOnly={!canEdit}
@@ -369,7 +531,7 @@ export function LiveMeetingView({
         {/* ── Right Column ────────────────────────────────────────── */}
         <div className="space-y-5">
           {/* ── New Action Item Card ────────────────────────────────── */}
-          {canAddActions && (
+          {canAddActions && !isEnded && (
             <div className="rounded-2xl border border-border/50 bg-surface-container-lowest p-5 shadow-sm">
               <div className="mb-4 flex items-center gap-2">
                 <svg className="h-5 w-5 text-scale-strong-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -406,9 +568,7 @@ export function LiveMeetingView({
                     </label>
                     <select
                       value={assignToId}
-                      onChange={(e) => {
-                        setAssignToId(e.target.value);
-                      }}
+                      onChange={(e) => setAssignToId(e.target.value)}
                       className="field"
                     >
                       {attendees.map((a) => (
@@ -442,14 +602,21 @@ export function LiveMeetingView({
             </div>
           )}
 
-          {/* ── Session Tasks ──────────────────────────────────────── */}
+          {/* ── Action Items ─────────────────────────────────────── */}
           <div className="rounded-2xl border border-border/50 bg-surface-container-lowest p-5 shadow-sm">
-            <h3 className="mb-4 text-base font-bold text-text">Session Tasks</h3>
-            {openActions.length === 0 && totalActions === 0 ? (
-              <p className="text-sm text-muted">No tasks yet. Add one above.</p>
+            <h3 className="mb-4 text-base font-bold text-text">
+              Action Items
+              {totalActions > 0 && (
+                <span className="ml-2 rounded-full bg-[var(--surface-container)] px-2 py-0.5 text-xs font-semibold text-muted">
+                  {totalActions}
+                </span>
+              )}
+            </h3>
+            {localActions.length === 0 ? (
+              <p className="text-sm text-muted">No action items yet. Add one above.</p>
             ) : (
               <div className="space-y-4">
-                {actions.slice(0, 3).map((action) => {
+                {localActions.map((action) => {
                   const overdue = action.status === "OPEN" && action.dueDate && isOverdue(action.dueDate);
                   return (
                     <div key={action.id} className="flex items-start gap-3">
@@ -483,9 +650,7 @@ export function LiveMeetingView({
                           </span>
                           {action.dueDate && (
                             <span
-                              className={`text-[11px] font-semibold ${
-                                overdue ? "text-error" : "text-muted"
-                              }`}
+                              className={`text-[11px] font-semibold ${overdue ? "text-error" : "text-muted"}`}
                             >
                               {formatDueDate(action.dueDate)}
                             </span>
@@ -496,15 +661,6 @@ export function LiveMeetingView({
                   );
                 })}
               </div>
-            )}
-
-            {totalActions > 3 && (
-              <button
-                type="button"
-                className="mt-4 w-full text-center text-[11px] font-bold uppercase tracking-wider text-muted hover:text-text calm-transition"
-              >
-                View All {totalActions} Tasks
-              </button>
             )}
           </div>
 
@@ -517,10 +673,11 @@ export function LiveMeetingView({
               </svg>
               <h3 className="text-lg font-bold text-on-primary">Efficiency Index</h3>
             </div>
-            <p className="text-sm leading-relaxed text-on-primary/70">
-              This session is moving{" "}
-              <span className="font-semibold text-on-primary">14% faster</span> than
-              typical {type} reviews.
+            <p className="text-sm font-semibold leading-snug text-on-primary">
+              {efficiencyMessage}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-on-primary/70">
+              {efficiencyDetail}
             </p>
           </div>
         </div>

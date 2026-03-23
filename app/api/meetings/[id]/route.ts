@@ -39,7 +39,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     const body = await req.json();
-    const { title, type, startDateTime, endDateTime, location, notes } = body;
+    const { title, type, startDateTime, endDateTime, location, notes, status } = body;
 
     const input: Record<string, unknown> = {};
     if (title !== undefined) input.title = title;
@@ -48,6 +48,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (endDateTime !== undefined) input.endDateTime = new Date(endDateTime);
     if (location !== undefined) input.location = location;
     if (notes !== undefined) input.notes = notes;
+    if (status !== undefined) input.status = status;
 
     const meeting = await updateMeeting(user.tenantId, params.id, user.id, input as any);
     return NextResponse.json(meeting);
