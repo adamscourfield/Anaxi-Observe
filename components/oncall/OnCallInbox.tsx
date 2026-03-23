@@ -126,7 +126,7 @@ export function OnCallInbox({
       <section>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3">
-            <h2 className="text-[20px] font-bold tracking-[-0.01em] text-text uppercase">
+            <h2 className="text-[20px] font-bold tracking-[-0.01em] text-text">
               Open Requests
             </h2>
             {openCount > 0 && (
@@ -260,7 +260,7 @@ export function OnCallInbox({
       <section>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3">
-            <h2 className="text-[20px] font-bold tracking-[-0.01em] text-text uppercase">
+            <h2 className="text-[20px] font-bold tracking-[-0.01em] text-text">
               Resolved Requests
             </h2>
             <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">

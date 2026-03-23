@@ -49,8 +49,8 @@ const SIGNAL_LABEL_MAP: Record<string, string> = Object.fromEntries(
 /** Signals shown in the compact heatmap (first 6) */
 const HEATMAP_KEYS = SIGNAL_KEYS.slice(0, 6);
 
-/** Teachers per page — matches the design spec showing 4 rows per page */
-const ITEMS_PER_PAGE = 4;
+/** Teachers per page */
+const ITEMS_PER_PAGE = 20;
 
 function formatTeacherRole(role: string): string {
   const map: Record<string, string> = {
@@ -339,7 +339,7 @@ export default async function ExplorerTeachersPage({
 
       {/* ── Page header ────────────────────────────────────────────────────── */}
       <div className="mb-8 flex items-start justify-between">
-        <h1 className="font-display text-[2.25rem] font-bold leading-tight tracking-[-0.02em] text-text">
+        <h1 className="font-sans text-[2.25rem] font-bold leading-tight tracking-[-0.02em] text-text">
           Teachers
         </h1>
         {canExport && (
@@ -433,9 +433,9 @@ export default async function ExplorerTeachersPage({
           </select>
           <button
             type="submit"
-            className="rounded-full border border-border bg-surface px-5 py-2 text-[0.8125rem] font-semibold text-text calm-transition hover:bg-surface-container-lowest"
+            className="rounded-lg bg-primary px-4 py-2 text-[0.8125rem] font-semibold text-on-primary calm-transition hover:opacity-90"
           >
-            Apply Filters
+            Apply
           </button>
           {departmentId && (
             <Link
@@ -609,7 +609,8 @@ export default async function ExplorerTeachersPage({
                       return (
                         <tr
                           key={row.teacherMembershipId}
-                          className="group border-b border-border/20 last:border-0 calm-transition hover:bg-surface-container-lowest/50"
+                          className="group border-b border-border/20 last:border-0 calm-transition hover:bg-[var(--surface-container-low)] cursor-pointer"
+                          onClick={() => window.location.href = `/analysis/teachers/${row.teacherMembershipId}?window=${windowDays}`}
                         >
                           <td className="whitespace-nowrap px-5 py-4">
                             <Link
@@ -649,16 +650,18 @@ export default async function ExplorerTeachersPage({
                                 const label = truncateLabel(SIGNAL_LABEL_MAP[d.signalKey] ?? d.signalKey);
                                 const isDrift = d.delta < 0;
                                 return (
-                                  <span
+                                  <Link
                                     key={d.signalKey}
-                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                                    href={`/analysis/cpd/${d.signalKey}?window=${windowDays}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium calm-transition hover:opacity-70 ${
                                       isDrift
                                         ? "bg-scale-limited-light text-scale-limited-text"
                                         : "bg-scale-strong-light text-scale-strong-text"
                                     }`}
                                   >
                                     {isDrift ? "↓" : "↑"} {label}
-                                  </span>
+                                  </Link>
                                 );
                               })}
                             </div>

@@ -175,9 +175,10 @@ function LeadershipHome({
           ) : (
             <div className="space-y-2">
               {onCallDetails.slice(0, 3).map((oc) => (
-                <div
+                <Link
                   key={oc.id}
-                  className={`flex items-center justify-between rounded-xl p-4 ${
+                  href={`/on-call/${oc.id}`}
+                  className={`flex items-center justify-between rounded-xl p-4 calm-transition hover:bg-[var(--surface-container)] ${
                     oc.status === "OPEN" || oc.status === "ACKNOWLEDGED"
                       ? "bg-[var(--surface-container-low)]"
                       : "bg-white"
@@ -208,7 +209,7 @@ function LeadershipHome({
                       </span>
                     )}
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -242,7 +243,8 @@ function LeadershipHome({
           </Card>
 
           {/* Observations this week box */}
-          <Card className="flex flex-col justify-between">
+          <Link href="/explorer/observations" className="block">
+          <Card className="flex flex-col justify-between calm-transition hover:bg-[var(--surface-container-low)] hover:shadow-md cursor-pointer">
             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Observations This Week</p>
             <div>
               <p className="mt-1 text-[36px] font-bold leading-none tracking-[-0.02em] text-text">
@@ -260,6 +262,7 @@ function LeadershipHome({
               </div>
             </div>
           </Card>
+          </Link>
         </div>
       </section>
 
@@ -284,9 +287,10 @@ function LeadershipHome({
                   const isCpd = reasonUpper.includes("CPD") || reasonUpper.includes("TRAINING");
                   const pillVariant: PillVariant = isEmergency ? "error" : isCpd ? "accent" : "neutral";
                   return (
-                    <div
+                    <Link
                       key={leave.id}
-                      className={`rounded-2xl border p-4 ${isEmergency ? "border-[var(--pill-error-ring)]" : "border-border/60"}`}
+                      href={`/leave/${leave.id}`}
+                      className={`block rounded-2xl border p-4 calm-transition hover:shadow-md hover:bg-[var(--surface-container-low)] ${isEmergency ? "border-[var(--pill-error-ring)]" : "border-border/60"}`}
                     >
                       <div className="flex items-center justify-between">
                         <StatusPill variant={pillVariant} size="sm">
@@ -318,7 +322,7 @@ function LeadershipHome({
                           </div>
                         )}
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -344,7 +348,7 @@ function LeadershipHome({
               </p>
               <div className="space-y-3">
                 {topCpd.map((row) => (
-                  <div key={row.signalKey}>
+                  <Link key={row.signalKey} href={`/analysis/cpd/${row.signalKey}?window=${windowDays}`} className="block rounded-xl p-2 -mx-2 calm-transition hover:bg-white/10">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">{row.label}</span>
                       <span className="text-sm font-bold">{Math.round(row.driftRate * 100)}%</span>
@@ -352,7 +356,7 @@ function LeadershipHome({
                     <div className="mt-1 h-1.5 w-full rounded-full bg-white/20 overflow-hidden">
                       <div className="h-full rounded-full bg-surface-container-lowest/80" style={{ width: `${Math.min(Math.round(row.driftRate * 100), 100)}%` }} />
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
               <Link href={`/analytics?tab=cpd&window=${windowDays}`} className="mt-2 inline-block text-[0.75rem] font-semibold uppercase tracking-[0.05em] text-on-primary/80 calm-transition hover:text-on-primary">

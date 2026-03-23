@@ -205,7 +205,7 @@ export default async function AdminUsersPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted/60">
               Internal&ensp;›&ensp;User Directory
             </p>
-            <h1 className="font-serif text-[2rem] font-bold leading-tight tracking-[-0.02em] text-text">
+            <h1 className="text-[2rem] font-bold leading-tight tracking-[-0.02em] text-text">
               User Directory
             </h1>
           </div>

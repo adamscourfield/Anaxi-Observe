@@ -786,7 +786,7 @@ export default async function AnalyticsPage({
 
   return (
     <div className="space-y-6">
-      <H1>Analytics</H1>
+      <H1>Priorities</H1>
 
       <div className="flex flex-wrap items-center gap-4">
         <TabBar activeTab={activeTab} windowDays={windowDays} />
