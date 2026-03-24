@@ -46,11 +46,50 @@ export default async function AssessmentsPage() {
           title="Assessments"
           subtitle="Track student attainment across subjects and assessment points."
         />
+        <div className="flex gap-2">
+          <Link
+            href="/assessments/adhoc"
+            className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text hover:bg-surface"
+          >
+            Add ad-hoc data
+          </Link>
+          <Link
+            href="/assessments/setup"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white"
+          >
+            Set up cycle
+          </Link>
+        </div>
+      </div>
+
+      {/* Quick-access feature links */}
+      <div className="grid grid-cols-3 gap-3">
         <Link
-          href="/assessments/setup"
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white"
+          href="/assessments/dashboard"
+          className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-accent/30 hover:bg-surface"
         >
-          Set up cycle
+          <span className="text-sm font-semibold text-text">Dashboard</span>
+          <span className="text-xs text-muted">
+            Heatmap, distributions and attainment overview across cycles
+          </span>
+        </Link>
+        <Link
+          href="/assessments/compare"
+          className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-accent/30 hover:bg-surface"
+        >
+          <span className="text-sm font-semibold text-text">Compare datasets</span>
+          <span className="text-xs text-muted">
+            Side-by-side stats for any two assessments with delta analysis
+          </span>
+        </Link>
+        <Link
+          href="/assessments/progress"
+          className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-accent/30 hover:bg-surface"
+        >
+          <span className="text-sm font-semibold text-text">Progress tracker</span>
+          <span className="text-xs text-muted">
+            Student score deltas across multiple assessment points
+          </span>
         </Link>
       </div>
 
@@ -130,12 +169,24 @@ export default async function AssessmentsPage() {
             ))}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
+            <Link
+              href="/assessments/dashboard"
+              className="rounded-lg border border-border px-4 py-2 text-sm text-text hover:bg-surface"
+            >
+              Dashboard →
+            </Link>
+            <Link
+              href="/assessments/compare"
+              className="rounded-lg border border-border px-4 py-2 text-sm text-text hover:bg-surface"
+            >
+              Compare datasets →
+            </Link>
             <Link
               href="/assessments/metrics"
               className="rounded-lg border border-border px-4 py-2 text-sm text-text hover:bg-surface"
             >
-              Metric builder
+              Metric builder →
             </Link>
           </div>
         </>
