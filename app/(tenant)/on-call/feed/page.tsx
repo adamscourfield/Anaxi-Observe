@@ -34,7 +34,7 @@ export default async function OnCallFeedPage({ searchParams }: { searchParams: R
       ...(status ? { status } : {}),
       ...(yearGroup ? { student: { yearGroup } } : {}),
     },
-    include: { student: true, createdBy: true, location: true, reason: true },
+    include: { student: true, requester: true },
     orderBy: { createdAt: "desc" },
     take: 200,
   });
@@ -121,8 +121,8 @@ export default async function OnCallFeedPage({ searchParams }: { searchParams: R
                     {r.student?.fullName} ({r.student?.yearGroup || "-"})
                   </td>
                   <td className="px-3 py-2 text-center">{r.category}</td>
-                  <td className="px-3 py-2">{r.location?.label || r.locationText || "-"}</td>
-                  <td className="px-3 py-2">{r.reason?.label || "-"}</td>
+                  <td className="px-3 py-2">{r.location || "-"}</td>
+                  <td className="px-3 py-2">{r.behaviourReasonCategory || "-"}</td>
                   <td className="px-3 py-2 text-center">
                     <StatusPill variant={FEED_STATUS_PILL[r.status] ?? "neutral"}>{r.status}</StatusPill>
                   </td>
