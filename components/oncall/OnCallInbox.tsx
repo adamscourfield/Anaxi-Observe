@@ -80,6 +80,12 @@ function formatTime(dateVal: Date | string): string {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
+function formatDate(dateVal: Date | string): string {
+  const d = new Date(dateVal);
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  return d.toLocaleDateString("en-GB", sameYear ? { day: "numeric", month: "short" } : { day: "numeric", month: "short", year: "numeric" });
+}
+
 function formatYearGroup(yearGroup: string | null | undefined): string {
   if (!yearGroup) return "—";
   const digits = yearGroup.replace(/\D/g, "");
@@ -477,7 +483,9 @@ export function OnCallInbox({
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
                       <span className="font-medium text-text">{r.responder?.fullName ?? "—"}</span>
                       <span aria-hidden>·</span>
-                      <span className="font-mono text-text">{r.resolvedAt ? formatTime(r.resolvedAt) : "—"}</span>
+                      <span className="font-mono text-text">
+                        {r.resolvedAt ? `${formatDate(r.resolvedAt)} · ${formatTime(r.resolvedAt)}` : "—"}
+                      </span>
                       {duration > 0 && (
                         <span className="inline-flex items-center rounded-md bg-[var(--pill-info-bg)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--pill-info-text)] ring-1 ring-inset ring-[var(--pill-info-ring)]">
                           {formatDuration(duration)}
@@ -489,12 +497,13 @@ export function OnCallInbox({
               })}
             </div>
             <div className="table-shell hidden overflow-x-auto md:block">
-              <table className="w-full min-w-[650px] text-sm">
+              <table className="w-full min-w-[750px] text-sm">
                 <thead>
                   <tr className="table-head-row">
                     <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Student name</th>
                     <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Type</th>
                     <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Responder</th>
+                    <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Date</th>
                     <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Resolved at</th>
                     <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Duration</th>
                   </tr>
@@ -524,6 +533,9 @@ export function OnCallInbox({
                         </td>
                         <td className="px-4 py-4 text-text">
                           {r.responder?.fullName ?? "—"}
+                        </td>
+                        <td className="px-4 py-4 text-text">
+                          {r.resolvedAt ? formatDate(r.resolvedAt) : "—"}
                         </td>
                         <td className="px-4 py-4 font-mono text-text">
                           {r.resolvedAt ? formatTime(r.resolvedAt) : "—"}
