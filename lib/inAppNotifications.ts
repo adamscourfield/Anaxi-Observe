@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { shouldSendUserEmail } from "@/lib/email/send";
 
 export async function createInAppNotification(options: {
   tenantId: string;
@@ -77,6 +78,9 @@ export async function notifyLeaveReviewers(options: {
   leaveRequestId: string;
 }) {
   for (const userId of options.approverUserIds) {
+    // "Leave emails" is the one preference an admin sets for leave notifications --
+    // it gates the in-app bell too, so turning it off stops both channels, not just email.
+    if (!(await shouldSendUserEmail(userId, "leave"))) continue;
     await createInAppNotification({
       tenantId: options.tenantId,
       userId,
