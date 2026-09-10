@@ -209,6 +209,38 @@ export async function getOpenRequests(tenantId: string) {
   });
 }
 
+/** Currently active requests, regardless of when they were raised -- safety-critical, never date-limited. */
+export async function getOpenAndAcknowledgedRequests(tenantId: string, take = 200) {
+  return (prisma as any).onCallRequest.findMany({
+    where: { tenantId, status: { in: ["OPEN", "ACKNOWLEDGED"] } },
+    include: REQUEST_INCLUDE,
+    orderBy: { createdAt: "desc" },
+    take,
+  });
+}
+
+/** Resolved requests, optionally scoped to a resolvedAt window (omit resolvedAfter for all time). */
+export async function getResolvedRequests(tenantId: string, resolvedAfter?: Date, take = 200) {
+  return (prisma as any).onCallRequest.findMany({
+    where: {
+      tenantId,
+      status: "RESOLVED",
+      ...(resolvedAfter ? { resolvedAt: { gte: resolvedAfter } } : {}),
+    },
+    include: REQUEST_INCLUDE,
+    orderBy: { resolvedAt: "desc" },
+    take,
+  });
+}
+
+/** Minimal rows for today's headline stats (volume, avg response, resolution rate). */
+export async function getTodayActivity(tenantId: string, todayStart: Date) {
+  return (prisma as any).onCallRequest.findMany({
+    where: { tenantId, createdAt: { gte: todayStart } },
+    select: { status: true, createdAt: true, resolvedAt: true },
+  });
+}
+
 export async function getRequestsByStatus(
   tenantId: string,
   status?: string,

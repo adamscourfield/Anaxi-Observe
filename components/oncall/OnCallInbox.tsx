@@ -3,7 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { REQUEST_TYPE_LABELS } from "@/modules/oncall/types";
+import {
+  REQUEST_TYPE_LABELS,
+  RESOLVED_HISTORY_RANGE_LABELS,
+  type ResolvedHistoryRange,
+} from "@/modules/oncall/types";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 
@@ -26,6 +30,7 @@ interface InboxRequest {
 interface OnCallInboxProps {
   openRequests: InboxRequest[];
   resolvedRequests: InboxRequest[];
+  resolvedRange: ResolvedHistoryRange;
   canAcknowledge?: boolean;
   canResolve?: boolean;
   totalLogsToday: number;
@@ -91,6 +96,7 @@ const TYPE_BADGE_CLASSES: Record<RequestType, string> = {
 export function OnCallInbox({
   openRequests,
   resolvedRequests,
+  resolvedRange,
   canAcknowledge,
   canResolve,
   totalLogsToday,
@@ -99,6 +105,12 @@ export function OnCallInbox({
 }: OnCallInboxProps) {
   const router = useRouter();
   const [actionPending, setActionPending] = useState<string | null>(null);
+  const [rangeMenuOpen, setRangeMenuOpen] = useState(false);
+
+  function handleRangeChange(next: ResolvedHistoryRange) {
+    router.push(next === "today" ? "/on-call" : `/on-call?range=${next}`);
+    setRangeMenuOpen(false);
+  }
 
   const openCount = openRequests.filter((r) => r.status === "OPEN").length;
 
@@ -367,22 +379,53 @@ export function OnCallInbox({
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5">
             <h2 className="whitespace-nowrap text-lg font-bold tracking-[-0.02em] text-text">Resolved Requests</h2>
             <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              History (Today)
+              History ({RESOLVED_HISTORY_RANGE_LABELS[resolvedRange]})
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {/* Filter icon */}
-            <button
-              type="button"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 bg-surface text-muted calm-transition hover:bg-[var(--surface-container-low)]"
-              aria-label="Filter resolved requests"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" y1="6" x2="20" y2="6" />
-                <line x1="8" y1="12" x2="16" y2="12" />
-                <line x1="11" y1="18" x2="13" y2="18" />
-              </svg>
-            </button>
+            {/* Time range filter */}
+            <div className="relative">
+              <button
+                type="button"
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-surface px-2.5 text-xs font-medium text-muted calm-transition hover:bg-[var(--surface-container-low)]"
+                aria-haspopup="listbox"
+                aria-expanded={rangeMenuOpen}
+                aria-label="Filter resolved requests by time range"
+                onClick={() => setRangeMenuOpen((open) => !open)}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="4" y1="6" x2="20" y2="6" />
+                  <line x1="8" y1="12" x2="16" y2="12" />
+                  <line x1="11" y1="18" x2="13" y2="18" />
+                </svg>
+                {RESOLVED_HISTORY_RANGE_LABELS[resolvedRange]}
+              </button>
+              {rangeMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setRangeMenuOpen(false)} />
+                  <ul
+                    role="listbox"
+                    className="absolute right-0 z-20 mt-1.5 w-40 overflow-hidden rounded-lg border border-border/60 bg-surface py-1 shadow-lg"
+                  >
+                    {(Object.keys(RESOLVED_HISTORY_RANGE_LABELS) as ResolvedHistoryRange[]).map((option) => (
+                      <li key={option}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={option === resolvedRange}
+                          className={`block w-full px-3 py-2 text-left text-sm calm-transition hover:bg-[var(--surface-container-low)] ${
+                            option === resolvedRange ? "font-semibold text-text" : "text-muted"
+                          }`}
+                          onClick={() => handleRangeChange(option)}
+                        >
+                          {RESOLVED_HISTORY_RANGE_LABELS[option]}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
             {/* Download icon */}
             <button
               type="button"
@@ -400,7 +443,7 @@ export function OnCallInbox({
 
         {resolvedRequests.length === 0 ? (
           <EmptyState
-            title="No resolved requests today"
+            title={`No resolved requests ${resolvedRange === "all" ? "yet" : `in the selected range (${RESOLVED_HISTORY_RANGE_LABELS[resolvedRange].toLowerCase()})`}`}
             description="Resolved incidents will appear here once handled."
             mode="embedded"
           />

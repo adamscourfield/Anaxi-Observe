@@ -6,7 +6,11 @@ import {
   resolveOnCallRequest,
   cancelOnCallRequest,
   deleteOnCallRequest,
+  getOpenAndAcknowledgedRequests,
+  getResolvedRequests,
+  getTodayActivity,
 } from "@/modules/oncall/service";
+import { parseResolvedHistoryRange, resolvedHistoryRangeStart } from "@/modules/oncall/types";
 
 // Mock prisma
 vi.mock("@/lib/prisma", () => ({
@@ -66,11 +70,13 @@ describe("RBAC – hasOnCallPermission", () => {
     expect(hasOnCallPermission("TEACHER", "oncall:view_all")).toBe(false);
   });
 
-  it("ON_CALL role can acknowledge, resolve, and view all", () => {
+  it("ON_CALL role can create, acknowledge, resolve, view all, and cancel their own", () => {
+    expect(hasOnCallPermission("ON_CALL", "oncall:create")).toBe(true);
     expect(hasOnCallPermission("ON_CALL", "oncall:acknowledge")).toBe(true);
     expect(hasOnCallPermission("ON_CALL", "oncall:resolve")).toBe(true);
     expect(hasOnCallPermission("ON_CALL", "oncall:view_all")).toBe(true);
-    expect(hasOnCallPermission("ON_CALL", "oncall:create")).toBe(false);
+    expect(hasOnCallPermission("ON_CALL", "oncall:cancel")).toBe(true);
+    expect(hasOnCallPermission("ON_CALL", "oncall:delete")).toBe(false);
   });
 
   it("HR can create only", () => {
@@ -397,5 +403,84 @@ describe("deleteOnCallRequest", () => {
   it("throws when request not found (or belongs to a different tenant)", async () => {
     (prisma as any).onCallRequest.deleteMany.mockResolvedValue({ count: 0 });
     await expect(deleteOnCallRequest("req_1", "tenant_1")).rejects.toThrow("request not found");
+  });
+});
+
+describe("getOpenAndAcknowledgedRequests", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("queries only OPEN and ACKNOWLEDGED requests, scoped to the tenant, with no date limit", async () => {
+    (prisma as any).onCallRequest.findMany.mockResolvedValue([mockRequest()]);
+    await getOpenAndAcknowledgedRequests("tenant_1");
+    expect((prisma as any).onCallRequest.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { tenantId: "tenant_1", status: { in: ["OPEN", "ACKNOWLEDGED"] } },
+      })
+    );
+  });
+});
+
+describe("getResolvedRequests", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("queries RESOLVED requests with no lower bound when resolvedAfter is omitted", async () => {
+    (prisma as any).onCallRequest.findMany.mockResolvedValue([]);
+    await getResolvedRequests("tenant_1");
+    expect((prisma as any).onCallRequest.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { tenantId: "tenant_1", status: "RESOLVED" } })
+    );
+  });
+
+  it("scopes to resolvedAt >= resolvedAfter when provided", async () => {
+    (prisma as any).onCallRequest.findMany.mockResolvedValue([]);
+    const after = new Date("2026-01-01T00:00:00Z");
+    await getResolvedRequests("tenant_1", after);
+    expect((prisma as any).onCallRequest.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { tenantId: "tenant_1", status: "RESOLVED", resolvedAt: { gte: after } },
+      })
+    );
+  });
+});
+
+describe("getTodayActivity", () => {
+  it("queries by createdAt >= todayStart, scoped to the tenant", async () => {
+    (prisma as any).onCallRequest.findMany.mockResolvedValue([]);
+    const todayStart = new Date("2026-01-15T00:00:00Z");
+    await getTodayActivity("tenant_1", todayStart);
+    expect((prisma as any).onCallRequest.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { tenantId: "tenant_1", createdAt: { gte: todayStart } },
+      })
+    );
+  });
+});
+
+describe("resolved history range helpers", () => {
+  it("parses known range values and falls back to today", () => {
+    expect(parseResolvedHistoryRange("7d")).toBe("7d");
+    expect(parseResolvedHistoryRange("30d")).toBe("30d");
+    expect(parseResolvedHistoryRange("all")).toBe("all");
+    expect(parseResolvedHistoryRange(undefined)).toBe("today");
+    expect(parseResolvedHistoryRange("bogus")).toBe("today");
+  });
+
+  it("computes a start boundary for today/7d/30d and null (no bound) for all", () => {
+    const now = new Date("2026-03-15T10:00:00");
+    const today = resolvedHistoryRangeStart("today", now);
+    expect(today?.getHours()).toBe(0);
+    expect(today?.getDate()).toBe(15);
+
+    const sevenDays = resolvedHistoryRangeStart("7d", now);
+    expect(sevenDays?.getDate()).toBe(8);
+
+    const thirtyDays = resolvedHistoryRangeStart("30d", now);
+    expect(thirtyDays?.getMonth()).toBe(1); // February
+
+    expect(resolvedHistoryRangeStart("all", now)).toBeNull();
   });
 });

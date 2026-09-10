@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getSessionUserOrThrow } from "@/lib/auth";
 import { hasOnCallPermission } from "@/lib/rbac";
-import { getRequestsByStatus } from "@/modules/oncall/service";
+import { getOpenAndAcknowledgedRequests, getResolvedRequests, getTodayActivity } from "@/modules/oncall/service";
+import { parseResolvedHistoryRange, resolvedHistoryRangeStart } from "@/modules/oncall/types";
 import { OnCallInbox } from "@/components/oncall/OnCallInbox";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -10,53 +11,50 @@ import { PageHeader } from "@/components/ui/page-header";
 // gated behind a tenant feature flag -- every school can always log and
 // track on-call requests. Whether staff receive emails about them is a
 // separate, per-user preference (see modules/oncall/notifications.ts).
-export default async function OnCallHomePage() {
+export default async function OnCallHomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ range?: string }>;
+}) {
   const user = await getSessionUserOrThrow();
 
   const canAcknowledge = hasOnCallPermission(user.role, "oncall:acknowledge");
   const canResolve = hasOnCallPermission(user.role, "oncall:resolve");
 
-  const { data: allRequests } = await getRequestsByStatus(user.tenantId, undefined, 200, 0);
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const range = parseResolvedHistoryRange(resolvedSearchParams.range);
 
-  const todayStart = new Date();
+  const now = new Date();
+  const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
+  const resolvedAfter = resolvedHistoryRangeStart(range, now);
 
-  const openRequests = allRequests.filter(
-    (r: { status: string }) => r.status === "OPEN" || r.status === "ACKNOWLEDGED"
-  );
+  const [openRequests, resolvedRequests, todayActivity] = await Promise.all([
+    getOpenAndAcknowledgedRequests(user.tenantId),
+    getResolvedRequests(user.tenantId, resolvedAfter ?? undefined),
+    getTodayActivity(user.tenantId, todayStart),
+  ]);
 
-  const resolvedToday = allRequests.filter(
-    (r: { status: string; resolvedAt?: Date | string | null }) =>
-      r.status === "RESOLVED" &&
-      r.resolvedAt &&
-      new Date(r.resolvedAt) >= todayStart
-  );
+  const totalLogsToday = todayActivity.length;
 
-  const todayRequests = allRequests.filter(
-    (r: { createdAt: Date | string }) => new Date(r.createdAt) >= todayStart
-  );
-
-  const totalLogsToday = todayRequests.length;
-
-  const resolvedWithDuration = resolvedToday.filter(
-    (r: { resolvedAt?: Date | string | null; createdAt: Date | string }) =>
-      r.resolvedAt
+  const resolvedTodayWithDuration = todayActivity.filter(
+    (r: { status: string; resolvedAt?: Date | string | null }) => r.status === "RESOLVED" && r.resolvedAt
   );
   const avgResponseMs =
-    resolvedWithDuration.length > 0
-      ? resolvedWithDuration.reduce(
+    resolvedTodayWithDuration.length > 0
+      ? resolvedTodayWithDuration.reduce(
           (sum: number, r: { resolvedAt?: Date | string | null; createdAt: Date | string }) => {
             const resolved = r.resolvedAt ? new Date(r.resolvedAt).getTime() : 0;
             return sum + (resolved - new Date(r.createdAt).getTime());
           },
           0
-        ) / resolvedWithDuration.length
+        ) / resolvedTodayWithDuration.length
       : 0;
 
-  const todayResolved = todayRequests.filter(
+  const todayResolved = todayActivity.filter(
     (r: { status: string }) => r.status === "RESOLVED"
   ).length;
-  const todayClosed = todayRequests.filter(
+  const todayClosed = todayActivity.filter(
     (r: { status: string }) =>
       r.status === "RESOLVED" || r.status === "CANCELLED"
   ).length;
@@ -91,7 +89,8 @@ export default async function OnCallHomePage() {
 
       <OnCallInbox
         openRequests={openRequests}
-        resolvedRequests={resolvedToday}
+        resolvedRequests={resolvedRequests}
+        resolvedRange={range}
         canAcknowledge={canAcknowledge}
         canResolve={canResolve}
         totalLogsToday={totalLogsToday}
