@@ -69,3 +69,35 @@ export const LOCATION_SUGGESTIONS = [
   "Library",
   "Toilets",
 ] as const;
+
+export type ResolvedHistoryRange = "today" | "7d" | "30d" | "all";
+
+export const RESOLVED_HISTORY_RANGE_LABELS: Record<ResolvedHistoryRange, string> = {
+  today: "Today",
+  "7d": "Last 7 days",
+  "30d": "Last 30 days",
+  all: "All time",
+};
+
+export function parseResolvedHistoryRange(value: string | undefined): ResolvedHistoryRange {
+  if (value === "7d" || value === "30d" || value === "all") return value;
+  return "today";
+}
+
+/** Start-of-window boundary for a resolved-history range, or null for "all time" (no lower bound). */
+export function resolvedHistoryRangeStart(range: ResolvedHistoryRange, now: Date): Date | null {
+  const start = new Date(now);
+  if (range === "today") {
+    start.setHours(0, 0, 0, 0);
+    return start;
+  }
+  if (range === "7d") {
+    start.setDate(start.getDate() - 7);
+    return start;
+  }
+  if (range === "30d") {
+    start.setDate(start.getDate() - 30);
+    return start;
+  }
+  return null;
+}
